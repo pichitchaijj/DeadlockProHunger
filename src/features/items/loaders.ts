@@ -37,6 +37,12 @@ export async function heroOptions(): Promise<Array<{ slug: string; name: string 
   return heroes ? [...heroes.values()].map((h) => ({ slug: h.slug, name: h.name })).sort((a, b) => a.name.localeCompare(b.name)) : []
 }
 
+/** Item select options (shop items), by name. Empty if the shop list can't load. */
+export async function itemOptions(): Promise<Array<{ slug: string; name: string }>> {
+  const items = await itemCatalog().catch(() => null)
+  return items ? [...items.values()].map((i) => ({ slug: i.slug, name: i.name })).sort((a, b) => a.name.localeCompare(b.name)) : []
+}
+
 export async function findItem(slug: string): Promise<ItemRef | null> {
   for (const item of (await itemCatalog()).values()) if (item.slug === slug) return item
   return null

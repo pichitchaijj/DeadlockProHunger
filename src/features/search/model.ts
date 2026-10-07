@@ -147,16 +147,14 @@ export function searchAll(
     icon: { type: 'item', src: i.icon, name: i.name, slot: i.slot, tier: i.tier },
   }))
 
+  // Patch days from the changelog are also Patch page ids (features/patches: YYYY-MM-DD).
   groups.patches = data.patches
-    .filter((p) => p.link && matchScore(p.title, q) >= 0)
+    .filter((p) => matchScore(p.title, q) >= 0)
     .slice(0, 3)
-    .map((p) => ({
-      id: `patch-${p.day}-${p.title}`,
-      label: p.title,
-      description: `${new Date(p.day * 1000).toISOString().slice(0, 10)} · opens the forum post`,
-      kind: 'external',
-      href: p.link!,
-    }))
+    .map((p) => {
+      const day = new Date(p.day * 1000).toISOString().slice(0, 10)
+      return { id: `patch-${p.day}-${p.title}`, label: p.title, description: `${day} · what changed and before / after stats`, kind: 'internal', href: `/patch/${day}` }
+    })
 
   return GROUP_ORDER.filter((g) => groups[g].length > 0).map((g) => ({ id: g, label: GROUP_LABELS[g], results: groups[g] }))
 }

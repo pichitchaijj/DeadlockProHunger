@@ -6,6 +6,8 @@ import { getHeroBuildStats } from '@/lib/deadlock/heroEndpoints'
 import { getItemPhases, getItemStatsByHero, getItemStatsByMinute } from '@/lib/deadlock/itemEndpoints'
 import { getItemContext, itemTotals } from '@/features/items/loaders'
 import { DEFAULT_ITEMS_QUERY } from '@/features/items/query'
+import { getPatchContext, patchDiffById, patchImpactById, patchList } from '@/features/patches/loaders'
+import { DEFAULT_PATCH_QUERY } from '@/features/patches/query'
 import { getBuildsListing } from '@/features/builds/loaders'
 import { DEFAULT_BUILDS_QUERY } from '@/features/builds/query'
 import { getHeroContext, getOverviewData } from '@/features/hero/loaders'
@@ -103,6 +105,26 @@ export function prewarmStages(): PrewarmStage[] {
           { name: 'item purchase minutes', run: () => getItemStatsByMinute(q, null) },
           { name: 'item purchase phases', run: () => getItemPhases(q, null) },
           { name: 'item heroes', run: () => getItemStatsByHero(q) },
+        ]
+      },
+    },
+    {
+      // /patch/[latest]: the game-data diff (two ~8 MB build snapshots, cached as one small diff) and
+      // the default before / after statistics.
+      name: 'latest patch',
+      tasks: async () => {
+        const [latest] = await patchList()
+        if (!latest) return []
+        return [
+          { name: 'patch diff', run: () => patchDiffById(latest.id) },
+          {
+            name: 'patch statistics',
+            run: async () => {
+              const ctx = await getPatchContext(DEFAULT_PATCH_QUERY)
+              if (typeof ctx === 'string') throw new DataError(ctx, 'not-found')
+              await patchImpactById(latest.id, ctx)
+            },
+          },
         ]
       },
     },

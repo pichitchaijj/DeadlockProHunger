@@ -32,6 +32,17 @@ export function getItemTotals(query: HeroStatsQuery, heroId?: number) {
   })
 }
 
+/** Per-item, per-UTC-day totals (bucket = day start, unix seconds) for every item. Patch before/after windows. */
+export function getItemStatsByDay(query: HeroStatsQuery) {
+  return deadlockGet('/v1/analytics/item-stats', {
+    params: { bucket: 'start_time_day', ...scopeParams(query), min_matches: ITEM_MIN_MATCHES, corrupted_items: 'exclude' },
+    schema: z.array(z.object({ item_id: z.number(), bucket: z.number(), wins: z.number(), matches: z.number() })),
+    revalidate: TTL.analytics,
+    tags: ['analytics:items'],
+    timeoutMs: 20_000,
+  })
+}
+
 /** [item id, bucket, wins, matches]: the compact projection cached for the bucketed calls. */
 export type ItemBucketRow = [itemId: number, bucket: number, wins: number, matches: number]
 

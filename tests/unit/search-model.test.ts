@@ -9,7 +9,7 @@ const data = {
     { id: 3, slug: 'viscous', name: 'Viscous', role: 'mystic', iconUrl: null },
   ],
   items: [{ id: 9, slug: 'vampiric-burst', name: 'Vampiric Burst', slot: 'spirit', tier: 4, cost: 6200, icon: null }],
-  patches: [{ title: '10-02-2026 Update', day: 1790985600, link: 'https://forums.example/1' }],
+  patches: [{ title: '10-02-2026 Update', day: 1790899200, link: 'https://forums.example/1' }],
   builds: [{ id: 77, heroId: 1, name: 'Vindicta Meta Build', favorites: 1200 }],
   players: [{ accountId: 5, name: 'vindi_main', avatar: null, matches30d: 40 }],
 }
@@ -40,10 +40,10 @@ describe('searchAll', () => {
     expect(groups.flatMap((g) => g.results.map((r) => r.href))).toEqual(['/players/48123456', '/matches/48123456'])
   })
 
-  it('links items to their item page and patches as external links', () => {
+  it('links items and patches to their pages', () => {
     const groups = searchAll('vamp', data)
     expect(groups.find((g) => g.id === 'items')!.results[0]).toMatchObject({ kind: 'internal', href: '/items/vampiric-burst', description: 'Spirit · Tier 4 · 6,200 souls' })
-    expect(searchAll('update', data).find((g) => g.id === 'patches')!.results[0].kind).toBe('external')
+    expect(searchAll('update', data).find((g) => g.id === 'patches')!.results[0]).toMatchObject({ kind: 'internal', href: '/patch/2026-10-02' })
   })
 
   it('drops fuzzy player matches from the upstream search', () => {
