@@ -1,0 +1,507 @@
+@import 'tailwindcss';
+
+/*
+ * Deadlockprohunger design tokens.
+ * Source of truth for color, type, space, shape, elevation, motion and breakpoints.
+ * Components use these tokens (via Tailwind utilities or var()) and never raw hex values.
+ * Contrast ratios for every allowed pair are listed in docs/DESIGN.md.
+ */
+
+@theme {
+  /* ── Color: brand palette (CLAUDE.md) ─────────────────────────── */
+  --color-bg: #0b1220;
+  --color-surface: #1a253f;
+  --color-surface-raised: #22304f;
+  --color-surface-sunken: #111a2e;
+  --color-steel: #3b556f;
+  --color-primary: #4fc2c0;
+  --color-highlight: #66ffe8;
+  --color-orange: #f58220;
+  --color-pink: #ed438b;
+
+  /* Text */
+  --color-text: #f5f7fa;
+  --color-text-muted: #a9b4c5;
+  --color-on-primary: #0b1220;
+
+  /* Semantic */
+  --color-positive: #4fc2c0;
+  --color-negative: #f2777a;
+  --color-warning: #f58220;
+  --color-special: #ed438b;
+  --color-focus: #66ffe8;
+
+  /* Borders: steel is decorative only (1.97:1 on surface).
+     border-control meets 3:1 on bg, surface and surface-raised for interactive boundaries. */
+  --color-border: #2c405a;
+  --color-border-strong: #3b556f;
+  --color-border-control: #64809b;
+
+  /* Data visualization: cyan = primary series, orange = comparison/trend, pink = special.
+     Grid and axis stay quiet so the data leads. */
+  --color-chart-1: var(--color-primary);
+  --color-chart-2: var(--color-orange);
+  --color-chart-3: var(--color-pink);
+  --color-chart-muted: var(--color-steel);
+  --color-chart-bg: var(--color-surface-sunken);
+  --color-chart-grid: rgb(59 85 111 / 0.35);
+  --color-chart-axis: var(--color-text-muted);
+
+  /* ── Typography ───────────────────────────────────────────────── */
+  --font-display: var(--font-barlow-condensed), 'Arial Narrow', sans-serif;
+  --font-display-slant: var(--font-barlow-condensed-italic), var(--font-barlow-condensed), 'Arial Narrow', sans-serif;
+  --font-ui: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-body: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
+
+  /*
+   * Type scale (docs/DESIGN.md § Typography). Three voices: editorial display (Barlow Condensed),
+   * UI headings (Inter, bold, compact) and body (system sans). Sizes are fluid from phone to desktop.
+   */
+  --text-display-xl: clamp(2.5rem, 1.6rem + 4vw, 4.5rem); /* home / page hero statement */
+  --text-display-xl--line-height: 0.95;
+  --text-display-xl--letter-spacing: -0.01em;
+  --text-display-lg: clamp(2rem, 1.5rem + 2.2vw, 3rem); /* page h1 */
+  --text-display-lg--line-height: 1;
+  --text-heading-xl: clamp(1.5rem, 1.3rem + 1vw, 2rem); /* section h2, big stat */
+  --text-heading-xl--line-height: 1.05;
+  --text-heading-lg: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem); /* card group / panel heading */
+  --text-heading-lg--line-height: 1.2;
+  --text-heading-md: clamp(1.125rem, 1.08rem + 0.2vw, 1.25rem); /* card title, h3 */
+  --text-heading-md--line-height: 1.3;
+  --text-body-lg: 1.125rem; /* lead paragraphs */
+  --text-body-lg--line-height: 1.6;
+  --text-body-md: 1rem;
+  --text-body-md--line-height: 1.6;
+  --text-body-sm: 0.875rem; /* dense UI copy, table cells */
+  --text-body-sm--line-height: 1.5;
+  --text-label: 0.8125rem; /* eyebrows, column headers (uppercase, tracked) */
+  --text-label--line-height: 1.2;
+  --text-label--letter-spacing: 0.06em;
+  --text-caption: 0.75rem; /* scope lines, timestamps, sample sizes */
+  --text-caption--line-height: 1.4;
+
+  /* Earlier names, kept as aliases so existing components render unchanged. Prefer the names above. */
+  --text-display-l: var(--text-display-lg);
+  --text-display-l--line-height: var(--text-display-lg--line-height);
+  --text-display-m: var(--text-heading-xl);
+  --text-display-m--line-height: var(--text-heading-xl--line-height);
+  --text-title: var(--text-heading-md);
+  --text-title--line-height: var(--text-heading-md--line-height);
+  --text-body: var(--text-body-md);
+  --text-body--line-height: var(--text-body-md--line-height);
+
+  /* ── Spacing ──────────────────────────────────────────────────── */
+  /* Tailwind's 4px scale (p-1 = 4px, p-4 = 16px …) plus semantic steps. */
+  --spacing: 0.25rem;
+  --spacing-gutter: 1rem;
+  --spacing-card: 1.25rem;
+  --spacing-section: 3rem;
+  --container-content: 80rem;
+
+  /* ── Radius ───────────────────────────────────────────────────── */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  /* ── Elevation ────────────────────────────────────────────────── */
+  --shadow-card: 0 1px 0 0 rgb(255 255 255 / 0.03) inset, 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-raised: 0 1px 0 0 rgb(255 255 255 / 0.05) inset, 0 8px 24px -8px rgb(0 0 0 / 0.6);
+  --shadow-overlay: 0 24px 64px -16px rgb(0 0 0 / 0.75);
+  /* Restrained glow: selected state and at most one focal element per page. */
+  --shadow-glow: 0 0 0 1px rgb(79 194 192 / 0.45), 0 0 24px -4px rgb(79 194 192 / 0.35);
+  /* Primary button depth: a lit top edge and a short drop. Subtle, never a glow. */
+  --shadow-button: 0 1px 0 0 rgb(255 255 255 / 0.22) inset, 0 2px 6px -2px rgb(0 0 0 / 0.5);
+
+  /* ── Motion: "data awakening" ─────────────────────────────────── */
+  --ease-awaken: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-move: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --animate-awaken: awaken var(--dur-medium) var(--ease-awaken) both;
+  --animate-scale-in: scale-in var(--dur-fast) var(--ease-awaken) both;
+  --animate-slide-in: slide-in var(--dur-medium) var(--ease-awaken) both;
+  /* Hero boot-up: one scan pass and a frame power-on. Runs once, never loops. */
+  --animate-boot-scan: boot-scan 1.1s var(--ease-move) 0.15s both;
+  --animate-boot-frame: boot-frame var(--dur-slow) var(--ease-awaken) both;
+  /* Logo reveal: scale only, never opacity, so the logo counts as painted from the first frame (it is the Home LCP). */
+  --animate-logo-reveal: logo-reveal var(--dur-slow) var(--ease-awaken) both;
+  /* Graph reveal for horizontal bars (use with origin-left). */
+  --animate-grow: grow var(--dur-slow) var(--ease-awaken) both;
+  --animate-grow-y: grow-y var(--dur-slow) var(--ease-awaken) both;
+  --animate-draw: draw var(--dur-slow) var(--ease-move) both;
+  --animate-drift: drift var(--dur-cinematic) var(--ease-move) infinite alternate;
+  /* Opacity only: for stretched SVGs where stroke drawing (pathLength) can't be used. */
+  --animate-fade-in: fade-in var(--dur-slow) var(--ease-awaken) both;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes awaken {
+    from {
+      opacity: 0;
+      transform: translateY(var(--reveal-distance, 8px));
+    }
+  }
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+  }
+  @keyframes slide-in {
+    from {
+      opacity: 0;
+      transform: translateX(16px);
+    }
+  }
+  @keyframes boot-scan {
+    from {
+      opacity: 0.9;
+      transform: translateY(-10%);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(1100%);
+    }
+  }
+  @keyframes boot-frame {
+    from {
+      opacity: 0;
+      transform: scale(1.02);
+    }
+  }
+  @keyframes logo-reveal {
+    from {
+      transform: scale(0.96);
+    }
+  }
+  @keyframes grow {
+    from {
+      transform: scaleX(0);
+    }
+  }
+  @keyframes grow-y {
+    from {
+      transform: scaleY(0);
+    }
+  }
+  @keyframes draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes drift {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(-2%, -1%, 0);
+    }
+  }
+
+  /* ── Breakpoints (mobile-first, 375px reference) ──────────────── */
+  --breakpoint-sm: 40rem; /* 640px  large phones / small tablets */
+  --breakpoint-md: 48rem; /* 768px  tablets */
+  --breakpoint-lg: 64rem; /* 1024px laptops */
+  --breakpoint-xl: 80rem; /* 1280px desktops */
+  --breakpoint-2xl: 96rem; /* 1536px wide */
+}
+
+/* Durations live outside @theme: they are referenced by var(), not generated as utilities. */
+:root {
+  --dur-fast: 200ms; /* FAST 150–250ms */
+  --dur-medium: 380ms; /* MEDIUM 300–450ms */
+  --dur-slow: 650ms; /* SLOW 500–800ms */
+  --dur-cinematic: 8s; /* CINEMATIC 2–12s */
+  --stagger-step: 40ms;
+
+  /*
+   * Gradients are for depth only: hero areas, image overlays, a focused data state. Never a fill
+   * for ordinary cards or controls.
+   */
+  --gradient-hero-depth: radial-gradient(120% 80% at 70% 30%, rgb(79 194 192 / 0.08), transparent 60%);
+  --gradient-image-fade: linear-gradient(to top, var(--color-bg) 0%, rgb(11 18 32 / 0.6) 40%, transparent 75%);
+  --gradient-focus: linear-gradient(180deg, rgb(79 194 192 / 0.1), transparent 70%);
+
+  --border-hairline: 1px;
+  --border-thick: 2px;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+
+  color-scheme: dark;
+}
+
+@media (min-width: 48rem) {
+  :root {
+    --spacing-gutter: 1.5rem;
+  }
+}
+@media (min-width: 64rem) {
+  :root {
+    --spacing-gutter: 2rem;
+  }
+}
+
+@layer base {
+  html {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    min-height: 100dvh;
+    background-color: var(--color-bg);
+  }
+
+  :focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  ::selection {
+    background-color: rgb(79 194 192 / 0.35);
+    color: var(--color-text);
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+}
+
+@layer utilities {
+  .page-container {
+    width: 100%;
+    max-width: var(--container-content);
+    margin-inline: auto;
+    /* Gutter, or the device safe area in landscape on notched phones, whichever is larger. */
+    padding-inline: max(var(--spacing-gutter), env(safe-area-inset-left), env(safe-area-inset-right));
+  }
+
+  /* Eyebrow / column-header label style */
+  .text-eyebrow {
+    font-family: var(--font-ui);
+    font-size: var(--text-label);
+    line-height: var(--text-label--line-height);
+    letter-spacing: var(--text-label--letter-spacing);
+    font-weight: 500;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  /* Brand voice: forward-leaning heavy condensed caps (wordmark, hero statements). One per view. */
+  .type-slant {
+    font-family: var(--font-display-slant);
+    font-style: italic;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+  }
+  /* Letterspaced brand tagline, e.g. "Community · Data · Builds · Strategy". */
+  .text-tagline {
+    font-family: var(--font-ui);
+    font-size: var(--text-caption);
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    @media (min-width: 40rem) {
+      letter-spacing: 0.32em;
+    }
+  }
+
+  /* Hover elevation for interactive cards */
+  .elevate {
+    transition:
+      transform var(--dur-fast) var(--ease-awaken),
+      background-color var(--dur-fast) var(--ease-awaken),
+      border-color var(--dur-fast) var(--ease-awaken),
+      box-shadow var(--dur-fast) var(--ease-awaken);
+  }
+  .elevate:hover {
+    transform: translateY(-3px);
+    background-color: var(--color-surface-raised);
+    border-color: var(--color-border-control);
+    /* Raised shadow + a faint cyan glow; restrained, never neon. */
+    box-shadow:
+      var(--shadow-raised),
+      0 0 22px -10px rgb(79 194 192 / 0.4);
+  }
+
+  /* Original "tactical grid" texture for page headers (decorative) */
+  .bg-tactical-grid {
+    background-image:
+      linear-gradient(rgb(59 85 111 / 0.12) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(59 85 111 / 0.12) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+}
+
+/*
+ * Mobile safety: grid items may shrink below their content width (the CSS default is
+ * min-width: auto). Without this, a scrollable chip row, a long select or a table wrapper
+ * silently widens its grid track, and with it the whole page. Zero specificity, so any
+ * explicit min-w-* utility still wins (base layer, below utilities).
+ */
+@layer base {
+  :where(.grid) > * {
+    min-width: 0;
+  }
+  /*
+   * Scroll containers are positioned so absolutely positioned descendants (e.g. .sr-only text
+   * in table cells) are clipped by them. Otherwise those spans take the page as their containing
+   * block, escape the scroller and widen the mobile layout viewport (a 375px phone laid out at 689px).
+   */
+  :where(.overflow-x-auto, .overflow-auto) {
+    position: relative;
+  }
+}
+
+/*
+ * Pulse rings and skeleton shimmer (docs/PERFORMANCE.md § Animation). They run on a pseudo-element
+ * and animate transform/opacity only, so a loop never repaints the element or its neighbours.
+ *  - animate-live-pulse: live status dot, a ring every 2.4s (the only looping status animation).
+ *  - animate-trend-pulse: a ring around a trend badge, twice, then stops.
+ *  - animate-shimmer: a light band sweeping across a skeleton.
+ */
+.animate-live-pulse,
+.animate-trend-pulse {
+  position: relative;
+}
+.animate-live-pulse::after,
+.animate-trend-pulse::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 45%, transparent);
+}
+.animate-live-pulse::after {
+  color: var(--color-primary);
+  --ring-scale: 2.6;
+  animation: ring-out 2.4s var(--ease-awaken) infinite;
+}
+.animate-trend-pulse::after {
+  --ring-scale: 1.12;
+  animation: ring-out 1.4s var(--ease-awaken) 0.6s 2;
+}
+@keyframes ring-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(var(--ring-scale));
+  }
+}
+.animate-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.animate-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--color-surface-raised), transparent);
+  transform: translateX(-100%);
+  animation: shimmer-sweep 1.6s linear infinite;
+}
+@keyframes shimmer-sweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* ── Reveal ("data awakening") ───────────────────────────────────
+ * Server-rendered content animates on first paint with no JS.
+ * <Reveal> marks content that starts below the fold as "hidden" after
+ * hydration and switches it to "shown" when it scrolls into view.
+ * Stagger is capped at 12 items via --reveal-index.
+ */
+[data-reveal] {
+  animation: var(--animate-awaken);
+  animation-delay: calc(min(var(--reveal-index, 0), 11) * var(--stagger-step));
+}
+[data-reveal='hidden'] {
+  animation: none;
+  opacity: 0;
+  transform: translateY(var(--reveal-distance, 8px));
+}
+/* Section-level scroll reveal travels further than items inside it. */
+[data-reveal-variant='section'] {
+  --reveal-distance: 20px;
+}
+
+/*
+ * <InView>: animations inside wait at their first frame (all use fill-mode "both")
+ * until the group scrolls into view, then play once. Used for build assembly,
+ * timelines and charts below the fold.
+ */
+[data-motion='reset'],
+[data-motion='reset'] * {
+  animation: none !important;
+}
+[data-motion='paused'],
+[data-motion='paused'] * {
+  animation-play-state: paused !important;
+}
+
+/* Graph reveal: SVG paths with pathLength="1" */
+[data-draw] {
+  stroke-dasharray: 1;
+  animation: var(--animate-draw);
+}
+
+/* Reduced motion: final states only. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    /* No staggered waits: delayed items would otherwise sit invisible before appearing. */
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+  /* Ambient and status loops are off entirely (not just shortened). */
+  .animate-drift,
+  .animate-live-pulse::after,
+  .animate-shimmer::after,
+  .animate-trend-pulse::after,
+  .animate-boot-scan {
+    animation: none !important;
+  }
+  .animate-boot-scan {
+    opacity: 0;
+  }
+  [data-motion='paused'],
+  [data-motion='paused'] * {
+    animation-play-state: running !important;
+  }
+  [data-reveal='hidden'] {
+    opacity: 1;
+    transform: none;
+  }
+  .elevate:hover {
+    transform: none;
+  }
+}
