@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
+import { localePath } from '@/i18n/server'
 import { DataNotice } from '@/components/data/DataState'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { Reveal } from '@/components/motion/Reveal'
@@ -74,7 +75,7 @@ async function PatchListContent({ patches }: { patches: PatchSummary[] }) {
           Compare two patches
         </h2>
         {/* A plain GET form: works without JavaScript. */}
-        <form action="/patch/compare" method="get" className="grid gap-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+        <form action={await localePath('/patch/compare')} method="get" className="grid gap-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
           {(
             [
               ['a', 'Patch A (older)', rest[0]?.id ?? latest.id],

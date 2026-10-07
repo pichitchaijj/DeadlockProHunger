@@ -1,6 +1,7 @@
 /*
- * Locale configuration: the single list of supported locales and the pure URL helpers around them.
+ * Locale configuration: the single list of supported locales, their names and formatting locales.
  * Plain constants and functions only, so client components, the proxy and tests can import it.
+ * Locale-aware URLs (links, redirects, the language switcher) live in ./navigation.ts.
  *
  * Routing (src/i18n/routing.ts, src/proxy.ts): English is unprefixed (/heroes); every other locale is
  * a path prefix (/th/heroes). Pages live under app/[lang]; the proxy rewrites unprefixed URLs to /en/….
@@ -41,24 +42,4 @@ export const formatLocales: Record<Locale, string> = {
 
 export function isLocale(value: string): value is Locale {
   return (locales as readonly string[]).includes(value)
-}
-
-/** The URL prefix of a locale: '' for English, '/th' for Thai. */
-export function localePrefix(locale: Locale): string {
-  return locale === defaultLocale ? '' : `/${locale}`
-}
-
-/** An app path ('/', '/heroes?x=1') as a link for `locale`: '/th', '/th/heroes?x=1'. English is unchanged. */
-export function localizeHref(href: string, locale: Locale): string {
-  const prefix = localePrefix(locale)
-  if (!prefix || !href.startsWith('/')) return href
-  return href === '/' ? prefix : href.startsWith('/?') ? `${prefix}${href.slice(1)}` : `${prefix}${href}`
-}
-
-/** A browser pathname split into its locale and the app path: '/th/heroes' → { th, '/heroes' }. */
-export function splitLocale(pathname: string): { locale: Locale; pathname: string } {
-  const [, first = ''] = pathname.split('/')
-  const locale = locales.find((l) => l !== defaultLocale && l === first)
-  if (!locale) return { locale: defaultLocale, pathname }
-  return { locale, pathname: pathname.slice(locale.length + 1) || '/' }
 }

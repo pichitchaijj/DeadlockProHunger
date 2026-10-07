@@ -6,6 +6,7 @@
     "more": "その他",
     "explore": "探す",
     "later": "予定",
+    "language": "言語",
     "links": {
       "home": { "label": "ホーム", "description": "今の Deadlock で注目すべきこと" },
       "meta": { "label": "メタ", "description": "ランク・期間別の強いヒーロー" },

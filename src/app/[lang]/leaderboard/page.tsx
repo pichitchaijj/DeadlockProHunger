@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { Suspense } from 'react'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { ButtonLink } from '@/components/ui/Button'

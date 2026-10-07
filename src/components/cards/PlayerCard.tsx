@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { sampleTier } from '@/lib/analytics/sampleTier'
 import { cx } from '@/lib/cx'
 import { cardClasses } from '@/components/ui/Card'

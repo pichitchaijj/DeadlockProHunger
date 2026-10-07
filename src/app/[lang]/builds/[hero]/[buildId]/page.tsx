@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
+import { Link } from '@/i18n/navigation'
+import { localePath } from '@/i18n/server'
 import type { ReactNode } from 'react'
 import { ScopeLine } from '@/components/data/ScopeLine'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
@@ -47,7 +48,7 @@ export default async function BuildDetailPage({ params, searchParams }: { params
   const data = detail.ok ? detail.value : undefined
   const failed = detail.ok ? 'unavailable' : detail.kind
   if (data === null) notFound()
-  if (data?.kind === 'redirect') redirect(data.href)
+  if (data?.kind === 'redirect') redirect(await localePath(data.href))
   if (!data) {
     return (
       <PageContainer>

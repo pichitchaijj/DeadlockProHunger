@@ -1,8 +1,9 @@
-import Link from 'next/link'
-import { useLocale, useTranslations } from 'next-intl'
-import { localizeHref } from '@/i18n/config'
+import { Link } from '@/i18n/navigation'
+import { useTranslations } from 'next-intl'
+import { locales } from '@/i18n/config'
 import { useLocalizedNav } from '@/i18n/nav'
 import { BrandMark } from '../BrandMark'
+import { LanguageSwitcher, type LanguageSwitcherLabels } from './LanguageSwitcher'
 import { LoginPlaceholder } from './LoginPlaceholder'
 import { MobileNav } from './MobileNav'
 import { MoreMenu } from './MoreMenu'
@@ -16,9 +17,13 @@ import { SearchTrigger } from './SearchTrigger'
  */
 export function SiteHeader() {
   const t = useTranslations('Nav')
-  const locale = useLocale()
   const { primary, secondary } = useLocalizedNav()
+  const languages = useTranslations('Languages')
   const labels = { more: t('more'), later: t('later') }
+  const switcher: LanguageSwitcherLabels = {
+    language: t('language'),
+    names: Object.fromEntries(locales.map((l) => [l, languages(l)])) as LanguageSwitcherLabels['names'],
+  }
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur-md supports-[not(backdrop-filter:blur(0))]:bg-bg">
@@ -26,7 +31,7 @@ export function SiteHeader() {
       <div aria-hidden="true" className="h-px bg-linear-to-r from-transparent via-primary/60 to-transparent" />
       {/* Below 360px (e.g. 320px phones) gaps tighten and the logo steps down so brand + 2 icons fit. */}
       <div className="page-container flex h-16 items-stretch gap-6 max-[359px]:gap-2">
-        <Link href={localizeHref('/', locale)} aria-label="Deadlockprohunger home" className="flex shrink-0 items-center">
+        <Link href="/" aria-label="Deadlockprohunger home" className="flex shrink-0 items-center">
           <BrandMark boot />
         </Link>
 
@@ -44,10 +49,13 @@ export function SiteHeader() {
             <SearchTrigger variant="icon" />
           </div>
           <div className="hidden lg:block">
+            <LanguageSwitcher variant="menu" labels={switcher} />
+          </div>
+          <div className="hidden lg:block">
             <LoginPlaceholder />
           </div>
           <div className="lg:hidden">
-            <MobileNav primary={primary} secondary={secondary} labels={labels} />
+            <MobileNav primary={primary} secondary={secondary} labels={labels} languages={switcher} />
           </div>
         </div>
       </div>

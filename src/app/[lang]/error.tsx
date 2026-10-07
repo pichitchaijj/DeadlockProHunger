@@ -1,11 +1,10 @@
 'use client'
 
-import { useLocale, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { useEffect } from 'react'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { ErrorState } from '@/components/ui/States'
-import { localizeHref } from '@/i18n/config'
 
 /**
  * Route error boundary: anything a page doesn't catch itself (data failures are caught per page and
@@ -18,7 +17,6 @@ export default function RouteError({ error, reset }: { error: Error & { digest?:
   }, [error])
   const t = useTranslations('Errors')
   const common = useTranslations('Common')
-  const locale = useLocale()
 
   return (
     <PageContainer width="reading">
@@ -29,7 +27,7 @@ export default function RouteError({ error, reset }: { error: Error & { digest?:
         action={
           <span className="flex flex-wrap gap-3">
             <Button variant="secondary" size="sm" onClick={reset}>{common('tryAgain')}</Button>
-            <ButtonLink href={localizeHref('/', locale)} variant="ghost" size="sm">{common('backHome')}</ButtonLink>
+            <ButtonLink href="/" variant="ghost" size="sm">{common('backHome')}</ButtonLink>
           </span>
         }
       />

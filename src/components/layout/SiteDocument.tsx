@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from 'next'
+import { NextIntlClientProvider } from 'next-intl'
 import { Barlow_Condensed, Inter } from 'next/font/google'
 import type { ReactNode } from 'react'
 import type { Locale } from '@/i18n/config'
+import { loadMessages } from '@/i18n/messages'
 import { CommandPaletteProvider } from './command/CommandPaletteProvider'
 import { Footer } from './Footer'
 import { SiteHeader } from './header/SiteHeader'
@@ -12,6 +14,10 @@ import { SkipLink } from './SkipLink'
  * Shared by the root layout (app/[lang]/layout.tsx) and the 404 for unmatched URLs
  * (app/global-not-found.tsx), which renders outside every layout and so needs the same document.
  * Each route file imports globals.css itself.
+ *
+ * NextIntlClientProvider gives client components the active locale (locale-aware links in the header,
+ * menus and pages: src/i18n/navigation.ts). It carries only the messages client components read
+ * (Common, Errors for error.tsx); everything else is translated on the server.
  */
 
 const display = Barlow_Condensed({
@@ -51,18 +57,21 @@ export const siteViewport: Viewport = {
   viewportFit: 'cover', // enables env(safe-area-inset-*) on notched phones
 }
 
-export function SiteDocument({ lang, children }: { lang: Locale; children: ReactNode }) {
+export async function SiteDocument({ lang, children }: { lang: Locale; children: ReactNode }) {
+  const messages = await loadMessages(lang)
   return (
     <html lang={lang} className={`${display.variable} ${displaySlant.variable} ${ui.variable}`}>
       <body className="flex min-h-dvh flex-col">
-        <SkipLink />
-        <CommandPaletteProvider>
-          <SiteHeader />
-          <main id="content" tabIndex={-1} className="flex-1 focus:outline-none">
-            {children}
-          </main>
-          <Footer />
-        </CommandPaletteProvider>
+        <NextIntlClientProvider locale={lang} messages={{ Common: messages.Common, Errors: messages.Errors }}>
+          <SkipLink />
+          <CommandPaletteProvider>
+            <SiteHeader />
+            <main id="content" tabIndex={-1} className="flex-1 focus:outline-none">
+              {children}
+            </main>
+            <Footer />
+          </CommandPaletteProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   )

@@ -1,15 +1,14 @@
 'use client'
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { Link, usePathname } from '@/i18n/navigation'
 import { useState, type ReactNode } from 'react'
-import { isActivePath, type NavLink } from '@/config/navigation'
-import { splitLocale } from '@/i18n/config'
+import { isActivePath, type NavItem } from '@/config/navigation'
 import { cx } from '@/lib/cx'
 import { Drawer } from '@/components/ui/Dialog'
 import { AnalyzeIcon, BuildsIcon, ChevronRightIcon, HeroesIcon, HomeIcon, MatchesIcon, MenuIcon, ReticleIcon, SearchIcon } from '@/components/ui/icons'
 import { useCommandPalette } from '../command/CommandPaletteProvider'
 import { LoginPlaceholder } from './LoginPlaceholder'
+import { LanguageSwitcher, type LanguageSwitcherLabels } from './LanguageSwitcher'
 import { LaterMark, type NavLabels } from './MoreMenu'
 
 /**
@@ -17,8 +16,9 @@ import { LaterMark, type NavLabels } from './MoreMenu'
  * Large touch targets (≥ 48px), the current page marked with aria-current,
  * bottom safe-area spacing, and the drawer closes when a link is chosen.
  */
-export function MobileNav({ primary, secondary, labels }: { primary: NavLink[]; secondary: NavLink[]; labels: NavLabels }) {
-  const { pathname } = splitLocale(usePathname())
+export function MobileNav({ primary, secondary, labels, languages }: { primary: NavItem[]; secondary: NavItem[]; labels: NavLabels; languages: LanguageSwitcherLabels }) {
+  // App path without the locale prefix (/th/heroes → /heroes), compared with the nav hrefs.
+  const pathname = usePathname()
   const { open: openSearch } = useCommandPalette()
   const [open, setOpen] = useState(false)
   const close = () => setOpen(false)
@@ -56,7 +56,7 @@ export function MobileNav({ primary, secondary, labels }: { primary: NavLink[]; 
               return (
                 <li key={item.href} className="animate-awaken" style={{ animationDelay: `calc(${i} * var(--stagger-step))` }}>
                   <Link
-                    href={item.to}
+                    href={item.href}
                     prefetch={item.built ? undefined : false}
                     onClick={close}
                     aria-current={active ? 'page' : undefined}
@@ -90,7 +90,7 @@ export function MobileNav({ primary, secondary, labels }: { primary: NavLink[]; 
                 return (
                   <li key={item.href}>
                     <Link
-                      href={item.to}
+                      href={item.href}
                       prefetch={item.built ? undefined : false}
                       onClick={close}
                       aria-current={active ? 'page' : undefined}
@@ -107,6 +107,8 @@ export function MobileNav({ primary, secondary, labels }: { primary: NavLink[]; 
               })}
             </ul>
           </div>
+
+          <LanguageSwitcher variant="list" labels={languages} />
 
           <LoginPlaceholder variant="block" />
         </nav>

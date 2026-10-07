@@ -3,5 +3,9 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
-  test: { include: ['tests/unit/**/*.test.ts'] },
+  test: {
+    include: ['tests/unit/**/*.test.ts'],
+    // next-intl's ESM build imports 'next/navigation' without an extension; let Vite resolve it.
+    server: { deps: { inline: ['next-intl'] } },
+  },
 })

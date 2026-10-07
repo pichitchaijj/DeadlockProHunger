@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
+import { localePath } from '@/i18n/server'
 import { Suspense } from 'react'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { RankBadge } from '@/components/game-assets/RankBadge'
@@ -58,7 +59,7 @@ async function SearchView({ query }: { query: PlayersQuery }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="grid gap-5 rounded-md border border-border bg-surface/60 p-(--spacing-card) lg:grid-cols-2">
-        <form action="/players" method="get" role="search" className="flex flex-col gap-2">
+        <form action={await localePath('/players')} method="get" role="search" className="flex flex-col gap-2">
           {query.rank !== 'all' && <input type="hidden" name="rank" value={query.rank} />}
           <label htmlFor="player-q" className="text-eyebrow">Name or SteamID3</label>
           <div className="flex gap-2">

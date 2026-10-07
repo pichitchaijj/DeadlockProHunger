@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { primaryNav, secondaryNav } from '@/config/navigation'
-import { defaultLocale, isLocale, localizeHref, locales, splitLocale } from '@/i18n/config'
+import { defaultLocale, isLocale, locales } from '@/i18n/config'
 import { mergeMessages, missingKeys, unknownKeys, type MessageTree } from '@/i18n/merge'
 import { routing } from '@/i18n/routing'
 import { dateFormat, formatCompact, formatInteger, formatRelativeTime } from '@/lib/format'
@@ -27,22 +27,6 @@ describe('locale config', () => {
     expect(routing.localeCookie).toBe(false)
   })
 
-  it('localizes links without touching English or the query string', () => {
-    expect(localizeHref('/', 'en')).toBe('/')
-    expect(localizeHref('/heroes?window=30d', 'en')).toBe('/heroes?window=30d')
-    expect(localizeHref('/', 'th')).toBe('/th')
-    expect(localizeHref('/heroes/abrams?tab=items', 'zh-CN')).toBe('/zh-CN/heroes/abrams?tab=items')
-    expect(localizeHref('https://deadlock-api.com', 'ja')).toBe('https://deadlock-api.com')
-  })
-
-  it('splits a browser pathname into locale and app path', () => {
-    expect(splitLocale('/heroes')).toEqual({ locale: 'en', pathname: '/heroes' })
-    expect(splitLocale('/th')).toEqual({ locale: 'th', pathname: '/' })
-    expect(splitLocale('/ko/items/x')).toEqual({ locale: 'ko', pathname: '/items/x' })
-    // A hero or path that merely starts with a locale's letters is not a prefix.
-    expect(splitLocale('/thermal')).toEqual({ locale: 'en', pathname: '/thermal' })
-    expect(splitLocale('/en/heroes')).toEqual({ locale: 'en', pathname: '/en/heroes' })
-  })
 })
 
 describe('messages', () => {

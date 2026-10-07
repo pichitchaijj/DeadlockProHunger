@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import type { ReactNode } from 'react'
 import { TierBadge } from '@/components/data/TierBadge'
 import { TrendBadge } from '@/components/data/TrendBadge'

@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { useRef, useState, type KeyboardEvent } from 'react'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
 import { RankBadge } from '@/components/game-assets/RankBadge'

@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
 import { Card } from '@/components/ui/Card'
 import { Filter } from '@/components/ui/Filter'

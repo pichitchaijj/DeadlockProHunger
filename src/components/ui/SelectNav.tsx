@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/navigation'
 import { useId } from 'react'
 
 export type SelectNavOption = { value: string; label: string }
@@ -8,6 +8,7 @@ export type SelectNavOption = { value: string; label: string }
 /**
  * Single-select filter for long option lists (too many for Filter chips), as a native select that
  * navigates on change. Every option's URL is computed on the server (`hrefFor`), so state stays in the URL.
+ * The locale-aware router keeps the current locale's prefix.
  */
 export function SelectNav({
   label,

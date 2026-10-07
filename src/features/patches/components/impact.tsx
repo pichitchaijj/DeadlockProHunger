@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { ConfidenceBadge } from '@/components/data/ConfidenceBadge'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
 import { ItemIcon } from '@/components/game-assets/ItemIcon'

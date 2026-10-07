@@ -7,6 +7,7 @@
     "more": "More",
     "explore": "Explore",
     "later": "Later",
+    "language": "Language",
     "links": {
       "home": { "label": "Home", "description": "What matters in Deadlock right now" },
       "meta": { "label": "Meta", "description": "Strongest heroes by rank and window" },

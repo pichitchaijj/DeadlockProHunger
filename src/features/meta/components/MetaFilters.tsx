@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { Filter } from '@/components/ui/Filter'
 import { ChevronDownIcon, FilterIcon } from '@/components/ui/icons'
 import type { RankBandId } from '@/lib/analytics/rankBands'

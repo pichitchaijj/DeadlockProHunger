@@ -1,6 +1,6 @@
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { useTranslations } from 'next-intl'
-import type { NavLink } from '@/config/navigation'
+import type { NavItem } from '@/config/navigation'
 import { useLocalizedNav } from '@/i18n/nav'
 import { BrandMark } from './BrandMark'
 
@@ -38,7 +38,7 @@ export function Footer() {
   )
 }
 
-function FooterLinks({ id, title, items }: { id: string; title: string; items: NavLink[] }) {
+function FooterLinks({ id, title, items }: { id: string; title: string; items: NavItem[] }) {
   const headingId = `footer-${id}`
   return (
     <nav aria-labelledby={headingId}>
@@ -49,7 +49,7 @@ function FooterLinks({ id, title, items }: { id: string; title: string; items: N
         {items.map((item) => (
           <li key={item.href}>
             <Link
-              href={item.to}
+              href={item.href}
               prefetch={item.built ? undefined : false}
               className="inline-flex min-h-11 min-w-11 items-center text-sm text-text-muted hover:text-text md:min-h-9 md:min-w-0"
             >

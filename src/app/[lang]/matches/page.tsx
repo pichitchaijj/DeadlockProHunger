@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
+import { localePath } from '@/i18n/server'
 import { Suspense } from 'react'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { Button, ButtonLink } from '@/components/ui/Button'
@@ -52,7 +53,7 @@ export default async function MatchesPage({ searchParams }: { searchParams: Sear
             value={query.hero}
             hrefFor={Object.fromEntries([['all', matchesHref(query, { hero: 'all' })], ...heroes.map((h) => [h.slug, matchesHref(query, { hero: h.slug })])])}
           />
-          <form action="/matches" method="get" role="search" className="flex flex-col gap-2">
+          <form action={await localePath('/matches')} method="get" role="search" className="flex flex-col gap-2">
             {(Object.keys(query) as Array<keyof MatchesQuery>)
               .filter((k) => k !== 'player' && query[k] !== 'all' && query[k] !== 'any' && !(k === 'date' && query[k] === '24h'))
               .map((k) => (

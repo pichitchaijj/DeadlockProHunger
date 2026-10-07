@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { primaryNav } from '@/config/navigation'
 import type { ReactNode } from 'react'
 import { ArrowRightIcon, BuildsIcon, HeroesIcon, MatchesIcon, MetaIcon } from '@/components/ui/icons'

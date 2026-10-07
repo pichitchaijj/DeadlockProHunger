@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
 import { cx } from '@/lib/cx'
 import { formatPercent } from '@/lib/format'

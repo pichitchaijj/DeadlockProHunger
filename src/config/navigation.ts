@@ -21,9 +21,6 @@ export type NavItem = {
 
 export type NavId = 'home' | 'meta' | 'heroes' | 'builds' | 'matches' | 'analyze' | 'players' | 'leaderboard' | 'compare' | 'draft' | 'items' | 'patch' | 'tools' | 'community'
 
-/** A nav item as rendered for one locale: translated text, and `to` = the href with the locale prefix. */
-export type NavLink = NavItem & { to: string }
-
 export const primaryNav: NavItem[] = [
   { id: 'home', label: 'Home', href: '/', description: 'What matters in Deadlock right now', phase: 'mvp', built: true },
   { id: 'meta', label: 'Meta', href: '/meta', description: 'Strongest heroes by rank and window', phase: 'mvp', built: true },

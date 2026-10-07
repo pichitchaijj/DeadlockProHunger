@@ -1,63 +1,30 @@
 'use client'
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
-import { isActivePath, type NavLink } from '@/config/navigation'
-import { splitLocale } from '@/i18n/config'
+import { Link, usePathname } from '@/i18n/navigation'
+import { useId } from 'react'
+import { isActivePath, type NavItem } from '@/config/navigation'
 import { cx } from '@/lib/cx'
 import { ChevronDownIcon } from '@/components/ui/icons'
+import { useDisclosureMenu } from '@/components/ui/useDisclosureMenu'
+
+export type NavLabels = { more: string; later: string }
 
 /**
  * "More" disclosure for secondary navigation (APG disclosure navigation pattern):
  * a button with aria-expanded controlling a list of links.
- * Escape closes and returns focus; ↓/↑ move between links; clicking outside closes.
+ * Escape closes and returns focus; ↓/↑ move between links; clicking outside closes (useDisclosureMenu).
  */
-export type NavLabels = { more: string; later: string }
-
-export function MoreMenu({ items, labels }: { items: NavLink[]; labels: NavLabels }) {
-  const { pathname } = splitLocale(usePathname())
+export function MoreMenu({ items, labels }: { items: NavItem[]; labels: NavLabels }) {
+  // App path without the locale prefix (/th/heroes → /heroes), compared with the nav hrefs.
+  const pathname = usePathname()
   const panelId = useId()
-  const [open, setOpen] = useState(false)
-  const rootRef = useRef<HTMLDivElement>(null)
-  const buttonRef = useRef<HTMLButtonElement>(null)
+  const { open, setOpen, buttonRef, rootProps } = useDisclosureMenu('data-more-link')
   const hasActiveChild = items.some((item) => isActivePath(pathname, item.href))
-
-  useEffect(() => {
-    if (!open) return
-    const onPointerDown = (event: PointerEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
-    }
-    document.addEventListener('pointerdown', onPointerDown)
-    return () => document.removeEventListener('pointerdown', onPointerDown)
-  }, [open])
-
-  function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    if (event.key === 'Escape' && open) {
-      setOpen(false)
-      buttonRef.current?.focus()
-      return
-    }
-    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return
-    const links = [...(rootRef.current?.querySelectorAll<HTMLAnchorElement>('[data-more-link]') ?? [])]
-    if (!open || links.length === 0) return
-    event.preventDefault()
-    const index = links.indexOf(document.activeElement as HTMLAnchorElement)
-    const next = event.key === 'ArrowDown' ? (index + 1) % links.length : (index - 1 + links.length) % links.length
-    links[next].focus()
-  }
 
   return (
     // Keyboard handling is delegated from the button and links inside this wrapper.
     // oxlint-disable-next-line jsx-a11y/no-static-element-interactions
-    <div
-      ref={rootRef}
-      className="relative flex"
-      onKeyDown={onKeyDown}
-      onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setOpen(false)
-      }}
-    >
+    <div {...rootProps} className="relative flex">
       <button
         ref={buttonRef}
         type="button"
@@ -89,7 +56,7 @@ export function MoreMenu({ items, labels }: { items: NavLink[]; labels: NavLabel
               <li key={item.href}>
                 <Link
                   data-more-link
-                  href={item.to}
+                  href={item.href}
                   prefetch={item.built ? undefined : false}
                   aria-current={active ? 'page' : undefined}
                   onClick={() => setOpen(false)}

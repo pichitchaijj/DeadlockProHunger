@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { TierBadge } from '@/components/data/TierBadge'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
 import { Reveal } from '@/components/motion/Reveal'

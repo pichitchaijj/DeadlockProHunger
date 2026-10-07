@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
+import { localePath } from '@/i18n/server'
 import { Suspense } from 'react'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { Button, ButtonLink } from '@/components/ui/Button'
@@ -74,9 +75,11 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
 }
 
 async function Pickers({ query, pickHero }: { query: CompareQuery; pickHero: string }) {
+  // GET forms submit to this page in the current locale.
+  const action = await localePath('/compare')
   if (query.type === 'players') {
     return (
-      <form action="/compare" method="get" className="grid gap-4 rounded-md border border-border bg-surface/60 p-(--spacing-card) md:grid-cols-[1fr_1fr_auto] md:items-end">
+      <form action={action} method="get" className="grid gap-4 rounded-md border border-border bg-surface/60 p-(--spacing-card) md:grid-cols-[1fr_1fr_auto] md:items-end">
         <input type="hidden" name="type" value="players" />
         {(['a', 'b'] as const).map((side) => (
           <label key={side} className="flex flex-col gap-1.5">
@@ -104,7 +107,7 @@ async function Pickers({ query, pickHero }: { query: CompareQuery; pickHero: str
   if (query.type === 'heroes') {
     return (
       <div className="flex flex-col gap-4 rounded-md border border-border bg-surface/60 p-(--spacing-card)">
-        <form action="/compare" method="get" className="grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
+        <form action={action} method="get" className="grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
           <input type="hidden" name="type" value="heroes" />
           {query.window !== '7d' && <input type="hidden" name="window" value={query.window} />}
           {query.rank !== 'all' && <input type="hidden" name="rank" value={query.rank} />}
@@ -128,7 +131,7 @@ async function Pickers({ query, pickHero }: { query: CompareQuery; pickHero: str
   const options = pickHero ? await buildOptions(pickHero).catch(() => []) : []
   return (
     <div className="flex flex-col gap-4 rounded-md border border-border bg-surface/60 p-(--spacing-card)">
-      <form action="/compare" method="get" className="flex flex-wrap items-end gap-3">
+      <form action={action} method="get" className="flex flex-wrap items-end gap-3">
         <input type="hidden" name="type" value="builds" />
         {query.a && <input type="hidden" name="a" value={query.a} />}
         {query.b && <input type="hidden" name="b" value={query.b} />}

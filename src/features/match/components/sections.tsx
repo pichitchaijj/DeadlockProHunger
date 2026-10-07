@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import type { ReactNode } from 'react'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
 import { ItemIcon } from '@/components/game-assets/ItemIcon'

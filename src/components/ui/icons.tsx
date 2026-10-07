@@ -39,6 +39,14 @@ export const CloseIcon = (p: IconProps) => (
   </Icon>
 )
 
+/** Language: a globe (meridian + equator). */
+export const GlobeIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M3 12h18M12 3c2.5 2.6 3.75 5.6 3.75 9S14.5 18.4 12 21c-2.5-2.6-3.75-5.6-3.75-9S9.5 5.6 12 3z" />
+  </Icon>
+)
+
 export const ChevronDownIcon = (p: IconProps) => (
   <Icon {...p}>
     <path d="m6 9 6 6 6-6" />

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { Suspense } from 'react'
 import { DataNotice } from '@/components/data/DataState'
 import { ScopeLine } from '@/components/data/ScopeLine'

@@ -1,8 +1,8 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { useEffect, useId, useMemo, useState, type KeyboardEvent } from 'react'
 import { primaryNav, secondaryNav, type NavItem } from '@/config/navigation'
+import { useRouter } from '@/i18n/navigation'
 import { cx } from '@/lib/cx'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
 import { ItemIcon } from '@/components/game-assets/ItemIcon'
@@ -118,6 +118,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
     if (!row || !row.href || !selectable(row)) return
     close()
     if (row.kind === 'external') window.open(row.href, '_blank', 'noopener,noreferrer')
+    // Internal destinations (pages, search results) are app paths: the locale-aware router keeps the locale.
     else router.push(row.href)
   }
 
