@@ -3,21 +3,22 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, type ReactNode } from 'react'
-import { isActivePath, primaryNav, secondaryNav } from '@/config/navigation'
+import { isActivePath, type NavLink } from '@/config/navigation'
+import { splitLocale } from '@/i18n/config'
 import { cx } from '@/lib/cx'
 import { Drawer } from '@/components/ui/Dialog'
 import { AnalyzeIcon, BuildsIcon, ChevronRightIcon, HeroesIcon, HomeIcon, MatchesIcon, MenuIcon, ReticleIcon, SearchIcon } from '@/components/ui/icons'
 import { useCommandPalette } from '../command/CommandPaletteProvider'
 import { LoginPlaceholder } from './LoginPlaceholder'
-import { LaterMark } from './MoreMenu'
+import { LaterMark, type NavLabels } from './MoreMenu'
 
 /**
  * Hamburger + navigation drawer (< lg).
  * Large touch targets (≥ 48px), the current page marked with aria-current,
  * bottom safe-area spacing, and the drawer closes when a link is chosen.
  */
-export function MobileNav() {
-  const pathname = usePathname()
+export function MobileNav({ primary, secondary, labels }: { primary: NavLink[]; secondary: NavLink[]; labels: NavLabels }) {
+  const { pathname } = splitLocale(usePathname())
   const { open: openSearch } = useCommandPalette()
   const [open, setOpen] = useState(false)
   const close = () => setOpen(false)
@@ -50,12 +51,12 @@ export function MobileNav() {
           </button>
 
           <ul className="flex flex-col">
-            {primaryNav.map((item, i) => {
+            {primary.map((item, i) => {
               const active = isActivePath(pathname, item.href)
               return (
                 <li key={item.href} className="animate-awaken" style={{ animationDelay: `calc(${i} * var(--stagger-step))` }}>
                   <Link
-                    href={item.href}
+                    href={item.to}
                     prefetch={item.built ? undefined : false}
                     onClick={close}
                     aria-current={active ? 'page' : undefined}
@@ -81,15 +82,15 @@ export function MobileNav() {
 
           <div>
             <p className="mb-2 text-eyebrow" id="mobile-more-heading">
-              More
+              {labels.more}
             </p>
             <ul aria-labelledby="mobile-more-heading" className="grid grid-cols-2 gap-2">
-              {secondaryNav.map((item) => {
+              {secondary.map((item) => {
                 const active = isActivePath(pathname, item.href)
                 return (
                   <li key={item.href}>
                     <Link
-                      href={item.href}
+                      href={item.to}
                       prefetch={item.built ? undefined : false}
                       onClick={close}
                       aria-current={active ? 'page' : undefined}
@@ -99,7 +100,7 @@ export function MobileNav() {
                       )}
                     >
                       {item.label}
-                      {item.phase === 'later' && <LaterMark />}
+                      {item.phase === 'later' && <LaterMark label={labels.later} />}
                     </Link>
                   </li>
                 )

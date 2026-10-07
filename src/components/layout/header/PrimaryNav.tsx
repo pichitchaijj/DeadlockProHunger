@@ -2,24 +2,25 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { isActivePath, primaryNav } from '@/config/navigation'
+import { isActivePath, type NavLink } from '@/config/navigation'
+import { splitLocale } from '@/i18n/config'
 import { cx } from '@/lib/cx'
 
 /**
  * Desktop primary navigation (≥ lg). Condensed uppercase labels with a
  * primary underline that grows in on the current section.
  */
-export function PrimaryNav() {
-  const pathname = usePathname()
+export function PrimaryNav({ items }: { items: NavLink[] }) {
+  const { pathname } = splitLocale(usePathname())
 
   return (
     <ul className="flex items-stretch">
-      {primaryNav.map((item) => {
+      {items.map((item) => {
         const active = isActivePath(pathname, item.href)
         return (
           <li key={item.href} className="flex">
             <Link
-              href={item.href}
+              href={item.to}
               prefetch={item.built ? undefined : false}
               aria-current={active ? 'page' : undefined}
               className={cx(

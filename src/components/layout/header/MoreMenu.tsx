@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
-import { isActivePath, secondaryNav } from '@/config/navigation'
+import { isActivePath, type NavLink } from '@/config/navigation'
+import { splitLocale } from '@/i18n/config'
 import { cx } from '@/lib/cx'
 import { ChevronDownIcon } from '@/components/ui/icons'
 
@@ -12,13 +13,15 @@ import { ChevronDownIcon } from '@/components/ui/icons'
  * a button with aria-expanded controlling a list of links.
  * Escape closes and returns focus; ↓/↑ move between links; clicking outside closes.
  */
-export function MoreMenu() {
-  const pathname = usePathname()
+export type NavLabels = { more: string; later: string }
+
+export function MoreMenu({ items, labels }: { items: NavLink[]; labels: NavLabels }) {
+  const { pathname } = splitLocale(usePathname())
   const panelId = useId()
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
-  const hasActiveChild = secondaryNav.some((item) => isActivePath(pathname, item.href))
+  const hasActiveChild = items.some((item) => isActivePath(pathname, item.href))
 
   useEffect(() => {
     if (!open) return
@@ -67,7 +70,7 @@ export function MoreMenu() {
           open || hasActiveChild ? 'text-text' : 'text-text-muted hover:text-text',
         )}
       >
-        More
+        {labels.more}
         <ChevronDownIcon
           size={16}
           className={cx('transition-transform duration-(--dur-fast)', open && 'rotate-180')}
@@ -80,13 +83,13 @@ export function MoreMenu() {
         className="absolute top-full left-0 z-50 mt-px w-80 rounded-b-md border border-t-0 border-border-strong bg-surface p-2 shadow-overlay animate-scale-in"
       >
         <ul>
-          {secondaryNav.map((item) => {
+          {items.map((item) => {
             const active = isActivePath(pathname, item.href)
             return (
               <li key={item.href}>
                 <Link
                   data-more-link
-                  href={item.href}
+                  href={item.to}
                   prefetch={item.built ? undefined : false}
                   aria-current={active ? 'page' : undefined}
                   onClick={() => setOpen(false)}
@@ -102,7 +105,7 @@ export function MoreMenu() {
                   <span className="min-w-0">
                     <span className="flex items-center gap-2 font-ui text-sm font-semibold text-text">
                       {item.label}
-                      {item.phase === 'later' && <LaterMark />}
+                      {item.phase === 'later' && <LaterMark label={labels.later} />}
                     </span>
                     <span className="block text-caption text-text-muted">{item.description}</span>
                   </span>
@@ -116,10 +119,10 @@ export function MoreMenu() {
   )
 }
 
-export function LaterMark() {
+export function LaterMark({ label }: { label: string }) {
   return (
     <span className="rounded-xs border border-border-strong px-1 text-[0.625rem] font-semibold tracking-wide text-text-muted uppercase">
-      Later
+      {label}
     </span>
   )
 }

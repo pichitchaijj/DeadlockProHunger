@@ -1,4 +1,7 @@
 import Link from 'next/link'
+import { useLocale, useTranslations } from 'next-intl'
+import { localizeHref } from '@/i18n/config'
+import { useLocalizedNav } from '@/i18n/nav'
 import { BrandMark } from '../BrandMark'
 import { LoginPlaceholder } from './LoginPlaceholder'
 import { MobileNav } from './MobileNav'
@@ -12,19 +15,24 @@ import { SearchTrigger } from './SearchTrigger'
  * < lg: brand · search icon · hamburger drawer.
  */
 export function SiteHeader() {
+  const t = useTranslations('Nav')
+  const locale = useLocale()
+  const { primary, secondary } = useLocalizedNav()
+  const labels = { more: t('more'), later: t('later') }
+
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur-md supports-[not(backdrop-filter:blur(0))]:bg-bg">
       {/* Hairline accent along the top edge: the brand's one restrained glow in the chrome. */}
       <div aria-hidden="true" className="h-px bg-linear-to-r from-transparent via-primary/60 to-transparent" />
       {/* Below 360px (e.g. 320px phones) gaps tighten and the logo steps down so brand + 2 icons fit. */}
       <div className="page-container flex h-16 items-stretch gap-6 max-[359px]:gap-2">
-        <Link href="/" aria-label="Deadlockprohunger home" className="flex shrink-0 items-center">
+        <Link href={localizeHref('/', locale)} aria-label="Deadlockprohunger home" className="flex shrink-0 items-center">
           <BrandMark boot />
         </Link>
 
         <nav aria-label="Primary" className="hidden items-stretch lg:flex">
-          <PrimaryNav />
-          <MoreMenu />
+          <PrimaryNav items={primary} />
+          <MoreMenu items={secondary} labels={labels} />
         </nav>
 
         <div className="ml-auto flex items-center gap-2 max-[359px]:gap-0">
@@ -39,7 +47,7 @@ export function SiteHeader() {
             <LoginPlaceholder />
           </div>
           <div className="lg:hidden">
-            <MobileNav />
+            <MobileNav primary={primary} secondary={secondary} labels={labels} />
           </div>
         </div>
       </div>

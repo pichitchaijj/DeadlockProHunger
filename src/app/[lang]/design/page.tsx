@@ -47,6 +47,8 @@ import { wilsonInterval } from '@/lib/analytics/wilson'
 import { formatPercent } from '@/lib/format'
 import { demoHeroRows, demoLowScope, demoRanks, demoScope, demoTimes, demoTrend, type DemoHeroRow } from '@/mocks/designSystem'
 import { InteractiveDemos } from './InteractiveDemos'
+import { notFound } from 'next/navigation'
+import { lang } from 'next/root-params'
 
 export const metadata: Metadata = {
   title: 'Design system',
@@ -105,6 +107,8 @@ const COLORS = [
 ] as const
 
 export default async function DesignSystemPage({ searchParams }: { searchParams: SearchParams }) {
+  // Internal English-only showcase: /design exists, /th/design etc. don't.
+  if ((await lang()) !== 'en') notFound()
   const params = await searchParams
   const rank = typeof params.rank === 'string' ? params.rank : 'all'
   const sortKey: SortKey = SORT_KEYS.find((k) => k === params.sort) ?? 'winRate'

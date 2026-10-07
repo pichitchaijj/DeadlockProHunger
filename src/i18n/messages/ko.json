@@ -1,0 +1,49 @@
+{
+  "Site": {
+    "tagline": "Deadlock 분석 및 전략"
+  },
+  "Nav": {
+    "more": "더 보기",
+    "explore": "둘러보기",
+    "later": "예정",
+    "links": {
+      "home": { "label": "홈", "description": "지금 Deadlock에서 중요한 것" },
+      "meta": { "label": "메타", "description": "랭크·기간별 강한 영웅" },
+      "heroes": { "label": "영웅", "description": "상성, 아이템, 능력 순서" },
+      "builds": { "label": "빌드", "description": "실제 승률이 있는 커뮤니티 빌드" },
+      "matches": { "label": "매치", "description": "매치를 찾거나 상위 랭크 경기 보기" },
+      "analyze": { "label": "분석", "description": "영웅 하나를 깊이 분석: 추세, 비교, 빌드, 상성" },
+      "players": { "label": "플레이어", "description": "플레이어, 랭크, 최근 성적 검색" },
+      "leaderboard": { "label": "리더보드", "description": "지역별 상위 플레이어" },
+      "compare": { "label": "비교", "description": "영웅, 빌드, 플레이어를 나란히 비교" },
+      "draft": { "label": "Draft Lab", "description": "팀 시너지, 상성, 다음 픽" },
+      "items": { "label": "아이템", "description": "아이템 성과와 구매 시점" },
+      "patch": { "label": "패치", "description": "패치 노트, 변경 사항, 전후 통계" },
+      "tools": { "label": "도구", "description": "플레이어를 위한 도구" },
+      "community": { "label": "커뮤니티", "description": "프로젝트와 기여자" }
+    }
+  },
+  "Languages": {
+    "en": "영어",
+    "th": "태국어",
+    "ja": "일본어",
+    "ko": "한국어",
+    "zh-CN": "중국어 간체"
+  },
+  "Common": {
+    "loading": "불러오는 중…",
+    "tryAgain": "다시 시도",
+    "backHome": "홈으로 돌아가기"
+  },
+  "Errors": {
+    "heading": "문제가 발생했습니다",
+    "title": "이 페이지를 불러오지 못했습니다",
+    "description": "페이지를 만드는 중 문제가 발생했습니다. 틀릴 수 있는 숫자 대신 아무 숫자도 표시하지 않습니다.",
+    "reference": "참조 {digest}"
+  },
+  "NotFound": {
+    "heading": "페이지를 찾을 수 없습니다",
+    "title": "아직 아무것도 없습니다",
+    "description": "이 페이지가 없거나 이 섹션이 아직 만들어지지 않았습니다. 계획된 섹션은 내비게이션에 이미 나와 있습니다."
+  }
+}
