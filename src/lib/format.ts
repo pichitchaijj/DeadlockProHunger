@@ -70,5 +70,6 @@ export function formatRelativeTime(timestampMs: number, now = Date.now(), locale
   for (const [unit, size] of UNITS) {
     if (Math.abs(seconds) >= size) return relative.format(Math.round(seconds / size), unit)
   }
-  return 'just now'
+  // Under a minute: English keeps its wording; other locales use their own word for "now".
+  return locale === defaultLocale ? 'just now' : relative.format(0, 'second')
 }

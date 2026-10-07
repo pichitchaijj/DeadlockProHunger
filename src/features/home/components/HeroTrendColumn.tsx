@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { ConfidenceBadge } from '@/components/data/ConfidenceBadge'
 import { Sparkline } from '@/components/data/Sparkline'
@@ -6,9 +7,11 @@ import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
 import { Reveal } from '@/components/motion/Reveal'
 import { cx } from '@/lib/cx'
 import { formatPercent } from '@/lib/format'
-import type { HeroTrendList } from '../types'
+import type { HeroTrendKind, HeroTrendList } from '../types'
 
 type HeroTrendColumnProps = {
+  /** Which list this is: its title and description (`home.trends.<kind>`). */
+  kind: HeroTrendKind
   list: HeroTrendList
   tone: 'primary' | 'orange'
   /** Offsets the stagger so columns reveal one after another. */
@@ -16,21 +19,24 @@ type HeroTrendColumnProps = {
 }
 
 /** One trend list (trending / rising / falling): ranked rows that reveal on scroll. */
-export function HeroTrendColumn({ list, tone, revealOffset = 0 }: HeroTrendColumnProps) {
-  const headingId = `trend-${list.title.toLowerCase().replace(/\s+/g, '-')}`
+export function HeroTrendColumn({ kind, list, tone, revealOffset = 0 }: HeroTrendColumnProps) {
+  const t = useTranslations('home')
+  // Every list on Home is about win rate.
+  const metric = useTranslations('cards')('winRate')
+  const headingId = `trend-${kind}`
 
   return (
     <div className="flex flex-col rounded-md border border-border bg-surface shadow-card">
       <header className="border-b border-border px-(--spacing-card) py-4">
         <h3 id={headingId} className="flex items-center gap-2 font-ui text-title font-semibold text-text">
           <span aria-hidden="true" className={cx('h-4 w-1', tone === 'orange' ? 'bg-orange' : 'bg-primary')} />
-          {list.title}
+          {t(`trends.${kind}.title`)}
         </h3>
-        <p className="mt-1 text-sm text-text-muted">{list.description}</p>
+        <p className="mt-1 text-sm text-text-muted">{t(`trends.${kind}.description`)}</p>
       </header>
 
       {list.heroes.length === 0 && (
-        <p className="px-(--spacing-card) py-6 text-sm text-text-muted">None this week: no hero moved beyond normal week-to-week variation.</p>
+        <p className="px-(--spacing-card) py-6 text-sm text-text-muted">{t('trends.none')}</p>
       )}
       <ol aria-labelledby={headingId} className="flex flex-col divide-y divide-border">
         {list.heroes.map((hero, i) => (
@@ -48,13 +54,13 @@ export function HeroTrendColumn({ list, tone, revealOffset = 0 }: HeroTrendColum
                   {hero.name}
                 </span>
                 <span className="mt-1 flex flex-wrap items-center gap-1.5">
-                  <TrendBadge direction={hero.direction} delta={hero.delta} comparison="vs previous 7 days" />
+                  <TrendBadge direction={hero.direction} delta={hero.delta} comparison={t('comparison')} />
                   <ConfidenceBadge sampleSize={hero.matches} className="max-sm:hidden" />
                 </span>
               </span>
               <span className="flex flex-col items-end gap-1">
                 <span className="font-ui text-sm font-semibold text-text tabular">
-                  <span className="sr-only">{list.metricLabel} </span>
+                  <span className="sr-only">{metric} </span>
                   {formatPercent(hero.value)}
                 </span>
                 {hero.history.length > 1 && (
@@ -63,7 +69,7 @@ export function HeroTrendColumn({ list, tone, revealOffset = 0 }: HeroTrendColum
                     tone={tone}
                     width={64}
                     height={20}
-                    summary={`${list.metricLabel} moved from ${formatPercent(hero.history[0])} to ${formatPercent(hero.value)} over the window.`}
+                    summary={t('trends.sparkline', { metric, from: formatPercent(hero.history[0]), to: formatPercent(hero.value) })}
                   />
                 )}
               </span>
@@ -73,7 +79,7 @@ export function HeroTrendColumn({ list, tone, revealOffset = 0 }: HeroTrendColum
       </ol>
 
       <p className="mt-auto border-t border-border px-(--spacing-card) py-2.5 text-caption text-text-muted">
-        {list.metricLabel} · change vs previous 7 days
+        {t('trends.footer', { metric })}
       </p>
     </div>
   )

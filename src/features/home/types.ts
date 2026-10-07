@@ -3,7 +3,11 @@ import type { TrendDirection } from '@/components/data/TrendBadge'
 import type { BuildCardProps } from '@/components/cards/BuildCard'
 import type { MatchCardProps } from '@/components/cards/MatchCard'
 
-/** View models for the Home page. Loaders produce these; components only render them. */
+/**
+ * View models for the Home page. Loaders produce these; components only render them. They carry data
+ * and ids, not UI text: labels are translated when rendered (`home` messages), so the cached sections
+ * are the same for every locale.
+ */
 
 export type HomeSummary = {
   matchesAnalyzed: number
@@ -34,15 +38,18 @@ export type PatchSnapshot = {
   limitedData: boolean
 }
 
+/** Which headline number a pulse card shows; its label is `home.pulse.<kind>`. */
+export type PulseKind = 'highestWinRate' | 'mostPicked' | 'biggestRiser' | 'biggestFaller'
+
 export type PulseStat = {
-  label: string
+  kind: PulseKind
   value: number
   format: 'percent' | 'compact' | 'integer' | 'duration'
   subject?: string
   why: string
   featured?: boolean
   trend?: { direction: TrendDirection; delta?: number }
-  sparkline?: { values: number[]; baseline?: number; summary: string }
+  sparkline?: { values: number[]; baseline?: number }
 }
 
 export type HeroTrend = {
@@ -58,12 +65,12 @@ export type HeroTrend = {
   history: number[]
 }
 
+/** One trend list; which one (and so its title and description) is the key it sits under in HomeMeta. */
 export type HeroTrendList = {
-  title: string
-  metricLabel: string
-  description: string
   heroes: HeroTrend[]
 }
+
+export type HeroTrendKind = 'trending' | 'rising' | 'falling'
 
 export type HomeMeta = {
   scope: StatScope

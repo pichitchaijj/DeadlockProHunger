@@ -1,3 +1,6 @@
+import type { Metadata } from 'next'
+import { useTranslations } from 'next-intl'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { Suspense, type ReactNode } from 'react'
 import { BuildCard } from '@/components/cards/BuildCard'
 import { MatchCard } from '@/components/cards/MatchCard'
@@ -22,8 +25,25 @@ import { QuickEntry } from '@/features/home/components/QuickEntry'
 /** Re-render at most every 5 minutes; each section's data has its own server cache and freshness budget. */
 export const revalidate = 300
 
+/** Open Graph locale per site locale. */
+const OG_LOCALE = { en: 'en_US', th: 'th_TH', ja: 'ja_JP', ko: 'ko_KR', 'zh-CN': 'zh_CN' } as const
+
+/**
+ * Home's own title and description in the active locale (other pages keep the layout default for now).
+ * The locale comes from the [lang] root param, so the page stays statically rendered per locale.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const [t, locale] = await Promise.all([getTranslations('home.meta'), getLocale()])
+  return {
+    title: { absolute: t('title') },
+    description: t('description'),
+    openGraph: { title: t('title'), description: t('description'), siteName: 'Deadlockprohunger', locale: OG_LOCALE[locale], type: 'website' },
+  }
+}
+
 /** Home: "What is happening in Deadlock right now?" Every section streams and fails on its own. */
 export default function HomePage() {
+  const t = useTranslations('home')
   const viewAll = (href: string, label: string) => (
     <ButtonLink href={href} variant="ghost" size="sm" trailingIcon={<ArrowRightIcon size={16} />}>
       {label}
@@ -41,14 +61,14 @@ export default function HomePage() {
       />
 
       <div className="flex flex-col gap-(--spacing-section) pt-(--spacing-section) lg:gap-20">
-        <HomeSection id="patch" index="01" kicker="Patch" title="Current patch snapshot">
-          <Suspense fallback={<Loading label="Loading the latest patch" className="h-56" />}>
+        <HomeSection id="patch" index="01" kicker={t('sections.patch.kicker')} title={t('sections.patch.title')}>
+          <Suspense fallback={<Loading label={t('loading.patch')} className="h-56" />}>
             <PatchBlock />
           </Suspense>
         </HomeSection>
 
-        <HomeSection id="pulse" index="02" kicker="Pulse" title="Deadlock pulse" description="The few numbers that best describe this week. Open “Why?” for the reasoning.">
-          <Suspense fallback={<Loading label="Loading this week’s numbers" className="h-52" />}>
+        <HomeSection id="pulse" index="02" kicker={t('sections.pulse.kicker')} title={t('sections.pulse.title')} description={t('sections.pulse.description')}>
+          <Suspense fallback={<Loading label={t('loading.pulse')} className="h-52" />}>
             <PulseBlock />
           </Suspense>
         </HomeSection>
@@ -56,12 +76,12 @@ export default function HomePage() {
         <HomeSection
           id="performance"
           index="03"
-          kicker="Performance"
-          title="Hero performance"
-          description="Top five heroes this week by win rate, pick rate and recorded bans. Heroes with a Low sample never rank."
-          actions={viewAll('/meta', 'Full table')}
+          kicker={t('sections.performance.kicker')}
+          title={t('sections.performance.title')}
+          description={t('sections.performance.description')}
+          actions={viewAll('/meta', t('sections.performance.action'))}
         >
-          <Suspense fallback={<Loading label="Loading hero performance" className="h-80" />}>
+          <Suspense fallback={<Loading label={t('loading.performance')} className="h-80" />}>
             <PerformanceBlock />
           </Suspense>
         </HomeSection>
@@ -69,29 +89,29 @@ export default function HomePage() {
         <HomeSection
           id="heroes"
           index="04"
-          kicker="Heroes"
-          title="Who’s moving"
-          description="Only changes larger than normal week-to-week variation are called trends. Everything else is “stable” and not listed."
-          actions={viewAll('/meta', 'Full meta')}
+          kicker={t('sections.heroes.kicker')}
+          title={t('sections.heroes.title')}
+          description={t('sections.heroes.description')}
+          actions={viewAll('/meta', t('sections.heroes.action'))}
         >
-          <Suspense fallback={<Loading label="Loading hero trends" className="h-80" />}>
+          <Suspense fallback={<Loading label={t('loading.heroes')} className="h-80" />}>
             <HeroesBlock />
           </Suspense>
         </HomeSection>
 
-        <HomeSection id="builds" index="05" kicker="Builds" title="Trending builds" description="Most favorited this week. Win rates appear only when enough tracked matches used the build." actions={viewAll('/builds', 'All builds')}>
-          <Suspense fallback={<Loading label="Loading builds" className="h-48" />}>
+        <HomeSection id="builds" index="05" kicker={t('sections.builds.kicker')} title={t('sections.builds.title')} description={t('sections.builds.description')} actions={viewAll('/builds', t('sections.builds.action'))}>
+          <Suspense fallback={<Loading label={t('loading.builds')} className="h-48" />}>
             <BuildsBlock />
           </Suspense>
         </HomeSection>
 
-        <HomeSection id="matches" index="06" kicker="Matches" title="Recent high-rank matches" description="Newest matches in the top rank band from the last 24 hours." actions={viewAll('/matches', 'All matches')}>
-          <Suspense fallback={<Loading label="Loading matches" className="h-48" />}>
+        <HomeSection id="matches" index="06" kicker={t('sections.matches.kicker')} title={t('sections.matches.title')} description={t('sections.matches.description')} actions={viewAll('/matches', t('sections.matches.action'))}>
+          <Suspense fallback={<Loading label={t('loading.matches')} className="h-48" />}>
             <MatchesBlock />
           </Suspense>
         </HomeSection>
 
-        <HomeSection id="explore" index="07" kicker="Explore" title="Go deeper">
+        <HomeSection id="explore" index="07" kicker={t('sections.explore.kicker')} title={t('sections.explore.title')}>
           <QuickEntry />
         </HomeSection>
       </div>
@@ -141,10 +161,10 @@ async function PatchBlock() {
 }
 
 async function PulseBlock() {
-  const s = await getHomeMeta()
+  const [s, t] = await Promise.all([getHomeMeta(), getTranslations('home')])
   if (!s.ok) return <DataNotice error={s.error} what="Pulse" />
   const { scope, pulse } = s.data
-  if (pulse.length === 0) return <EmptyState title="Not enough data yet" description="No hero has a large enough sample in this window to report." />
+  if (pulse.length === 0) return <EmptyState title={t('empty.pulseTitle')} description={t('empty.pulseDescription')} />
   return (
     <div className="flex flex-col gap-4">
       <Meta>
@@ -153,18 +173,18 @@ async function PulseBlock() {
       </Meta>
       <div className="grid gap-4 md:grid-cols-3">
         {pulse.map((stat, i) => (
-          <Reveal key={stat.label} index={i}>
+          <Reveal key={stat.kind} index={i}>
             <StatCard
               className="h-full"
-              label={stat.label}
+              label={t(`pulse.${stat.kind}`)}
               subject={stat.subject}
               value={stat.value}
               format={stat.format}
               featured={stat.featured}
               scope={scope}
               showScope={false}
-              delta={stat.trend && <TrendBadge {...stat.trend} comparison="vs previous 7 days" />}
-              footer={stat.sparkline && <Sparkline {...stat.sparkline} />}
+              delta={stat.trend && <TrendBadge {...stat.trend} comparison={t('comparison')} />}
+              footer={stat.sparkline && <Sparkline {...stat.sparkline} summary={t('pulse.sparkline', { hero: stat.subject ?? '' })} />}
               why={stat.why}
             />
           </Reveal>
@@ -184,18 +204,18 @@ async function HeroesBlock() {
         <Freshness asOf={s.asOf} stale={s.stale} />
       </Meta>
       <div className="grid gap-4 lg:grid-cols-3">
-        <HeroTrendColumn list={s.data.trending} tone="primary" />
-        <HeroTrendColumn list={s.data.rising} tone="primary" revealOffset={1} />
-        <HeroTrendColumn list={s.data.falling} tone="orange" revealOffset={2} />
+        <HeroTrendColumn kind="trending" list={s.data.trending} tone="primary" />
+        <HeroTrendColumn kind="rising" list={s.data.rising} tone="primary" revealOffset={1} />
+        <HeroTrendColumn kind="falling" list={s.data.falling} tone="orange" revealOffset={2} />
       </div>
     </div>
   )
 }
 
 async function BuildsBlock() {
-  const s = await getHomeBuilds()
+  const [s, t] = await Promise.all([getHomeBuilds(), getTranslations('home.empty')])
   if (!s.ok) return <DataNotice error={s.error} what="Builds" />
-  if (s.data.length === 0) return <EmptyState title="No builds this week" description="No build was favorited this week yet." />
+  if (s.data.length === 0) return <EmptyState title={t('buildsTitle')} description={t('buildsDescription')} />
   return (
     <div className="flex flex-col gap-4">
       <ul className="-mx-(--spacing-gutter) flex snap-x snap-mandatory gap-4 overflow-x-auto px-(--spacing-gutter) pb-2 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 md:pb-0">
@@ -211,9 +231,9 @@ async function BuildsBlock() {
 }
 
 async function MatchesBlock() {
-  const s = await getHomeMatches()
+  const [s, t] = await Promise.all([getHomeMatches(), getTranslations('home')])
   if (!s.ok) return <DataNotice error={s.error} what="Matches" />
-  if (s.data.length === 0) return <EmptyState title="No top-band matches in the last 24 hours" description="The data source hasn’t processed any yet." action={<ButtonLink href="/matches" variant="secondary" size="sm">All matches</ButtonLink>} />
+  if (s.data.length === 0) return <EmptyState title={t('empty.matchesTitle')} description={t('empty.matchesDescription')} action={<ButtonLink href="/matches" variant="secondary" size="sm">{t('sections.matches.action')}</ButtonLink>} />
   return (
     <div className="flex flex-col gap-4">
       <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

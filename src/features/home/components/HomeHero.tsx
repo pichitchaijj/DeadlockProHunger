@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import type { CSSProperties, ReactNode } from 'react'
 import { BrandMark } from '@/components/layout/BrandMark'
 import { CountUp } from '@/components/motion/CountUp'
@@ -8,7 +9,8 @@ import { cx } from '@/lib/cx'
 import type { HomeSource, HomeSummary } from '../types'
 import { HeroBackdrop } from './HeroBackdrop'
 
-const HEADLINE = ['Play', 'Learn', 'Analyze', 'Improve', 'Together.']
+/** The brand statement, one line each (`home.hero.headline.<key>`); the last line carries the accent. */
+const HEADLINE = ['play', 'learn', 'analyze', 'improve', 'together'] as const
 
 /**
  * Logo reveal, then the brand statement (staggered), CTAs and a streamed stats strip: the storyboard's
@@ -16,6 +18,7 @@ const HEADLINE = ['Play', 'Learn', 'Analyze', 'Improve', 'Together.']
  * stays short (everything visible by ~0.7s) because the statement and paragraph are the page's LCP.
  */
 export function HomeHero({ stats }: { stats: ReactNode }) {
+  const t = useTranslations('home.hero')
   return (
     <section aria-labelledby="home-hero-title" className="relative isolate overflow-hidden border-b border-border">
       <HeroBackdrop />
@@ -26,7 +29,7 @@ export function HomeHero({ stats }: { stats: ReactNode }) {
           <BrandMark variant="primary" priority boot className="max-w-md" />
 
           <p className="text-tagline animate-awaken" style={{ animationDelay: '60ms' }}>
-            <span className="text-primary">●</span> Unofficial · Community · Data · Builds · Strategy
+            <span className="text-primary">●</span> {t('tagline')}
           </p>
 
           {/* Brand statement: stacked, forward-leaning caps; the last line carries the accent. */}
@@ -37,7 +40,7 @@ export function HomeHero({ stats }: { stats: ReactNode }) {
                 className={cx('block animate-awaken', i === HEADLINE.length - 1 && 'text-primary')}
                 style={{ animationDelay: `${80 + i * 50}ms` } as CSSProperties}
               >
-                {word}
+                {t(`headline.${word}`)}
               </span>
             ))}
           </h1>
@@ -46,15 +49,15 @@ export function HomeHero({ stats }: { stats: ReactNode }) {
             className="max-w-xl text-lg text-text-muted animate-awaken sm:text-xl"
             style={{ animationDelay: '220ms' }}
           >
-            A community analytics hub for Deadlock players. Practical data, clear insights and tools built by players, for players.
+            {t('intro')}
           </p>
 
           <div className="flex flex-wrap gap-3 animate-awaken" style={{ animationDelay: '300ms' }}>
             <ButtonLink href="/meta" trailingIcon={<ArrowRightIcon size={18} />}>
-              Explore meta
+              {t('exploreMeta')}
             </ButtonLink>
             <ButtonLink href="/heroes" variant="secondary">
-              View heroes
+              {t('viewHeroes')}
             </ButtonLink>
           </div>
         </div>
@@ -90,19 +93,20 @@ function SummaryStat({ label, icon, children, note }: { label: string; icon: Rea
  * HeroStatsSkeleton so streaming causes no shift.
  */
 export function HeroStats({ summary, source, footer }: { summary: HomeSummary; source: HomeSource | null; footer?: ReactNode }) {
+  const t = useTranslations('home.stats')
   return (
     <>
       <dl className="grid max-w-4xl grid-cols-2 gap-px overflow-hidden rounded-md border border-border bg-border lg:grid-cols-4">
-        <SummaryStat label="Heroes" icon={<HeroesIcon size={18} />} note={`${summary.heroesTracked} with enough data`}>
+        <SummaryStat label={t('heroes')} icon={<HeroesIcon size={18} />} note={t('heroesNote', { count: summary.heroesTracked })}>
           <CountUp value={summary.heroesTotal} format="integer" durationMs={800} />
         </SummaryStat>
-        <SummaryStat label="Matches analyzed" icon={<MatchesIcon size={18} />} note={summary.dataScopeLabel}>
+        <SummaryStat label={t('matches')} icon={<MatchesIcon size={18} />} note={summary.dataScopeLabel}>
           <CountUp value={summary.matchesAnalyzed} format="compact" durationMs={800} />
         </SummaryStat>
-        <SummaryStat label="New matches / day" icon={<TrendsIcon size={18} />} note="Added to the data source">
+        <SummaryStat label={t('newMatches')} icon={<TrendsIcon size={18} />} note={t('newMatchesNote')}>
           {source ? <CountUp value={source.matchesPerDay} format="compact" durationMs={800} /> : <span className="text-text-muted">—</span>}
         </SummaryStat>
-        <SummaryStat label="Player profiles" icon={<PlayersIcon size={18} />} note="Known to the data source">
+        <SummaryStat label={t('profiles')} icon={<PlayersIcon size={18} />} note={t('profilesNote')}>
           {source?.playerProfiles ? <CountUp value={source.playerProfiles} format="compact" durationMs={800} /> : <span className="text-text-muted">—</span>}
         </SummaryStat>
       </dl>
@@ -111,14 +115,15 @@ export function HeroStats({ summary, source, footer }: { summary: HomeSummary; s
   )
 }
 
-const SKELETON_LABELS = ['Heroes', 'Matches analyzed', 'New matches / day', 'Player profiles']
+const SKELETON_LABELS = ['heroes', 'matches', 'newMatches', 'profiles'] as const
 
 export function HeroStatsSkeleton() {
+  const t = useTranslations('home.stats')
   return (
     <div aria-hidden="true" className="grid max-w-4xl grid-cols-2 gap-px overflow-hidden rounded-md border border-border bg-border lg:grid-cols-4">
       {SKELETON_LABELS.map((label) => (
         <div key={label} className="flex flex-col justify-between gap-2 bg-surface/90 px-4 py-4 sm:px-5">
-          <span className="text-eyebrow">{label}</span>
+          <span className="text-eyebrow">{t(label)}</span>
           <Skeleton className="h-14" />
         </div>
       ))}

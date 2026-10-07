@@ -1,0 +1,131 @@
+{
+  "meta": {
+    "title": "Deadlockprohunger — Deadlock analytics & strategy",
+    "description": "Unofficial community analytics and strategy for Deadlock. Data, insight, decision, action."
+  },
+  "hero": {
+    "tagline": "Unofficial · Community · Data · Builds · Strategy",
+    "headline": {
+      "play": "Play",
+      "learn": "Learn",
+      "analyze": "Analyze",
+      "improve": "Improve",
+      "together": "Together."
+    },
+    "intro": "A community analytics hub for Deadlock players. Practical data, clear insights and tools built by players, for players.",
+    "exploreMeta": "Explore meta",
+    "viewHeroes": "View heroes"
+  },
+  "stats": {
+    "heroes": "Heroes",
+    "heroesNote": "{count} with enough data",
+    "matches": "Matches analyzed",
+    "newMatches": "New matches / day",
+    "newMatchesNote": "Added to the data source",
+    "profiles": "Player profiles",
+    "profilesNote": "Known to the data source"
+  },
+  "sections": {
+    "patch": {
+      "kicker": "Patch",
+      "title": "Current patch snapshot"
+    },
+    "pulse": {
+      "kicker": "Pulse",
+      "title": "Deadlock pulse",
+      "description": "The few numbers that best describe this week. Open “Why?” for the reasoning."
+    },
+    "performance": {
+      "kicker": "Performance",
+      "title": "Hero performance",
+      "description": "Top five heroes this week by win rate, pick rate and recorded bans. Heroes with a Low sample never rank.",
+      "action": "Full table"
+    },
+    "heroes": {
+      "kicker": "Heroes",
+      "title": "Who’s moving",
+      "description": "Only changes larger than normal week-to-week variation are called trends. Everything else is “stable” and not listed.",
+      "action": "Full meta"
+    },
+    "builds": {
+      "kicker": "Builds",
+      "title": "Trending builds",
+      "description": "Most favorited this week. Win rates appear only when enough tracked matches used the build.",
+      "action": "All builds"
+    },
+    "matches": {
+      "kicker": "Matches",
+      "title": "Recent high-rank matches",
+      "description": "Newest matches in the top rank band from the last 24 hours.",
+      "action": "All matches"
+    },
+    "explore": {
+      "kicker": "Explore",
+      "title": "Go deeper"
+    }
+  },
+  "loading": {
+    "patch": "Loading the latest patch",
+    "pulse": "Loading this week’s numbers",
+    "performance": "Loading hero performance",
+    "heroes": "Loading hero trends",
+    "builds": "Loading builds",
+    "matches": "Loading matches"
+  },
+  "empty": {
+    "pulseTitle": "Not enough data yet",
+    "pulseDescription": "No hero has a large enough sample in this window to report.",
+    "buildsTitle": "No builds this week",
+    "buildsDescription": "No build was favorited this week yet.",
+    "matchesTitle": "No top-band matches in the last 24 hours",
+    "matchesDescription": "The data source hasn’t processed any yet."
+  },
+  "comparison": "vs previous 7 days",
+  "pulse": {
+    "highestWinRate": "Highest win rate",
+    "mostPicked": "Most picked",
+    "biggestRiser": "Biggest riser",
+    "biggestFaller": "Biggest faller",
+    "sparkline": "{hero}’s daily win rate over the window."
+  },
+  "trends": {
+    "trending": {
+      "title": "Most picked",
+      "description": "Highest pick rate this window, with each hero’s win rate and weekly change."
+    },
+    "rising": {
+      "title": "Rising",
+      "description": "Win rate up vs the previous 7 days, beyond normal variation."
+    },
+    "falling": {
+      "title": "Falling",
+      "description": "Win rate down vs the previous 7 days, beyond normal variation."
+    },
+    "none": "None this week: no hero moved beyond normal week-to-week variation.",
+    "sparkline": "{metric} moved from {from} to {to} over the window.",
+    "footer": "{metric} · change vs previous 7 days"
+  },
+  "performance": {
+    "tabs": "Hero performance metric",
+    "pickRate": "Pick rate",
+    "bans": "Bans",
+    "noSample": "No hero has a large enough sample in this window.",
+    "noBans": "No bans were recorded in this window.",
+    "bansNote": "{count, plural, one {# ban} other {# bans}} recorded in the last 7 days, from matches whose bans were read from the demo. The source doesn’t say how many matches that is, so this shows each hero’s share of recorded bans, not a ban rate.",
+    "bansFailed": "Ban data didn’t load. Win and pick rates are unaffected."
+  },
+  "patch": {
+    "unknown": "Patch unknown",
+    "unknownText": "We couldn’t date the latest changelog, so “current patch” windows fall back to the last 7 days.",
+    "unknownNote": "Statistics below are still real; they just aren’t split at a patch boundary.",
+    "current": "Current patch",
+    "changelog": "Changelog",
+    "fromPost": "From the post",
+    "excerptNote": "Excerpt from the official post’s preview; the full notes are on the forum.",
+    "noPreview": "The feed doesn’t include a preview of this post. Open it for the notes.",
+    "limited": "This patch is very recent, so “current patch” views have little post-patch data. Treat trends as early signals.",
+    "window": "“Current patch” views on this site start on this date (from the changelog title).",
+    "read": "Read the changelog",
+    "newTab": "(opens the official forum in a new tab)"
+  }
+}

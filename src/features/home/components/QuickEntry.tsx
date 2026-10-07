@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { primaryNav } from '@/config/navigation'
 import type { ReactNode } from 'react'
@@ -12,8 +13,9 @@ const ICONS: Record<string, ReactNode> = {
   '/matches': <MatchesIcon size={28} />,
 }
 
-/** Four editorial entry tiles into the main sections. */
+/** Four editorial entry tiles into the main sections; labels are the navigation's own (`nav.links`). */
 export function QuickEntry() {
+  const t = useTranslations('nav.links')
   return (
     <ul className="grid gap-px overflow-hidden rounded-md border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
       {ENTRIES.map((item, i) => (
@@ -28,10 +30,10 @@ export function QuickEntry() {
             </span>
             <span>
               <span className="flex items-center justify-between gap-3 font-display text-display-m font-bold text-text uppercase group-hover:text-highlight">
-                {item.label}
+                {t(`${item.id}.label`)}
                 <ArrowRightIcon className="shrink-0 text-primary transition-transform duration-(--dur-fast) ease-awaken group-hover:translate-x-1" />
               </span>
-              <span className="mt-1 block text-sm text-text-muted">{item.description}</span>
+              <span className="mt-1 block text-sm text-text-muted">{t(`${item.id}.description`)}</span>
             </span>
             <span
               aria-hidden="true"

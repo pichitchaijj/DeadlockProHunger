@@ -1,0 +1,131 @@
+{
+  "meta": {
+    "title": "Deadlockprohunger — Deadlock の分析と戦略",
+    "description": "コミュニティによる非公式の Deadlock 分析と戦略。データ、洞察、判断、行動。"
+  },
+  "hero": {
+    "tagline": "非公式 · コミュニティ · データ · ビルド · 戦略",
+    "headline": {
+      "play": "プレイ",
+      "learn": "学ぶ",
+      "analyze": "分析",
+      "improve": "上達",
+      "together": "みんなで。"
+    },
+    "intro": "Deadlock プレイヤーのためのコミュニティ分析ハブ。実用的なデータ、わかりやすい洞察、そしてプレイヤーがプレイヤーのために作ったツール。",
+    "exploreMeta": "メタを見る",
+    "viewHeroes": "ヒーロー一覧"
+  },
+  "stats": {
+    "heroes": "ヒーロー",
+    "heroesNote": "うち {count} 体はデータ十分",
+    "matches": "分析した試合",
+    "newMatches": "新規試合 / 日",
+    "newMatchesNote": "データソースへの追加数",
+    "profiles": "プレイヤープロフィール",
+    "profilesNote": "データソースの登録数"
+  },
+  "sections": {
+    "patch": {
+      "kicker": "パッチ",
+      "title": "現在のパッチ概要"
+    },
+    "pulse": {
+      "kicker": "パルス",
+      "title": "Deadlock パルス",
+      "description": "今週をもっともよく表す数値。根拠は「Why?」から確認できます。"
+    },
+    "performance": {
+      "kicker": "パフォーマンス",
+      "title": "ヒーローの成績",
+      "description": "今週の勝率・ピック率・記録された BAN 数の上位 5 ヒーロー。サンプルが少ないヒーローはランク外です。",
+      "action": "全体の表"
+    },
+    "heroes": {
+      "kicker": "ヒーロー",
+      "title": "動きのあるヒーロー",
+      "description": "週ごとの通常の変動を超える変化だけをトレンドとしています。それ以外は「横ばい」として表示しません。",
+      "action": "メタ全体"
+    },
+    "builds": {
+      "kicker": "ビルド",
+      "title": "注目のビルド",
+      "description": "今週もっともお気に入り登録されたビルド。勝率は、追跡した試合で十分に使われた場合のみ表示します。",
+      "action": "すべてのビルド"
+    },
+    "matches": {
+      "kicker": "試合",
+      "title": "最近の高ランク試合",
+      "description": "過去 24 時間の最上位ランク帯の最新試合。",
+      "action": "すべての試合"
+    },
+    "explore": {
+      "kicker": "探す",
+      "title": "さらに詳しく"
+    }
+  },
+  "loading": {
+    "patch": "最新パッチを読み込み中",
+    "pulse": "今週の数値を読み込み中",
+    "performance": "ヒーローの成績を読み込み中",
+    "heroes": "ヒーローのトレンドを読み込み中",
+    "builds": "ビルドを読み込み中",
+    "matches": "試合を読み込み中"
+  },
+  "empty": {
+    "pulseTitle": "まだデータが足りません",
+    "pulseDescription": "この期間に報告できるだけのサンプルがあるヒーローはいません。",
+    "buildsTitle": "今週のビルドはありません",
+    "buildsDescription": "今週はまだお気に入り登録されたビルドがありません。",
+    "matchesTitle": "過去 24 時間に最上位帯の試合はありません",
+    "matchesDescription": "データソースはまだ処理していません。"
+  },
+  "comparison": "前の 7 日間との比較",
+  "pulse": {
+    "highestWinRate": "最高勝率",
+    "mostPicked": "最多ピック",
+    "biggestRiser": "最大の上昇",
+    "biggestFaller": "最大の下降",
+    "sparkline": "期間中の {hero} の日別勝率。"
+  },
+  "trends": {
+    "trending": {
+      "title": "最多ピック",
+      "description": "この期間でピック率が最も高いヒーローと、それぞれの勝率・週ごとの変化。"
+    },
+    "rising": {
+      "title": "上昇",
+      "description": "前の 7 日間より勝率が上昇（通常の変動幅を超える）。"
+    },
+    "falling": {
+      "title": "下降",
+      "description": "前の 7 日間より勝率が下降（通常の変動幅を超える）。"
+    },
+    "none": "今週は該当なし：通常の週ごとの変動を超えたヒーローはいません。",
+    "sparkline": "期間中に{metric}が {from} から {to} に変化。",
+    "footer": "{metric} · 前の 7 日間との差"
+  },
+  "performance": {
+    "tabs": "ヒーロー成績の指標",
+    "pickRate": "ピック率",
+    "bans": "BAN",
+    "noSample": "この期間に十分なサンプルがあるヒーローはいません。",
+    "noBans": "この期間に記録された BAN はありません。",
+    "bansNote": "過去 7 日間に記録された BAN は {count, plural, other {# 件}}（BAN をデモから読み取れた試合のみ）。データソースは対象の試合数を示していないため、ここでは BAN 率ではなく、記録された BAN に占める各ヒーローの割合を表示しています。",
+    "bansFailed": "BAN データを読み込めませんでした。勝率とピック率には影響ありません。"
+  },
+  "patch": {
+    "unknown": "パッチ不明",
+    "unknownText": "最新のパッチノートの日付を特定できなかったため、「現在のパッチ」の期間は直近 7 日間になります。",
+    "unknownNote": "以下の統計は実データですが、パッチの境目では区切っていません。",
+    "current": "現在のパッチ",
+    "changelog": "パッチノート",
+    "fromPost": "投稿より",
+    "excerptNote": "公式投稿のプレビューからの抜粋です。全文はフォーラムで確認できます。",
+    "noPreview": "フィードにはこの投稿のプレビューが含まれていません。内容は投稿を開いて確認してください。",
+    "limited": "このパッチは公開されたばかりのため、「現在のパッチ」ビューにはパッチ後のデータがまだ少なく、トレンドは初期のシグナルとして見てください。",
+    "window": "当サイトの「現在のパッチ」ビューはこの日付から始まります（パッチノートのタイトルに基づく）。",
+    "read": "パッチノートを読む",
+    "newTab": "（公式フォーラムを新しいタブで開きます）"
+  }
+}

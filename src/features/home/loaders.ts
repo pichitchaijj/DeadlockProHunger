@@ -31,7 +31,7 @@ export type Section<T> = { ok: true; data: T; asOf: number; stale: boolean } | {
 function section<T>(key: string, revalidate: number, maxAgeMs: number, load: () => Promise<T>) {
   const cached = unstable_cache(
     stableKey('home-section', async () => ({ data: await load(), asOf: Date.now() })),
-    ['home', key, 'v2'], // bump when a section's cached shape changes (v2: averageRank is a RankDisplay)
+    ['home', key, 'v3'], // bump when a section's cached shape changes (v3: pulse/trend ids instead of English labels)
     { revalidate, tags: ['home'] },
   )
   return cache(async (): Promise<Section<T>> => {
@@ -74,24 +74,24 @@ export const getHomeMeta = section<HomeMeta>('meta', TTL.analytics / 6, FRESHNES
   if (s.highestWinRate) {
     const h = s.highestWinRate
     pulse.push({
-      label: 'Highest win rate',
+      kind: 'highestWinRate',
       subject: h.name,
       value: h.winRate,
       format: 'percent',
       featured: true,
       trend: h.trend ? { direction: h.trend.direction, delta: h.trend.delta } : undefined,
-      sparkline: h.history.length > 1 ? { values: h.history, baseline: 0.5, summary: `${h.name}'s daily win rate over the window.` } : undefined,
+      sparkline: h.history.length > 1 ? { values: h.history, baseline: 0.5 } : undefined,
       why: whyText(h),
     })
   }
   if (s.mostPlayed) {
     const h = s.mostPlayed
-    pulse.push({ label: 'Most picked', subject: h.name, value: h.pickRate, format: 'percent', why: `${h.name} appeared in ${(h.pickRate * 100).toFixed(1)}% of matches (pick rate = its matches ÷ total matches ÷ 12 slots). ${whyText(h)}` })
+    pulse.push({ kind: 'mostPicked', subject: h.name, value: h.pickRate, format: 'percent', why: `${h.name} appeared in ${(h.pickRate * 100).toFixed(1)}% of matches (pick rate = its matches ÷ total matches ÷ 12 slots). ${whyText(h)}` })
   }
   const mover = s.rising[0] ?? s.falling[0] ?? null
   if (mover?.trend) {
     pulse.push({
-      label: mover.trend.direction === 'rising' ? 'Biggest riser' : 'Biggest faller',
+      kind: mover.trend.direction === 'rising' ? 'biggestRiser' : 'biggestFaller',
       subject: mover.name,
       value: mover.winRate,
       format: 'percent',
@@ -104,9 +104,9 @@ export const getHomeMeta = section<HomeMeta>('meta', TTL.analytics / 6, FRESHNES
     scope,
     summary: { matchesAnalyzed: s.matchesAnalyzed, heroesTracked: s.heroesWithData, heroesTotal: s.heroesTotal, dataScopeLabel: `${scope.windowLabel} · ${scope.rankLabel}` },
     pulse,
-    trending: { title: 'Most picked', metricLabel: 'Win rate', description: 'Highest pick rate this window, with each hero’s win rate and weekly change.', heroes: byPick.slice(0, 3).map(trendRow) },
-    rising: { title: 'Rising', metricLabel: 'Win rate', description: 'Win rate up vs the previous 7 days, beyond normal variation.', heroes: s.rising.slice(0, 3).map(trendRow) },
-    falling: { title: 'Falling', metricLabel: 'Win rate', description: 'Win rate down vs the previous 7 days, beyond normal variation.', heroes: s.falling.slice(0, 3).map(trendRow) },
+    trending: { heroes: byPick.slice(0, 3).map(trendRow) },
+    rising: { heroes: s.rising.slice(0, 3).map(trendRow) },
+    falling: { heroes: s.falling.slice(0, 3).map(trendRow) },
   }
 })
 

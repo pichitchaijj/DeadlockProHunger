@@ -1,4 +1,5 @@
 import { Link } from '@/i18n/navigation'
+import { useLocale, useTranslations } from 'next-intl'
 import type { ReactNode } from 'react'
 import { WinRate } from '@/components/cards/WinRate'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
@@ -14,30 +15,33 @@ import type { HeroPerformance as Performance } from '../model'
  * scrolled into view; the number is always printed, so the bar is never the only signal.
  */
 export function HeroPerformance({ data }: { data: Performance }) {
+  const t = useTranslations('home.performance')
+  const winRate = useTranslations('cards')('winRate')
+  const locale = useLocale()
   const items = [
     {
       value: 'win',
-      label: 'Win rate',
+      label: winRate,
       content: (
         <Rows
           rows={data.winRate.map((r) => ({ ...r, bar: <WinRate value={r.value} className="w-full justify-end" /> }))}
-          empty="No hero has a large enough sample in this window."
+          empty={t('noSample')}
         />
       ),
     },
     {
       value: 'pick',
-      label: 'Pick rate',
+      label: t('pickRate'),
       content: (
         <Rows
           rows={data.pickRate.map((r) => ({ ...r, bar: <Bar share={r.value / (data.pickRate[0]?.value || 1)} label={formatPercent(r.value)} /> }))}
-          empty="No hero has a large enough sample in this window."
+          empty={t('noSample')}
         />
       ),
     },
     {
       value: 'bans',
-      label: 'Bans',
+      label: t('bans'),
       content: data.bans ? (
         <div className="flex flex-col gap-3">
           <Rows
@@ -45,23 +49,20 @@ export function HeroPerformance({ data }: { data: Performance }) {
               slug: r.slug,
               name: r.name,
               imageSrc: r.imageSrc,
-              bar: <Bar share={r.bans / (data.bans!.rows[0]?.bans || 1)} label={`${formatInteger(r.bans)} · ${formatPercent(r.share)}`} tone="orange" />,
+              bar: <Bar share={r.bans / (data.bans!.rows[0]?.bans || 1)} label={`${formatInteger(r.bans, locale)} · ${formatPercent(r.share)}`} tone="orange" />,
             }))}
-            empty="No bans were recorded in this window."
+            empty={t('noBans')}
           />
-          <p className="text-caption text-text-muted">
-            {formatInteger(data.bans.total)} bans recorded in the last 7 days, from matches whose bans were read from the demo. The source doesn&rsquo;t say how many matches that is, so
-            this shows each hero&rsquo;s share of recorded bans, not a ban rate.
-          </p>
+          <p className="text-caption text-text-muted">{t('bansNote', { count: data.bans.total })}</p>
         </div>
       ) : (
-        <p className="text-sm text-text-muted">Ban data didn&rsquo;t load. Win and pick rates are unaffected.</p>
+        <p className="text-sm text-text-muted">{t('bansFailed')}</p>
       ),
     },
   ]
   return (
     <Card className="p-(--spacing-card)">
-      <Tabs label="Hero performance metric" items={items} />
+      <Tabs label={t('tabs')} items={items} />
     </Card>
   )
 }

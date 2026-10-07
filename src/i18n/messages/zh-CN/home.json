@@ -1,0 +1,131 @@
+{
+  "meta": {
+    "title": "Deadlockprohunger — Deadlock 数据分析与策略",
+    "description": "社区驱动的非官方 Deadlock 数据分析与策略。数据、洞察、决策、行动。"
+  },
+  "hero": {
+    "tagline": "非官方 · 社区 · 数据 · 出装 · 策略",
+    "headline": {
+      "play": "对战",
+      "learn": "学习",
+      "analyze": "分析",
+      "improve": "提升",
+      "together": "一起。"
+    },
+    "intro": "面向 Deadlock 玩家的社区数据分析平台。实用的数据、清晰的洞察，以及由玩家为玩家打造的工具。",
+    "exploreMeta": "查看版本强势",
+    "viewHeroes": "查看英雄"
+  },
+  "stats": {
+    "heroes": "英雄",
+    "heroesNote": "{count} 名数据充足",
+    "matches": "已分析比赛",
+    "newMatches": "每日新增比赛",
+    "newMatchesNote": "新增至数据源",
+    "profiles": "玩家档案",
+    "profilesNote": "数据源已收录"
+  },
+  "sections": {
+    "patch": {
+      "kicker": "补丁",
+      "title": "当前补丁速览"
+    },
+    "pulse": {
+      "kicker": "脉搏",
+      "title": "Deadlock 脉搏",
+      "description": "最能概括本周的几项数据。点开“Why?”查看依据。"
+    },
+    "performance": {
+      "kicker": "表现",
+      "title": "英雄表现",
+      "description": "本周胜率、选取率和已记录禁用数排名前五的英雄。样本少的英雄不参与排名。",
+      "action": "完整表格"
+    },
+    "heroes": {
+      "kicker": "英雄",
+      "title": "谁在变化",
+      "description": "只有超出正常周间波动的变化才算趋势，其余均视为“持平”，不予列出。",
+      "action": "完整版本强势"
+    },
+    "builds": {
+      "kicker": "出装",
+      "title": "热门出装",
+      "description": "本周收藏最多的出装。只有在足够多的已追踪比赛使用过该出装时才显示胜率。",
+      "action": "全部出装"
+    },
+    "matches": {
+      "kicker": "比赛",
+      "title": "近期高段位比赛",
+      "description": "过去 24 小时内最高段位区间的最新比赛。",
+      "action": "全部比赛"
+    },
+    "explore": {
+      "kicker": "浏览",
+      "title": "深入探索"
+    }
+  },
+  "loading": {
+    "patch": "正在加载最新补丁",
+    "pulse": "正在加载本周数据",
+    "performance": "正在加载英雄表现",
+    "heroes": "正在加载英雄趋势",
+    "builds": "正在加载出装",
+    "matches": "正在加载比赛"
+  },
+  "empty": {
+    "pulseTitle": "数据尚不足",
+    "pulseDescription": "此时间范围内没有英雄的样本量足以报告。",
+    "buildsTitle": "本周暂无出装",
+    "buildsDescription": "本周还没有出装被收藏。",
+    "matchesTitle": "过去 24 小时内没有最高段位比赛",
+    "matchesDescription": "数据源尚未处理任何比赛。"
+  },
+  "comparison": "对比前 7 天",
+  "pulse": {
+    "highestWinRate": "最高胜率",
+    "mostPicked": "最常选取",
+    "biggestRiser": "涨幅最大",
+    "biggestFaller": "跌幅最大",
+    "sparkline": "{hero} 在此时间范围内的每日胜率。"
+  },
+  "trends": {
+    "trending": {
+      "title": "最常选取",
+      "description": "此时间范围内选取率最高的英雄，以及各自的胜率和周变化。"
+    },
+    "rising": {
+      "title": "上升",
+      "description": "胜率较前 7 天上升，且超出正常波动。"
+    },
+    "falling": {
+      "title": "下降",
+      "description": "胜率较前 7 天下降，且超出正常波动。"
+    },
+    "none": "本周暂无：没有英雄的变化超出正常周间波动。",
+    "sparkline": "此时间范围内{metric}从 {from} 变为 {to}。",
+    "footer": "{metric} · 对比前 7 天的变化"
+  },
+  "performance": {
+    "tabs": "英雄表现指标",
+    "pickRate": "选取率",
+    "bans": "禁用",
+    "noSample": "此时间范围内没有英雄的样本量足够。",
+    "noBans": "此时间范围内没有已记录的禁用。",
+    "bansNote": "过去 7 天共记录 {count, plural, other {# 次}}禁用（仅限能从录像读取禁用信息的比赛）。数据源未提供对应的比赛数量，因此这里显示的是各英雄在已记录禁用中的占比，而非禁用率。",
+    "bansFailed": "禁用数据未能加载。胜率和选取率不受影响。"
+  },
+  "patch": {
+    "unknown": "补丁未知",
+    "unknownText": "无法确定最新补丁说明的日期，因此“当前补丁”时间范围改为最近 7 天。",
+    "unknownNote": "下方统计仍为真实数据，只是未按补丁分界划分。",
+    "current": "当前补丁",
+    "changelog": "更新日志",
+    "fromPost": "摘自原帖",
+    "excerptNote": "摘自官方帖子的预览，完整内容请见论坛。",
+    "noPreview": "订阅源未包含此帖的预览，请打开帖子查看内容。",
+    "limited": "此补丁刚发布不久，“当前补丁”视图中的补丁后数据较少。请将趋势视为早期信号。",
+    "window": "本站“当前补丁”视图从此日期开始计算（依据更新日志标题）。",
+    "read": "阅读更新日志",
+    "newTab": "（在新标签页中打开官方论坛）"
+  }
+}

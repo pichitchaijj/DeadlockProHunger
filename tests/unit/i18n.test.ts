@@ -29,6 +29,10 @@ describe('locale-aware formatting', () => {
   it('formats for the requested locale', () => {
     expect(formatCompact(12400, 'ja')).toBe('1.2万')
     expect(formatRelativeTime(0, 86_400_000, 'ko')).toBe('어제')
+    // Under a minute: each locale's own word, never the English "just now".
+    expect(formatRelativeTime(0, 10_000, 'ja')).toBe('今')
+    expect(formatRelativeTime(0, 10_000, 'th')).toBe('ขณะนี้')
+    expect(formatRelativeTime(0, 10_000)).toBe('just now')
   })
 
   it('uses the Gregorian year in Thai', () => {
