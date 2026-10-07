@@ -58,6 +58,16 @@ export class TokenBucket {
     this.updatedAt = now
   }
 
+  /** Tokens available now (may be negative while booked requests are queued). Reading never spends one. */
+  available(now: number): number {
+    this.refill(now)
+    return this.tokens
+  }
+
+  get size(): number {
+    return this.capacity
+  }
+
   /** Milliseconds to wait before sending (0 = send now), or null when the wait would exceed `maxWaitMs`. */
   reserve(now: number, maxWaitMs: number): number | null {
     this.refill(now)

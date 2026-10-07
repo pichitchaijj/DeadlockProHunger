@@ -1,5 +1,6 @@
 import 'server-only'
 import { unstable_cache } from 'next/cache'
+import { stableKey } from '@/lib/cache/stableKey'
 import { z } from 'zod'
 import { deadlockGet, DeadlockApiError } from './client'
 import { isMissing } from './errors'
@@ -92,7 +93,7 @@ export type HistoryEntry = z.infer<typeof historySchema>[number]
 
 /** Stored match history (no force_refetch, ever). Cached 10 min as a projection. */
 export const getMatchHistory = unstable_cache(
-  (accountId: number) => deadlockGet(`/v1/players/${accountId}/match-history`, { schema: historySchema, revalidate: false, timeoutMs: 20_000 }),
+  stableKey('player-history', (accountId: number) => deadlockGet(`/v1/players/${accountId}/match-history`, { schema: historySchema, revalidate: false, timeoutMs: 20_000 })),
   ['player-history-v2'],
   { revalidate: 10 * 60, tags: ['players:history'] },
 )

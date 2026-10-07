@@ -101,7 +101,7 @@ Question: *"How is this hero really doing, and where does it stand?"*
 |---|---|---|
 | `/design` | Component showcase with labelled DEMO DATA from `src/mocks/` | `noindex`; disallowed in `robots.txt` |
 | `GET /api/search?q=` | Command-palette search: heroes, items, patches, builds, players, match ids | Query trimmed and length-capped; 40 queries per client per minute (429 + `Retry-After`); each source capped at 3 s |
-| `GET /api/cron/{reference\|daily\|builds\|prune}` | Database jobs (`vercel.json`, daily) | `Authorization: Bearer $CRON_SECRET`, constant-time compare; refuses without the secret; `days` clamped to 1–30 |
+| `GET /api/cron/{reference\|daily\|builds\|prune\|prewarm}` | Database jobs (`vercel.json`, daily) and the cache prewarm (hourly via GitHub Actions, daily backup on Vercel; needs no database) | `Authorization: Bearer $CRON_SECRET`, constant-time compare; refuses without the secret; `days` clamped to 1–30 |
 | `/robots.txt`, `/icon.png`, `/apple-icon.png`, `/brand/*` | Static | — |
 
 Pages fetch through server components, not through our own API. `/api/search` exists only because the palette is a client component.

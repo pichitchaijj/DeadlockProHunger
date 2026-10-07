@@ -34,6 +34,18 @@ Without any environment variables the site runs on the public API with no databa
 | `npm run api:verify` | Checks every API call against the live OpenAPI spec |
 | `npm run db:migrate` | Applies database migrations (needs `DATABASE_URL`) |
 
+## Deployment (Vercel)
+
+| Where | Name | Purpose |
+|---|---|---|
+| Vercel env | `CRON_SECRET` | Protects `/api/cron/*` (database jobs and the cache prewarm). Long random value; never commit it |
+| Vercel env | `DEADLOCK_API_KEY` (optional) | Higher Deadlock API limits |
+| Vercel env | `DATABASE_URL` (optional) | Postgres history and fallbacks |
+| GitHub Actions secret | `CRON_SECRET` | Same value as on Vercel; used by the hourly prewarm workflow |
+| GitHub Actions variable | `SITE_URL` | Production origin the prewarm workflow calls |
+
+Cache prewarming runs hourly from `.github/workflows/prewarm.yml` (Vercel Hobby crons are daily-only), with a daily Vercel cron as backup. Details: [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) § Cache prewarming.
+
 ## Documentation
 
 Planning and audit docs live in [`docs/`](./docs): product, architecture, routes, data model, API, design system, roadmap, plus QA, performance, accessibility and mobile audits. Contributor guidance for AI-assisted work is in [`CLAUDE.md`](./CLAUDE.md).

@@ -33,7 +33,7 @@ The phase lists below are the **original plan**, kept for reference. Where the b
 | Post-MVP 6 Personal Dashboard | **Blocked** | Needs approval: Steam OpenID sign-in, sessions and a user table are a new architecture layer |
 | Deprecated upstream endpoints (MMR, `/v1/patches`, `/v1/sql`) | **Deprecated** | Never used; `api:verify` fails on them |
 
-**Next, in order:** remaining snapshot fallbacks and a deployed Postgres → Insight Engine on Meta/Home/Build Detail → launch items in P7 → Personal Dashboard (after approval).
+**Implemented later:** hourly cache prewarming (ARCHITECTURE § Cache prewarming). **Next, in order:** remaining snapshot fallbacks and a deployed Postgres → Insight Engine on Meta/Home/Build Detail → launch items in P7 → Personal Dashboard (after approval).
 
 ---
 

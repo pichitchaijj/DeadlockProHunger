@@ -1,5 +1,6 @@
 import 'server-only'
 import { unstable_cache } from 'next/cache'
+import { stableKey } from '@/lib/cache/stableKey'
 import { z } from 'zod'
 import { TTL } from '@/lib/cache/ttl'
 import { deadlockGet } from './client'
@@ -164,7 +165,7 @@ export type ShopItem = { id: number; className: string | null; shopable: boolean
  * 2 MB entry limit, so the raw response is not cached; the projection is cached for 24h.
  */
 export const getShopItems = unstable_cache(
-  async (): Promise<ShopItem[]> => {
+  stableKey('shop-items', async (): Promise<ShopItem[]> => {
     const items = await deadlockGet('/v1/assets/items/by-type/upgrade', { schema: z.array(upgradeSchema), revalidate: false })
     return items.map((i) => ({
       id: i.id,
@@ -176,7 +177,7 @@ export const getShopItems = unstable_cache(
       cost: i.cost ?? null,
       icon: i.shop_image_small ?? i.image ?? null,
     }))
-  },
+  }),
   ['shop-items-v2'],
   { revalidate: TTL.assets, tags: ['assets'] },
 )

@@ -133,7 +133,33 @@ Lifetimes per data class and per endpoint: [API § 9](./API.md#9-production-data
 
 ### Scheduled jobs (Vercel Cron, daily)
 
-`reference` 02:50, `daily` 03:00, `builds` 03:30, `prune` 04:00 UTC. Request budgets are in [DATA_MODEL § Jobs](./DATA_MODEL.md#jobs-apicronjob-verceljson-daily).
+`reference` 02:50, `daily` 03:00, `builds` 03:30, `prune` 04:00, `prewarm` 06:15 UTC (backup; the hourly prewarm runs from GitHub Actions, see Cache prewarming). Request budgets are in [DATA_MODEL § Jobs](./DATA_MODEL.md#jobs-apicronjob-verceljson-daily).
+
+### Cache prewarming — **Implemented**
+
+`GET /api/cron/prewarm` (`lib/jobs/prewarm.ts` + the pure runner `lib/jobs/prewarmRunner.ts`) loads, through the same loaders the pages use, the data the default views need, so their cache keys match exactly:
+
+| Stage (in order) | What | Why |
+|---|---|---|
+| shared reference | hero list, rank tiers, patch feed | every page |
+| meta model | 7d and 30d, all ranks | Home/Meta/Heroes/Hero/Analyze defaults (7d), Builds default (30d) |
+| home | the six Home sections (their own section caches too) | most-visited page |
+| builds tracked stats | one `hero-build-stats` call per hero (30d, all ranks), one task each | `/builds` default fires all of them at once on a cold cache: the site's worst burst |
+| builds page | the default listing (then only hits) | |
+| hero detail + analyze | overview data for the **3 most-picked heroes** in the 7d model (non-Low sample); the first also warms the all-hero matrix data every hero page shares | chosen from measured pick rate, never assumed |
+
+- **Cache first, budget enforced:** every request goes through the normal client (cache → budget → API). Fresh keys are hits; nothing bypasses the token bucket.
+- **Pacing:** at most 3 tasks in flight, and a task starts only while the analytics bucket has at least half its burst (20 of 40) unspent, so warming never takes the whole budget from users; if it doesn't recover within 20 s the task is skipped. The run stops at 240 s (route limit 300 s).
+- **Circuit breaker:** after 3 rate-limited tasks in a row (upstream 429 or our budget), every remaining task is skipped. Measured against a 429 stub: 76 requests and 14 s instead of 218 and 57 s.
+- **Report** (JSON response + one `[prewarm]` log line): status `ok|partial|failed`, per-task result, upstream network requests, cache hits, budget waits and refusals, duration. Counts and task names only; secrets are redacted from error text.
+- **Measured** (cold cache): 55 tasks ok, 120 upstream requests, ~13 s. Then every target page's first visit needed 0 upstream requests (`/builds` 0.04 s instead of ~3 s). A second run: 0 requests, 177 hits, 3 s.
+- **Schedule:** analytics keys roll over each hour (window end rounded to the hour), so warming must be hourly. Vercel Hobby crons are daily-only, so `.github/workflows/prewarm.yml` calls the endpoint at minute 7 of every hour; `vercel.json` adds a daily 06:15 UTC run as a backup.
+- **Cache keys across bundles:** `unstable_cache` keys on the callback's source text, which differs between bundles (cron route vs pages). Every call site wraps its callback in `stableKey()` (`lib/cache/stableKey.ts`) so the key depends only on the key parts; without it a warmed entry was invisible to pages.
+
+**Deployment (prewarm):**
+1. Vercel project → Environment Variables: `CRON_SECRET` (long random value). Optional: `DEADLOCK_API_KEY`.
+2. GitHub repository → Settings → Secrets and variables → Actions: secret `CRON_SECRET` (same value) and variable `SITE_URL` (production origin, no trailing slash). Without both, the workflow skips itself.
+3. Check: Actions → "Prewarm cache" → Run workflow; the log shows the JSON report.
 
 ### Fallback — **Partial**
 

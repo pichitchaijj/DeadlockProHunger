@@ -1,0 +1,35 @@
+# Hourly cache prewarm (docs/ARCHITECTURE.md § Cache prewarming).
+# Analytics cache keys roll over each hour, and Vercel Hobby only allows daily crons, so this workflow
+# calls the same protected endpoint Vercel Cron uses, a few minutes past every hour.
+#
+# Repository settings → Secrets and variables → Actions:
+#   secret   CRON_SECRET  the same value as CRON_SECRET in the Vercel project
+#   variable SITE_URL     the production origin, e.g. https://example.vercel.app (no trailing slash)
+# Without both, the job skips itself. Never put the secret in this file.
+name: Prewarm cache
+
+on:
+  schedule:
+    - cron: '7 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  prewarm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Call /api/cron/prewarm
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          if [ -z "$CRON_SECRET" ] || [ -z "$SITE_URL" ]; then
+            echo "CRON_SECRET secret or SITE_URL variable not set; skipping."
+            exit 0
+          fi
+          # The report holds counts and task names only (no URLs, keys or secrets).
+          curl --fail-with-body --silent --show-error --max-time 300 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$SITE_URL/api/cron/prewarm"

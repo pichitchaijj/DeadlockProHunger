@@ -1,5 +1,6 @@
 import 'server-only'
 import { unstable_cache } from 'next/cache'
+import { stableKey } from '@/lib/cache/stableKey'
 import { z } from 'zod'
 import { deadlockGet } from './client'
 import { isMissing } from './errors'
@@ -87,13 +88,13 @@ export function parseStoredMatchDetail(json: unknown): MatchDetailRaw | null {
  * a recent match that isn't processed yet will load once it is.
  */
 const cachedMatchDetail = unstable_cache(
-  (matchId: number): Promise<MatchDetailRaw> =>
+  stableKey('match-detail', (matchId: number): Promise<MatchDetailRaw> =>
     deadlockGet(`/v1/matches/${matchId}/metadata`, {
       params: { disable_steam: true },
       schema: detailSchema,
       revalidate: false,
       timeoutMs: 20_000,
-    }),
+    })),
   ['match-detail-v1'],
   { revalidate: 24 * 60 * 60, tags: ['matches:detail'] },
 )

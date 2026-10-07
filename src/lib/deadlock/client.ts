@@ -1,6 +1,7 @@
 import 'server-only'
 import { createHash } from 'node:crypto'
 import { unstable_cache } from 'next/cache'
+import { stableKey } from '@/lib/cache/stableKey'
 import { z } from 'zod'
 import { budgetClasses, classFor, TokenBucket, type BudgetClass } from './budget'
 
@@ -63,6 +64,20 @@ export function buildUrl(path: string, params: Record<string, QueryValue> = {}):
 const CLASSES = budgetClasses(Boolean(process.env.DEADLOCK_API_KEY))
 const buckets = new Map<BudgetClass, TokenBucket>()
 
+/**
+ * Counters since the server instance started (for the prewarm job's report and audits). Counts only:
+ * no URLs, headers or keys are kept.
+ */
+const counters = { network: 0, hits: 0, budgetWaits: 0, budgetExhausted: 0 }
+export type ApiCallStats = typeof counters
+export const apiCallStats = (): ApiCallStats => ({ ...counters })
+
+/** Unspent tokens in the bucket that serves `path`, so background work can leave room for users. */
+export function budgetHeadroom(path: string): { available: number; capacity: number } {
+  const { bucket } = bucketFor(path)
+  return { available: bucket.available(Date.now()), capacity: bucket.size }
+}
+
 function bucketFor(path: string) {
   const cls = classFor(path, CLASSES)
   let bucket = buckets.get(cls.id)
@@ -75,10 +90,12 @@ async function acquire(path: string, maxWaitMs: number) {
   const { bucket, id } = bucketFor(path)
   const wait = bucket.reserve(Date.now(), maxWaitMs)
   if (wait === null) {
+    counters.budgetExhausted++
     if (TRACE) console.info(`[api] ${path} budget:${id} exhausted`)
     throw new DeadlockApiError(`Outbound ${id} budget exhausted`, 429, path)
   }
   if (wait > 0) {
+    counters.budgetWaits++
     if (TRACE) console.info(`[api] ${path} budget:${id} wait ${wait}ms`)
     await new Promise((resolve) => setTimeout(resolve, wait))
   }
@@ -95,6 +112,7 @@ async function request<S extends z.ZodType>(url: string, path: string, schema: S
   const started = performance.now()
   for (let attempt = 0; ; attempt++) {
     await acquire(path, maxWaitMs) // every network attempt (retries too) spends budget
+    counters.network++
     let response: Response
     try {
       // no-store: caching is done above, on the parsed result (inside unstable_cache Next treats
@@ -171,14 +189,16 @@ export async function deadlockGet<S extends z.ZodType>(
   return coalesce(`${url}|${sKey}`, async () => {
     let missed = false
     const cached = unstable_cache(
-      () => {
+      // Fixed source text: the key is the URL + schema below, the same in every bundle (cron route and pages).
+      stableKey('deadlock-api', () => {
         missed = true
         return load()
-      },
+      }),
       ['deadlock', CACHE_VERSION, url, sKey],
       { revalidate, tags },
     )
     const data = (await cached()) as z.infer<S>
+    if (!missed) counters.hits++
     if (TRACE && !missed) console.info(`[api] ${path}${new URL(url).search} hit`)
     return data
   })

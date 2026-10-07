@@ -1,5 +1,6 @@
 import 'server-only'
 import { unstable_cache } from 'next/cache'
+import { stableKey } from '@/lib/cache/stableKey'
 import { cache } from 'react'
 import { TTL } from '@/lib/cache/ttl'
 import { getApiInfo, getPatchFeed } from '@/lib/deadlock/endpoints'
@@ -28,7 +29,11 @@ import type { HomeBuild, HomeMatch, HomeMeta, HomeSource, HeroTrend, PatchSnapsh
 export type Section<T> = { ok: true; data: T; asOf: number; stale: boolean } | { ok: false; error: DataErrorKind }
 
 function section<T>(key: string, revalidate: number, maxAgeMs: number, load: () => Promise<T>) {
-  const cached = unstable_cache(async () => ({ data: await load(), asOf: Date.now() }), ['home', key, 'v1'], { revalidate, tags: ['home'] })
+  const cached = unstable_cache(
+    stableKey('home-section', async () => ({ data: await load(), asOf: Date.now() })),
+    ['home', key, 'v1'],
+    { revalidate, tags: ['home'] },
+  )
   return cache(async (): Promise<Section<T>> => {
     try {
       const { data, asOf } = await cached()
