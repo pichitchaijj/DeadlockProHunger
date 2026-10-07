@@ -30,7 +30,7 @@ export const secondaryNav: NavItem[] = [
   { label: 'Leaderboard', href: '/leaderboard', description: 'Top players by region', phase: 'mvp', built: true },
   { label: 'Compare', href: '/compare', description: 'Heroes, builds or players side by side', phase: 'mvp', built: true },
   { label: 'Draft Lab', href: '/draft', description: 'Team synergy, matchups and next picks', phase: 'mvp', built: true },
-  { label: 'Items', href: '/items', description: 'Item performance and timings', phase: 'later', built: false },
+  { label: 'Items', href: '/items', description: 'Item performance and timings', phase: 'mvp', built: true },
   { label: 'Patch', href: '/patch', description: 'Patch notes and what changed', phase: 'later', built: false },
   { label: 'Tools', href: '/tools', description: 'Utilities for players', phase: 'later', built: false },
   { label: 'Community', href: '/community', description: 'Projects and contributors', phase: 'later', built: false },

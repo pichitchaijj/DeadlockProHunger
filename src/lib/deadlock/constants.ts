@@ -21,3 +21,6 @@ export const SCOREBOARD_METRICS = {
   rank: { label: 'Rank progress', format: 'integer' },
 } as const
 export type ScoreboardMetric = keyof typeof SCOREBOARD_METRICS
+
+/** Minimum purchases per item row we request from item-stats / item-flow (equal to Hero Detail's, so hero-filtered calls share its cache entry). */
+export const ITEM_MIN_MATCHES = 200

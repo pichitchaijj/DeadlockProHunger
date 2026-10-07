@@ -3,6 +3,9 @@ import { DataError, classifyError } from '@/lib/deadlock/errors'
 import { apiCallStats, budgetHeadroom } from '@/lib/deadlock/client'
 import { getActiveHeroes, getPatchFeed, getRanks } from '@/lib/deadlock/endpoints'
 import { getHeroBuildStats } from '@/lib/deadlock/heroEndpoints'
+import { getItemPhases, getItemStatsByHero, getItemStatsByMinute } from '@/lib/deadlock/itemEndpoints'
+import { getItemContext, itemTotals } from '@/features/items/loaders'
+import { DEFAULT_ITEMS_QUERY } from '@/features/items/query'
 import { getBuildsListing } from '@/features/builds/loaders'
 import { DEFAULT_BUILDS_QUERY } from '@/features/builds/query'
 import { getHeroContext, getOverviewData } from '@/features/hero/loaders'
@@ -86,6 +89,22 @@ export function prewarmStages(): PrewarmStage[] {
     {
       name: 'builds page',
       tasks: [{ name: 'builds default listing', run: () => getBuildsListing(DEFAULT_BUILDS_QUERY) }],
+    },
+    {
+      // /items and every item page's default view (7d, all ranks, all heroes). The timing calls return
+      // every item at once (~9 s cold each), so one warm entry serves all item pages.
+      name: 'items (7d, all ranks)',
+      tasks: async () => {
+        const ctx = await getItemContext(DEFAULT_ITEMS_QUERY)
+        if (ctx === 'unknown-hero') throw new DataError('unknown hero', 'not-found')
+        const q = ctx.scope.statsQuery
+        return [
+          { name: 'item totals', run: () => itemTotals(ctx) },
+          { name: 'item purchase minutes', run: () => getItemStatsByMinute(q, null) },
+          { name: 'item purchase phases', run: () => getItemPhases(q, null) },
+          { name: 'item heroes', run: () => getItemStatsByHero(q) },
+        ]
+      },
     },
     {
       // Hero Detail and Analyze defaults (7d, all ranks). The first hero also warms the all-hero

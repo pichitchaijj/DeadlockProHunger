@@ -20,7 +20,7 @@ export type SearchResult = {
   id: string
   label: string
   description: string
-  /** internal: app route · external: opens a new tab · info: shown, not navigable (e.g. items, no page yet) */
+  /** internal: app route · external: opens a new tab · info: shown, not navigable */
   kind: 'internal' | 'external' | 'info'
   href?: string
   icon?: { type: 'hero' | 'item' | 'avatar'; src: string | null; name: string; slot?: string | null; tier?: number | null }
@@ -28,7 +28,7 @@ export type SearchResult = {
 export type SearchGroup = { id: SearchGroupId; label: string; results: SearchResult[] }
 
 export type SearchHero = { id: number; slug: string; name: string; role: string | null; iconUrl: string | null }
-export type SearchItem = { id: number; name: string; slot: string | null; tier: number | null; cost: number | null; icon: string | null }
+export type SearchItem = { id: number; slug: string; name: string; slot: string | null; tier: number | null; cost: number | null; icon: string | null }
 export type SearchPatch = { title: string; day: number; link: string | null }
 export type SearchBuild = { id: number; heroId: number; name: string; favorites: number | null }
 export type SearchPlayer = { accountId: number; name: string; avatar: string | null; matches30d: number | null }
@@ -142,7 +142,8 @@ export function searchAll(
     id: `item-${i.id}`,
     label: i.name,
     description: [i.slot ? cap(i.slot) : null, i.tier ? `Tier ${i.tier}` : null, i.cost ? `${i.cost.toLocaleString('en-US')} souls` : null].filter(Boolean).join(' · ') || 'Item',
-    kind: 'info',
+    kind: 'internal',
+    href: `/items/${i.slug}`,
     icon: { type: 'item', src: i.icon, name: i.name, slot: i.slot, tier: i.tier },
   }))
 

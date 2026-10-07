@@ -87,7 +87,6 @@ const selectable = (r: Row) => r.kind !== 'info'
  * Ctrl/⌘+K global search.
  * Groups: Heroes, Builds, Players, Matches, Items, Patches (server, cached) and Pages & tools (instant).
  * ARIA combobox + listbox: ↑/↓ move, Enter opens, Escape closes, Home/End jump.
- * Items have no page yet, so they show their key facts and are skipped by the arrow keys.
  * Opens with a short opacity + scale (FAST); reduced motion shows it immediately.
  */
 export function CommandPalette({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -260,7 +259,6 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
         <span><Kbd>↑</Kbd> <Kbd>↓</Kbd> navigate</span>
         <span><Kbd>Enter</Kbd> open</span>
         <span><Kbd>Esc</Kbd> close</span>
-        <span className="ml-auto hidden sm:inline">Items show facts only; item pages come later</span>
       </footer>
     </dialog>
   )

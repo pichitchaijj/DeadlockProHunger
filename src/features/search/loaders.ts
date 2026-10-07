@@ -41,7 +41,8 @@ export async function globalSearch(query: string): Promise<{ groups: SearchGroup
   ])
   const groups = searchAll(query, {
     heroes: heroes.map((h) => ({ id: h.id, slug: slugify(h.name), name: h.name, role: h.hero_type ?? null, iconUrl: heroIconUrl(h.images) })),
-    items: items.flatMap((i) => (i.name ? [{ ...i, name: i.name }] : [])),
+    // Only shop items have an item page.
+    items: items.flatMap((i) => (i.shopable && i.name ? [{ ...i, slug: slugify(i.name), name: i.name }] : [])),
     patches: forumPatches(feed),
     builds: builds.map((b) => ({ id: b.hero_build.hero_build_id, heroId: b.hero_build.hero_id, name: b.hero_build.name.trim() || 'Untitled build', favorites: b.num_weekly_favorites ?? null })),
     players: players.map((p) => ({ accountId: p.account_id, name: p.personaname, avatar: p.avatarmedium ?? null, matches30d: p.matches_played_last_30d ?? null })),

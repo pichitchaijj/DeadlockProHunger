@@ -38,6 +38,7 @@ export type InsightKind =
   | 'rank-performance'
   | 'length-performance'
   | 'rank-popularity'
+  | 'purchase-timing'
 
 export type InsightMetric = { label: string; value: string }
 
