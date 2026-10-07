@@ -40,7 +40,7 @@ Each route was requested on the production server (status, time, `h1`, error not
 | 11 | Error handling | **PASS** | Classified messages on every route; 404s return 404 + `noindex`. Their body is client-rendered (framework behavior, § 13) |
 | 12 | Empty states | **PASS** | **Fixed:** a failed search said "Nothing matches" |
 | 13 | Loading states | **WARN** | Section skeletons everywhere; no route-level loading UI; 404 content needs JS (see § 13) |
-| 14 | Rate-limit handling | **WARN** | **Fixed:** `/api/search` is now throttled per client. Upstream token buckets still open |
+| 14 | Rate-limit handling | **PASS** | `/api/search` throttled per client; upstream calls go cache-first, then a per-class token bucket (only misses spend budget) |
 | 15 | Security | **WARN** | Headers, server-only secrets, validated inputs, throttled search. No `script-src` CSP yet |
 
 **No FAIL.** Release verdict in § 4.
@@ -107,14 +107,14 @@ Each route was requested on the production server (status, time, `h1`, error not
 - **WARN:** no route-level loading UI. A root `loading.tsx` would start streaming before `notFound()` and turn 404s into 200s (first audit), so it stays out.
 - **WARN:** 404 pages from `notFound()` have no server-rendered content (§ 11). Users see nothing until JavaScript loads. A possible remedy is to reject malformed IDs in a `proxy.ts` by rewriting to an unmatched path, which does render server-side. That adds a routing layer, so it's left as a decision.
 
-### 14. Rate-limit handling — WARN (improved)
+### 14. Rate-limit handling — PASS (token buckets added later the same day)
 - **PASS:**
   - Upstream 429s are retried once, honoring `Retry-After` (capped at 3 s).
   - "Rate limited" is shown everywhere and never mistaken for missing data.
   - Analytics data is cached for 6 h; daily jobs keep within a request budget.
 - **Fixed:** our own `/api/search` was unthrottled, so a script sending random queries could spend the shared upstream budget. It now allows 40 queries per client per minute, then answers **429 with `Retry-After`** (`src/lib/rateLimit.ts`, unit-tested). Verified: requests 41–42 from one address got 429 with `retry-after: 50`, and another address still got 200. Real typing stays far below the limit (200 ms debounce plus a per-session answer cache). The limiter is in memory, so on a multi-instance host it bounds each instance separately.
 - **WARN:**
-  - No per-class token buckets on upstream calls yet (P1 in `client.ts`).
+  - **Fixed (later, 2026-10-07):** per-class token buckets on upstream calls, cache-first (see API § 7). Buckets are per server instance.
   - `/builds` fans out 39 calls per scope on a cold cache.
 
 ### 15. Security — WARN
@@ -150,7 +150,7 @@ First-audit changes (error classification, `attempt()`, error boundary, security
 **Ready for a public beta on the live API** (no database), with the WARN items known.
 
 Before wider launch, in priority order:
-1. **Upstream rate limits:** token buckets in `client.ts` (§ 14).
+1. ~~**Upstream rate limits:** token buckets in `client.ts` (§ 14).~~ Done.
 2. **Database:** deploy Postgres, set `DATABASE_URL` and `CRON_SECRET`, run the migrations and the first `daily` job with `days=30` (§ 6).
 3. **Analyze:** build a first version or move it out of the primary nav (§ 1).
 4. **Asset rights:** decide on game-art usage before monetization (§ 10).

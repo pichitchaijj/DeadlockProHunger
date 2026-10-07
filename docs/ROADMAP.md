@@ -20,7 +20,7 @@ The phase lists below are the **original plan**, kept for reference. Where the b
 | Phase | Status | Open items |
 |---|---|---|
 | P0 Foundation | **Implemented** | Built differently: header + mobile drawer instead of a bottom tab bar; no `/about`; no git repository or CI yet |
-| P1 Data layer | **Partial** | Done: client (timeout, one retry, zod, error classes), endpoints, TTLs, Drizzle schema (18 tables), 4 cron jobs, analytics with tests, `api:verify`. **Planned:** per-class token buckets; snapshot fallback beyond Match Detail, Meta and Leaderboard; `openapi-typescript` types; recorded fixtures. **Blocked:** deploying Postgres (needs the owner's database and credentials) |
+| P1 Data layer | **Partial** | Done: client (timeout, one retry, zod, error classes), endpoints, TTLs, Drizzle schema (18 tables), 4 cron jobs, analytics with tests, `api:verify`. **Implemented later:** per-class token buckets (cache-first). **Planned:** snapshot fallback beyond Match Detail, Meta and Leaderboard; `openapi-typescript` types; recorded fixtures. **Blocked:** deploying Postgres (needs the owner's database and credentials) |
 | P2 Heroes | **Implemented** | Hero Detail tabs are Overview, Builds, Matchups, Abilities, Trends, Matches |
 | P3 Meta + Home | **Implemented** | **Planned:** Insight Engine on Meta and Home |
 | P4 Players + Leaderboard | **Implemented** | Leaderboard is one route with `view`/`scope` params (Global + Performance from the scoreboard endpoint), not `/leaderboard/[region]` |
@@ -33,7 +33,7 @@ The phase lists below are the **original plan**, kept for reference. Where the b
 | Post-MVP 6 Personal Dashboard | **Blocked** | Needs approval: Steam OpenID sign-in, sessions and a user table are a new architecture layer |
 | Deprecated upstream endpoints (MMR, `/v1/patches`, `/v1/sql`) | **Deprecated** | Never used; `api:verify` fails on them |
 
-**Next, in order:** token buckets in `client.ts` → remaining snapshot fallbacks and a deployed Postgres → Insight Engine on Meta/Home/Build Detail → launch items in P7 → Personal Dashboard (after approval).
+**Next, in order:** remaining snapshot fallbacks and a deployed Postgres → Insight Engine on Meta/Home/Build Detail → launch items in P7 → Personal Dashboard (after approval).
 
 ---
 
@@ -153,7 +153,7 @@ Done when: all MVP routes meet budgets and pass checks; public launch.
 
 | Risk | Impact | Mitigation |
 |---|---|---|
-| Upstream analytics limit (200 req/min shared per IP; Vercel IPs shared) | Throttled pages | Presets, hour-rounded keys, 6h cache, snapshot fallback (partly built), token buckets (open); request an API key before launch |
+| Upstream analytics limit (200 req/min shared per IP; Vercel IPs shared) | Throttled pages | Presets, hour-rounded keys, 6h cache, snapshot fallback (partly built), token buckets (implemented, cache-first); request an API key before launch |
 | API schema drift | Broken parsing | zod at the boundary; `npm run api:verify` against the live spec (generated types and CI planned) |
 | Deprecated endpoints removed | Broken features | Never use them (`npm run api:verify` fails on any deprecated or MMR path; run after touching an endpoint) |
 | Vercel Hobby cron is daily only | No intra-day history | History is daily by design; everything else is on-demand ISR. Upgrade only if needed. |

@@ -138,7 +138,8 @@ Lifetimes per data class and per endpoint: [API § 9](./API.md#9-production-data
 ### Fallback — **Partial**
 
 - **Implemented:** Match Detail reads the stored match first. Meta falls back to stored daily history. Leaderboard falls back to the regional snapshot. Both fallbacks label the view `source: 'snapshot'` with its time, and the UI shows the data's age. Our own `/api/search` is throttled per client (`lib/rateLimit.ts`).
-- **Planned:** fallbacks for the other pages (read the latest `data_snapshots` row for the same request key when upstream fails or the rate budget is spent), and per-class token buckets in `client.ts`.
+- **Implemented:** outbound rate limiting in `client.ts`: cache first (`unstable_cache` keyed on URL + schema, holding the parsed projection) → on a miss only, a per-class token bucket (`lib/deadlock/budget.ts`: analytics 160/min, 320 with a key; batch ranks 16/min; bulk match metadata 24/min; others 80/s; 80% of the spec's per-IP limits, in memory per instance) → API → cache. A request that would wait longer than half its timeout (max 3 s) fails as a 429 (`rate-limit`) instead of queuing; concurrent misses for one key share a request.
+- **Planned:** fallbacks for the other pages (read the latest `data_snapshots` row for the same request key when upstream fails or the rate budget is spent).
 - **Blocked:** every fallback is inactive in production until a Postgres database is deployed (needs the owner's credentials).
 
 ---
