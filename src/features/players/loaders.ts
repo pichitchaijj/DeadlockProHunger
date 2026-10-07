@@ -13,9 +13,10 @@ import {
 } from '@/lib/deadlock/playerEndpoints'
 import { slugify } from '@/features/meta/model'
 import { resolveScope } from '@/features/meta/scope'
-import { heroPool, peers, profileModel, rankLabel, type HeroLite } from './model'
+import { heroPool, peers, profileModel, type HeroLite } from './model'
 import type { PlayersQuery } from './query'
 import { heroIconUrl } from '@/lib/deadlock/heroImages'
+import { rankFromBadge } from '@/lib/deadlock/rankAssets'
 
 export const PAGE_SIZE = 50
 
@@ -27,13 +28,13 @@ async function context() {
   return {
     heroes,
     tierNames: scope?.tierNames ?? new Map<number, string>(),
-    tierImages: scope?.tierImages ?? new Map<number, string | null>(),
+    ranks: scope?.ranks ?? [],
     rankLabels: scope?.rankLabels ?? null,
   }
 }
 
 export async function getSearchView(query: PlayersQuery) {
-  const { tierNames, rankLabels, heroes } = await context()
+  const { ranks, rankLabels, heroes } = await context()
   const minBadge = badgeRange(rankBand(query.rank))?.min
   const results = query.q.length >= 2 ? await searchProfiles(query.q, minBadge) : []
   return {
@@ -42,16 +43,17 @@ export async function getSearchView(query: PlayersQuery) {
       name: p.personaname,
       avatar: p.avatarmedium ?? null,
       matches30d: p.matches_played_last_30d ?? null,
-      teamRank: rankLabel(p.last_team_avg_badge, tierNames),
+      teamRank: rankFromBadge(ranks, p.last_team_avg_badge),
     })),
     rankLabels,
+    ranks,
     heroes: [...heroes.values()].sort((a, b) => a.name.localeCompare(b.name)),
   }
 }
 
 /** Null when the account has neither a public profile nor stored matches. */
 export async function getPlayerProfile(accountId: number) {
-  const [{ heroes, tierNames, tierImages }, profiles, rank, history, heroStats, mates, enemies] = await Promise.all([
+  const [{ heroes, tierNames, ranks }, profiles, rank, history, heroStats, mates, enemies] = await Promise.all([
     context(),
     getPublicProfiles([accountId]).catch(() => []),
     getPlayerRank(accountId).catch(() => null),
@@ -77,15 +79,14 @@ export async function getPlayerProfile(accountId: number) {
     rank:
       rank && rank.badge > 0
         ? {
-            label: rankLabel(rank.badge, tierNames)!,
-            tierName: tierNames.get(Math.floor(rank.badge / 10)) ?? null,
-            image: tierImages.get(Math.floor(rank.badge / 10)) ?? null,
+            ...rankFromBadge(ranks, rank.badge)!,
             badge: rank.badge,
             at: rank.last_match ? rank.last_match.start_time * 1000 : null,
           }
         : null,
     placements: rank?.last_match?.player_rank_initial_calibration_games ?? null,
     tierNames,
+    ranks,
     history: profileModel(history, heroes),
     pool: heroPool(heroStats, heroes),
     mates: peers(mateRows, peerNames),

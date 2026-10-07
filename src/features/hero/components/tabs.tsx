@@ -4,6 +4,7 @@ import { DataNotice } from '@/components/data/DataState'
 import { Filter } from '@/components/ui/Filter'
 import { EmptyState } from '@/components/ui/States'
 import { attempt } from '@/lib/deadlock/errors'
+import { rankFromBadge } from '@/lib/deadlock/rankAssets'
 import { cx } from '@/lib/cx'
 import { formatInteger, formatPercent, formatPointDelta, formatRelativeTime } from '@/lib/format'
 import {
@@ -22,7 +23,6 @@ import { TrendChart } from './TrendChart'
 import type { getOverviewData } from '../loaders'
 
 type OverviewData = Awaited<ReturnType<typeof getOverviewData>>
-const NUMERALS = ['', 'I', 'II', 'III', 'IV', 'V', 'VI']
 const DATE = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
 
 
@@ -259,11 +259,6 @@ export async function MatchesTab({ ctx }: { ctx: HeroContext }) {
   if (!result.ok) return <DataNotice error={result.kind} what="Recent matches" />
   const matches = result.value
   if (matches.length === 0) return <EmptyState title="No recent matches" description="No recent matches with this hero were found for this rank band." />
-  const rankLabel = (badge: number | null) => {
-    if (!badge) return undefined
-    const tier = Math.floor(badge / 10)
-    return `${ctx.scope.tierNames.get(tier) ?? `Tier ${tier}`} ${NUMERALS[badge % 10] ?? ''}`.trim()
-  }
   return (
     <Panel title="Match samples" description="The most recent matches with this hero that the data source has processed. Samples, not a summary.">
       <ul className="grid gap-3 md:grid-cols-2">
@@ -274,7 +269,7 @@ export async function MatchesTab({ ctx }: { ctx: HeroContext }) {
               href={`/matches/${m.matchId}`}
               startedAt={m.startedAt}
               durationS={m.durationS}
-              averageRank={rankLabel(m.averageBadge)}
+              averageRank={rankFromBadge(ctx.scope.ranks, m.averageBadge) ?? undefined}
               perspective={m.perspective ? { won: m.perspective.won, heroName: ctx.hero.name, kda: m.perspective.kda } : undefined}
               teams={[toTeam(m.teams[0]), toTeam(m.teams[1])]}
               className="h-full"

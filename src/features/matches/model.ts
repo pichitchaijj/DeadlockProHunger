@@ -4,7 +4,7 @@
  * enum strings become plain words, timestamps become dates.
  */
 
-const NUMERALS = ['', 'I', 'II', 'III', 'IV', 'V', 'VI']
+import { badgeLabel, rankFromBadge, type RankCatalog, type RankDisplay } from '@/lib/deadlock/rankAssets'
 
 export type HeroLite = { id: number; name: string; slug: string; iconUrl: string | null }
 
@@ -25,7 +25,8 @@ export type MatchRow = {
   startedAt: number // unix ms
   durationS: number
   mode: 'Ranked' | 'Unranked'
-  rank: string | null
+  /** Average badge of the match, resolved through lib/deadlock/rankAssets. */
+  rank: RankDisplay | null
   patch: string | null
   teams: [MatchTeam, MatchTeam]
   /** The filtered hero's or player's side, when a filter gives the match a perspective. */
@@ -42,11 +43,8 @@ type RawMatch = {
   players: Array<{ account_id: number; hero_id: number; team: string; kills: number; deaths: number; assists: number; net_worth?: number | null }>
 }
 
-export function rankName(badge: number | null | undefined, tierNames: Map<number, string>): string | null {
-  if (!badge) return null
-  const tier = Math.floor(badge / 10)
-  return `${tierNames.get(tier) ?? `Tier ${tier}`} ${NUMERALS[badge % 10] ?? ''}`.trim()
-}
+/** "Oracle IV" for a badge (text only). */
+export const rankName = badgeLabel
 
 const PATCH_DATE = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
 
@@ -65,7 +63,7 @@ export function toMatchRow(
   raw: RawMatch,
   ctx: {
     heroes: Map<number, HeroLite>
-    tierNames: Map<number, string>
+    ranks: RankCatalog
     patches: Array<{ title: string; day: number }>
     focusHeroId: number | null
     focusAccountId: number | null
@@ -96,7 +94,7 @@ export function toMatchRow(
     startedAt,
     durationS: raw.duration_s,
     mode: raw.match_mode === 'Ranked' ? 'Ranked' : 'Unranked',
-    rank: rankName(raw.average_badge, ctx.tierNames),
+    rank: rankFromBadge(ctx.ranks, raw.average_badge),
     patch: patchFor(startedAt, ctx.patches),
     teams,
     focus: focused ? { label: ctx.focusLabel ?? focused.p.hero.name, won: focused.won, kda: `${focused.p.kills} / ${focused.p.deaths} / ${focused.p.assists}` } : null,

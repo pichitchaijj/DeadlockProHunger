@@ -4,7 +4,8 @@ import { getActiveHeroes } from '@/lib/deadlock/endpoints'
 import { getMatchDetail, parseStoredMatchDetail } from '@/lib/deadlock/matchDetail'
 import { readStoredMatch, storeMatch } from '@/lib/db/store'
 import { shopMap } from '@/features/hero/loaders'
-import { patchFor, rankName } from '@/features/matches/model'
+import { patchFor } from '@/features/matches/model'
+import { rankFromBadge, type RankDisplay } from '@/lib/deadlock/rankAssets'
 import { slugify } from '@/features/meta/model'
 import { resolveScope } from '@/features/meta/scope'
 import { buildMatchView, type HeroLite, type MatchView } from './model'
@@ -13,7 +14,7 @@ import { heroIconUrl } from '@/lib/deadlock/heroImages'
 export type MatchPage = {
   view: MatchView
   patch: string | null
-  rank: [string | null, string | null]
+  rank: [RankDisplay | null, RankDisplay | null]
 }
 
 /** Null when the match isn't available. Throws when the source fails. */
@@ -32,11 +33,11 @@ export async function getMatchPage(matchId: number): Promise<MatchPage | null> {
   ])
   const heroes = new Map<number, HeroLite>(apiHeroes.map((h) => [h.id, { id: h.id, name: h.name, slug: slugify(h.name), iconUrl: heroIconUrl(h.images) }]))
   const view = buildMatchView(raw, { heroes, items: shop, names: new Map(names.map((n) => [n.account_id, n.personaname])) })
-  const tierNames = scope?.tierNames ?? new Map<number, string>()
+  const ranks = scope?.ranks ?? []
 
   return {
     view,
     patch: scope ? patchFor(view.startedAt, scope.patches) : null,
-    rank: [rankName(view.averageBadge[0], tierNames), rankName(view.averageBadge[1], tierNames)],
+    rank: [rankFromBadge(ranks, view.averageBadge[0]), rankFromBadge(ranks, view.averageBadge[1])],
   }
 }

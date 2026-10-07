@@ -1,6 +1,7 @@
 import { sampleTier, type SampleTier } from '@/lib/analytics/sampleTier'
 import { wilsonInterval, type Interval } from '@/lib/analytics/wilson'
 import type { HeroLite } from '@/features/players/model'
+import type { RankDisplay } from '@/lib/deadlock/rankAssets'
 
 /*
  * Leaderboard rows. "Rank change" is measured, not inferred: the batch rank endpoint reports the
@@ -31,10 +32,8 @@ export type BoardRow = {
   possibleAccounts: number
   topHeroes: HeroLite[]
   badge: number | null
-  rankLabel: string | null
-  tierName: string | null
-  /** Tier badge image (set by the loader; absent in pure model output). */
-  tierImage?: string | null
+  /** Current rank, resolved through lib/deadlock/rankAssets. */
+  rank: RankDisplay | null
   change: RankChange | null
   /** Performance view / global view: tracked matches and the sorted value. */
   matches: number | null
@@ -47,7 +46,7 @@ export type BoardRow = {
 /** Rows from the analytics scoreboard (global, account-based). */
 export function scoreboardRows(
   rows: Array<{ rank: number; account_id: number; value: number; matches: number; badge?: number | null }>,
-  ctx: { names: Map<number, string>; changes: Map<number, RankChange>; badges: Map<number, number>; label: (badge: number | null) => string | null; tier: (badge: number | null) => string | null; winRate: boolean },
+  ctx: { names: Map<number, string>; changes: Map<number, RankChange>; badges: Map<number, number>; rank: (badge: number | null) => RankDisplay | null; winRate: boolean },
 ): BoardRow[] {
   return rows.map((r) => {
     const badge = r.badge || ctx.badges.get(r.account_id) || null
@@ -58,8 +57,7 @@ export function scoreboardRows(
       possibleAccounts: 1,
       topHeroes: [],
       badge,
-      rankLabel: ctx.label(badge),
-      tierName: ctx.tier(badge),
+      rank: ctx.rank(badge),
       change: ctx.changes.get(r.account_id) ?? null,
       matches: r.matches,
       value: r.value,

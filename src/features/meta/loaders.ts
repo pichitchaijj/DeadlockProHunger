@@ -1,4 +1,5 @@
 import 'server-only'
+import type { RankCatalog } from '@/lib/deadlock/rankAssets'
 import { cache } from 'react'
 import type { StatScope } from '@/lib/analytics/scope'
 import { badgeRange, RANK_BANDS, type RankBandId } from '@/lib/analytics/rankBands'
@@ -23,6 +24,8 @@ export type MetaPageData =
       scope: StatScope
       windowLabels: Record<MetaWindow, string>
       rankLabels: Record<RankBandId, string>
+      /** Rank tiers with emblems (lib/deadlock/rankAssets). */
+      ranks: RankCatalog
       /** Share of ranked players (latest ranked match) whose rank falls in each band; null if unavailable. */
       rankShares: Record<RankBandId, number> | null
       patch: { title: string; startedAt: number; days: number; limited: boolean } | null
@@ -98,6 +101,7 @@ const loadMetaPageData = cache(async (key: string): Promise<MetaPageData> => {
       },
       windowLabels,
       rankLabels,
+      ranks: scopeInfo.ranks,
       rankShares: distribution ? bandShares(distribution) : null,
       patch: latest ? { title: latest.title, startedAt: latest.day * 1000, days: patchDays, limited: patchDays < MIN_PATCH_DAYS } : null,
     }

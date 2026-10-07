@@ -1,4 +1,5 @@
 import 'server-only'
+import type { RankCatalog } from '@/lib/deadlock/rankAssets'
 import type { StatScope } from '@/lib/analytics/scope'
 import type { RankBandId } from '@/lib/analytics/rankBands'
 import type { SampleTier } from '@/lib/analytics/sampleTier'
@@ -37,6 +38,7 @@ export type DirectoryData =
       scope: StatScope
       windowLabels: Record<MetaWindow, string>
       rankLabels: Record<RankBandId, string>
+      ranks: RankCatalog
     }
   | { ok: false; message: string; kind: DataErrorKind }
 
@@ -57,6 +59,7 @@ export async function getDirectoryData(scope: DirectoryScope): Promise<Directory
     scope: meta.scope,
     windowLabels: meta.windowLabels,
     rankLabels: meta.rankLabels,
+    ranks: meta.ranks,
     heroes: heroes
       .map((hero) => {
         const s = statsById.get(hero.id)

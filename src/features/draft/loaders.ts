@@ -39,6 +39,7 @@ export async function getDraftData(query: DraftQuery) {
     scopeText: scope.scopeText,
     windowLabels: scope.windowLabels,
     rankLabels: scope.rankLabels,
+    ranks: scope.ranks,
     heroes,
     allies,
     enemies,

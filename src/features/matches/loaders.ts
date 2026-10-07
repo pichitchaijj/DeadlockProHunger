@@ -69,7 +69,7 @@ export async function getMatchesPage(query: MatchesQuery): Promise<MatchesPage> 
   const rows = raw.map((m) =>
     toMatchRow(m, {
       heroes,
-      tierNames: scope.tierNames,
+      ranks: scope.ranks,
       patches: scope.patches,
       focusHeroId: heroFilter?.id ?? null,
       focusAccountId: player?.accountId ?? null,

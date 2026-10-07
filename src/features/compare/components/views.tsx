@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { TierBadge } from '@/components/data/TierBadge'
 import { TrendBadge } from '@/components/data/TrendBadge'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
+import { RankBadge } from '@/components/game-assets/RankBadge'
 import { Avatar } from '@/components/ui/Avatar'
 import { cx } from '@/lib/cx'
 import { formatCompact, formatInteger, formatPercent } from '@/lib/format'
@@ -199,7 +200,7 @@ export function PlayerCompareView({ data }: { data: PlayerData }) {
       <Avatar name={name} src={p.avatar ?? undefined} />
       <div className="min-w-0">
         <Link href={`/players/${p.accountId}`} className={cx('block truncate font-ui text-title font-semibold hover:text-highlight pointer-coarse:py-2.5', SIDE_TEXT[side])}>{name}</Link>
-        <span className="text-caption text-text-muted">{p.rank?.label ?? 'No current rank'}</span>
+        <RankBadge rank={p.rank} size="xs" emptyLabel="No current rank" className="text-caption text-text-muted" />
       </div>
     </div>
   )

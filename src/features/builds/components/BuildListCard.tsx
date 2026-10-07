@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { WinRate } from '@/components/cards/WinRate'
 import { ConfidenceBadge } from '@/components/data/ConfidenceBadge'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
+import { RankBadge } from '@/components/game-assets/RankBadge'
 import { cx } from '@/lib/cx'
 import { formatCompact, formatInteger, formatRelativeTime } from '@/lib/format'
 import type { BuildRow } from '../loaders'
@@ -54,7 +55,7 @@ export function BuildListCard({ build }: { build: BuildRow }) {
           </h3>
           <p className="truncate text-caption text-text-muted">
             {build.authorName ? `by ${build.authorName}` : 'Author unknown'}
-            {build.authorRank && ` · ${build.authorRank}`}
+            {build.authorRank && <> · <RankBadge rank={build.authorRank} size="xs" /></>}
           </p>
         </div>
       </header>

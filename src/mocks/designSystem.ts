@@ -4,6 +4,7 @@
  * Never import this from loaders or production pages.
  */
 import type { StatScope } from '@/lib/analytics/scope'
+import { rankFromBadge, type RankCatalog } from '@/lib/deadlock/rankAssets'
 
 export const demoScope: StatScope = {
   windowLabel: 'Last 7 days',
@@ -32,6 +33,13 @@ export const demoHeroRows: DemoHeroRow[] = [
 ]
 
 /** Computed once at module load (not during render). */
+/** Fictional rank tiers with no art: the showcase renders the original emblem fallback. */
+const demoRankCatalog: RankCatalog = [{ tier: 4, name: 'Demo Tier', metal: 'Demo Metal', image: null }]
+export const demoRanks = {
+  player: rankFromBadge(demoRankCatalog, 46),
+  match: rankFromBadge(demoRankCatalog, 44) ?? undefined,
+}
+
 export const demoTimes = {
   buildUpdatedAt: Date.now() - 2 * 86_400_000,
   matchStartedAt: Date.now() - 3 * 3_600_000,

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { rankChange, scoreboardRows } from '@/features/leaderboard/model'
+import { rankFromBadge } from '@/lib/deadlock/rankAssets'
 import { leaderboardHref, parseLeaderboardQuery } from '@/features/leaderboard/query'
 
 /* Synthetic inputs only. */
@@ -24,8 +25,7 @@ describe('scoreboardRows', () => {
     names: new Map([[7, 'Ann']]),
     changes: new Map(),
     badges: new Map([[8, 95]]),
-    label: (b: number | null) => (b ? `B${b}` : null),
-    tier: (b: number | null) => (b ? `T${Math.floor(b / 10)}` : null),
+    rank: (b: number | null) => rankFromBadge([{ tier: 9, name: 'T9', metal: null, image: null }, { tier: 11, name: 'T11', metal: null, image: null }], b),
     winRate: true,
   }
 
@@ -37,7 +37,7 @@ describe('scoreboardRows', () => {
       ],
       ctx,
     )
-    expect(rows.map((r) => [r.position, r.name, r.badge, r.tierName])).toEqual([
+    expect(rows.map((r) => [r.position, r.name, r.badge, r.rank?.name])).toEqual([
       [1, 'Ann', 116, 'T11'],
       [2, 'Player 8', 95, 'T9'],
     ])

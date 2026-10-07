@@ -7,10 +7,12 @@ import { Filter } from '@/components/ui/Filter'
 import { ChevronDownIcon, FilterIcon } from '@/components/ui/icons'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { EmptyState } from '@/components/ui/States'
-import { RANK_BANDS, type RankBandId } from '@/lib/analytics/rankBands'
+import type { RankBandId } from '@/lib/analytics/rankBands'
+import type { RankCatalog } from '@/lib/deadlock/rankAssets'
 import { cx } from '@/lib/cx'
 import { capitalize } from '@/features/meta/model'
 import { ROLES, type MetaWindow } from '@/features/meta/query'
+import { rankBandOptions } from '@/features/meta/rankFilter'
 import { filterHeroes } from '../filter'
 import type { DirectoryHero } from '../loaders'
 import { DEFAULT_VIEW, heroesHref, SORTS, type DirectoryScope, type DirectorySort, type DirectoryView } from '../query'
@@ -22,6 +24,7 @@ type HeroDirectoryProps = {
   initialView: DirectoryView
   windowLabels: Record<MetaWindow, string>
   rankLabels: Record<RankBandId, string>
+  ranks: RankCatalog
 }
 
 const WINDOWS: Array<[MetaWindow, string]> = [
@@ -35,7 +38,7 @@ const WINDOWS: Array<[MetaWindow, string]> = [
  * complexity and sort filter in the browser and are mirrored into the URL.
  * "/" focuses the search field.
  */
-export function HeroDirectory({ heroes, scope, initialView, windowLabels, rankLabels }: HeroDirectoryProps) {
+export function HeroDirectory({ heroes, scope, initialView, windowLabels, rankLabels, ranks }: HeroDirectoryProps) {
   const [view, setView] = useState(initialView)
   const resultsId = useId()
   const searchWrap = useRef<HTMLDivElement>(null)
@@ -137,7 +140,7 @@ export function HeroDirectory({ heroes, scope, initialView, windowLabels, rankLa
           <Filter
             label="Rank (match average)"
             value={scope.rank}
-            options={RANK_BANDS.map((band) => ({ value: band.id, label: rankLabels[band.id], href: heroesHref({ ...scope, rank: band.id }, view) }))}
+            options={rankBandOptions(rankLabels, ranks, (rank) => heroesHref({ ...scope, rank }, view))}
           />
         </div>
       </div>

@@ -7,9 +7,9 @@ import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { CountUp } from '@/components/motion/CountUp'
 import { ButtonLink } from '@/components/ui/Button'
+import { RankBadge } from '@/components/game-assets/RankBadge'
 import { Filter } from '@/components/ui/Filter'
 
-import { RANK_BANDS } from '@/lib/analytics/rankBands'
 import { cx } from '@/lib/cx'
 import { formatInteger, formatPercent, formatPointDelta } from '@/lib/format'
 import { BuildLabels, PatchNote } from '@/features/builds/components/BuildListCard'
@@ -18,6 +18,7 @@ import { getBuildDetail } from '@/features/builds/loaders'
 import { buildDetailHref, buildsHref, DEFAULT_BUILDS_QUERY, parseBuildsQuery } from '@/features/builds/query'
 import { AbilitySequence, Panel } from '@/features/hero/components/parts'
 import { ABILITY_PREFIX } from '@/features/hero/model'
+import { rankBandOptions } from '@/features/meta/rankFilter'
 import { resolveScope } from '@/features/meta/scope'
 import { DataNotice } from '@/components/data/DataState'
 import { attempt } from '@/lib/deadlock/errors'
@@ -75,7 +76,7 @@ export default async function BuildDetailPage({ params, searchParams }: { params
             <h1 id="build-name" className="font-display text-display-l font-extrabold text-text uppercase">{build.name}</h1>
             <p className="text-sm text-text-muted">
               {hero.name} · {build.authorName ? `by ${build.authorName}` : 'Author unknown'}
-              {build.authorRank && ` (${build.authorRank})`}
+              {build.authorRank && <> · <RankBadge rank={build.authorRank} size="xs" /></>}
               {build.version && ` · version ${build.version}`}
             </p>
             <div className="flex flex-wrap items-center gap-3">
@@ -97,7 +98,7 @@ export default async function BuildDetailPage({ params, searchParams }: { params
         <div className="grid gap-4 md:grid-cols-2">
           <Filter label="Patch / time" value={query.window} options={WINDOWS.map(([value, label]) => ({ value, label, href: buildDetailHref(hero.slug, buildId, { ...query, window: value }) }))} />
           {scope && (
-            <Filter label="Rank (match average)" value={query.rank} options={RANK_BANDS.map((b) => ({ value: b.id, label: scope.rankLabels[b.id], href: buildDetailHref(hero.slug, buildId, { ...query, rank: b.id }) }))} />
+            <Filter label="Rank (match average)" value={query.rank} options={rankBandOptions(scope.rankLabels, scope.ranks, (rank) => buildDetailHref(hero.slug, buildId, { ...query, rank }))} />
           )}
         </div>
         <ScopeLine scope={{ ...data.statScope, sampleSize: stats?.matches }} />

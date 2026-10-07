@@ -2,10 +2,12 @@ import Link from 'next/link'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
 import { Card } from '@/components/ui/Card'
 import { Filter } from '@/components/ui/Filter'
-import { RANK_BANDS, type RankBandId } from '@/lib/analytics/rankBands'
+import type { RankBandId } from '@/lib/analytics/rankBands'
+import type { RankCatalog } from '@/lib/deadlock/rankAssets'
 import { cx } from '@/lib/cx'
 import { capitalize } from '@/features/meta/model'
 import { ROLES, type MetaWindow } from '@/features/meta/query'
+import { rankBandOptions } from '@/features/meta/rankFilter'
 import { pickerHeroes, type PickerHero } from '../model'
 import { analyzeHref, type AnalyzeQuery } from '../query'
 
@@ -19,6 +21,7 @@ type ControlsProps = {
   query: AnalyzeQuery
   heroes: PickerHero[]
   rankLabels: Record<RankBandId, string>
+  ranks: RankCatalog
   windowLabels: Record<MetaWindow, string>
   /** Name of the hero under analysis, when one is selected and known. */
   selectedName: string | null
@@ -28,7 +31,7 @@ type ControlsProps = {
  * Scope and hero selection. Everything is a link (state lives in the URL, no client JS). Once a hero
  * is selected the picker folds into "Change hero" so the analysis leads.
  */
-export function Controls({ query, heroes, rankLabels, windowLabels, selectedName }: ControlsProps) {
+export function Controls({ query, heroes, rankLabels, ranks, windowLabels, selectedName }: ControlsProps) {
   const picker = <HeroPicker query={query} heroes={heroes} />
   return (
     <Card as="section" aria-labelledby="analyze-scope" className="flex flex-col gap-5 p-(--spacing-card)">
@@ -44,7 +47,7 @@ export function Controls({ query, heroes, rankLabels, windowLabels, selectedName
         <Filter
           label="Rank (match average)"
           value={query.rank}
-          options={RANK_BANDS.map((b) => ({ value: b.id, label: rankLabels[b.id], href: analyzeHref(query, { rank: b.id }) }))}
+          options={rankBandOptions(rankLabels, ranks, (rank) => analyzeHref(query, { rank }))}
         />
       </div>
       {selectedName ? (

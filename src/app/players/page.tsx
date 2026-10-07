@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { RankBadge } from '@/components/game-assets/RankBadge'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { Filter } from '@/components/ui/Filter'
@@ -9,7 +10,7 @@ import { SearchIcon } from '@/components/ui/icons'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState, LoadingState } from '@/components/ui/States'
-import { RANK_BANDS } from '@/lib/analytics/rankBands'
+import { rankBandOptions } from '@/features/meta/rankFilter'
 import { formatInteger } from '@/lib/format'
 import { getSearchView } from '@/features/players/loaders'
 import { parsePlayersQuery, playersHref, type PlayersQuery } from '@/features/players/query'
@@ -78,7 +79,7 @@ async function SearchView({ query }: { query: PlayersQuery }) {
           <Filter
             label="Recent team average rank (at least)"
             value={query.rank}
-            options={RANK_BANDS.map((b) => ({ value: b.id, label: data.rankLabels![b.id], href: playersHref(query, { rank: b.id }) }))}
+            options={rankBandOptions(data.rankLabels, data.ranks, (rank) => playersHref(query, { rank }))}
           />
         )}
       </div>
@@ -98,7 +99,7 @@ async function SearchView({ query }: { query: PlayersQuery }) {
                   <span className="block truncate font-ui text-sm font-semibold text-text">{p.name}</span>
                   <span className="block text-caption text-text-muted">
                     {p.matches30d !== null ? `${formatInteger(p.matches30d)} matches in 30 days` : 'Recent activity unknown'}
-                    {p.teamRank && ` · recent teams avg. ${p.teamRank}`}
+                    {p.teamRank && <> · recent teams avg. <RankBadge rank={p.teamRank} size="xs" /></>}
                   </span>
                 </span>
               </Link>

@@ -1,22 +1,25 @@
 import Link from 'next/link'
 import { Filter } from '@/components/ui/Filter'
 import { ChevronDownIcon, FilterIcon } from '@/components/ui/icons'
-import { RANK_BANDS, type RankBandId } from '@/lib/analytics/rankBands'
+import type { RankBandId } from '@/lib/analytics/rankBands'
+import type { RankCatalog } from '@/lib/deadlock/rankAssets'
 import { formatPercent } from '@/lib/format'
 import { capitalize } from '../model'
+import { rankBandOptions } from '../rankFilter'
 import { DEFAULT_QUERY, metaHref, ROLES, type MetaQuery, type MetaWindow } from '../query'
 
 type MetaFiltersProps = {
   query: MetaQuery
   windowLabels: Record<MetaWindow, string>
   rankLabels: Record<RankBandId, string>
+  ranks: RankCatalog
   rankShares: Record<RankBandId, number> | null
 }
 
 const WINDOW_SHORT: Record<MetaWindow, string> = { patch: 'Current patch', '7d': '7 days', '30d': '30 days' }
 
 /** Primary filters always visible; advanced filters behind a disclosure. All state is in the URL. */
-export function MetaFilters({ query, windowLabels, rankLabels, rankShares }: MetaFiltersProps) {
+export function MetaFilters({ query, windowLabels, rankLabels, ranks, rankShares }: MetaFiltersProps) {
   const advancedActive = query.mode !== DEFAULT_QUERY.mode || query.showLow
   const share = rankShares && query.rank !== 'all' ? rankShares[query.rank] : null
 
@@ -36,7 +39,7 @@ export function MetaFilters({ query, windowLabels, rankLabels, rankShares }: Met
           <Filter
             label="Rank (match average)"
             value={query.rank}
-            options={RANK_BANDS.map((band) => ({ value: band.id, label: rankLabels[band.id], href: metaHref(query, { rank: band.id }) }))}
+            options={rankBandOptions(rankLabels, ranks, (rank) => metaHref(query, { rank }))}
           />
           {share !== null && (
             <p className="text-caption text-text-muted">

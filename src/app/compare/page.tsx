@@ -7,12 +7,12 @@ import { Filter } from '@/components/ui/Filter'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState, LoadingState } from '@/components/ui/States'
-import { RANK_BANDS } from '@/lib/analytics/rankBands'
 import { cx } from '@/lib/cx'
 import { formatCompact } from '@/lib/format'
 import { BuildCompareView, HeroCompareView, PlayerCompareView } from '@/features/compare/components/views'
 import { buildOptions, getBuildCompare, getHeroCompare, getPlayerCompare, heroOptions } from '@/features/compare/loaders'
 import { compareHref, parseCompareQuery, type CompareQuery } from '@/features/compare/query'
+import { rankBandOptions } from '@/features/meta/rankFilter'
 import { resolveScope } from '@/features/meta/scope'
 import { DataNotice } from '@/components/data/DataState'
 import { attempt } from '@/lib/deadlock/errors'
@@ -97,7 +97,7 @@ async function Pickers({ query, pickHero }: { query: CompareQuery; pickHero: str
   const scopeFilters = scope && (
     <div className="grid gap-4 md:grid-cols-2">
       <Filter label="Patch / time" value={query.window} options={(['patch', '7d', '30d'] as const).map((w) => ({ value: w, label: scope.windowLabels[w].replace(/ \(since .*\)/, ''), href: compareHref(query, { window: w }) }))} />
-      <Filter label="Rank (match average)" value={query.rank} options={RANK_BANDS.map((b) => ({ value: b.id, label: scope.rankLabels[b.id], href: compareHref(query, { rank: b.id }) }))} />
+      <Filter label="Rank (match average)" value={query.rank} options={rankBandOptions(scope.rankLabels, scope.ranks, (rank) => compareHref(query, { rank }))} />
     </div>
   )
 

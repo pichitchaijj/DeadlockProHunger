@@ -2,6 +2,7 @@ import 'server-only'
 import { DataError } from '@/lib/deadlock/errors'
 import type { StatScope } from '@/lib/analytics/scope'
 import { getActiveHeroes } from '@/lib/deadlock/endpoints'
+import { rankFromBadge, type RankDisplay } from '@/lib/deadlock/rankAssets'
 import { getAccountRanks, getBuildById, getItemFlow, getSteamNames, searchBuilds, type FullBuild } from '@/lib/deadlock/buildEndpoints'
 import { getAbilityOrderStats, getHeroBuildStats, getHeroItemStats } from '@/lib/deadlock/heroEndpoints'
 import { abilityNames, shopMap } from '@/features/hero/loaders'
@@ -26,7 +27,6 @@ import {
 import { buildDetailHref, type BuildsQuery } from './query'
 import { heroIconUrl } from '@/lib/deadlock/heroImages'
 
-const NUMERALS = ['', 'I', 'II', 'III', 'IV', 'V', 'VI']
 const PRO_MIN_TIER = 10 // Ascendant
 
 /** Serializable list row. */
@@ -36,7 +36,7 @@ export type BuildRow = {
   hero: HeroRef
   name: string
   authorName: string | null
-  authorRank: string | null
+  authorRank: RankDisplay | null
   updatedAt: number | null
   weeklyFavorites: number | null
   stats: BuildStats | null
@@ -69,8 +69,8 @@ async function common(query: Pick<BuildsQuery, 'window' | 'rank'>): Promise<Comm
   }
 }
 
-const rankLabel = (scope: ResolvedScope, r: { rank: number; subrank: number } | undefined) =>
-  r && r.rank > 0 ? `${scope.tierNames.get(r.rank) ?? `Tier ${r.rank}`} ${NUMERALS[r.subrank] ?? ''}`.trim() : null
+const authorRank = (scope: ResolvedScope, r: { rank: number; subrank: number } | undefined) =>
+  r && r.rank > 0 ? rankFromBadge(scope.ranks, r.rank * 10 + r.subrank) : null
 
 /** Tracked build stats per hero for the scope (one call per hero; cached and shared). */
 async function trackedStats(heroIds: number[], c: Common) {
@@ -137,7 +137,7 @@ export async function getBuildsListing(query: BuildsQuery): Promise<BuildsListin
         hero,
         name: hb.name.trim() || 'Untitled build',
         authorName: nameById.get(hb.author_account_id) ?? null,
-        authorRank: rankLabel(c.scope, ranks.get(hb.author_account_id)),
+        authorRank: authorRank(c.scope, ranks.get(hb.author_account_id)),
         updatedAt,
         weeklyFavorites: b.num_weekly_favorites || null,
         stats: own,
@@ -208,7 +208,7 @@ export async function getBuildDetail(heroSlug: string, buildId: number, query: P
       updatedAt,
       weeklyFavorites: build.num_weekly_favorites || null,
       authorName: names[0]?.personaname ?? null,
-      authorRank: rankLabel(c.scope, ranks[0]),
+      authorRank: authorRank(c.scope, ranks[0]),
       patch: patchStatus(updatedAt, c.scope.patches[0] ? c.scope.patches[0].day * 1000 : null),
       patchTitle: c.scope.patches[0]?.title ?? null,
     },

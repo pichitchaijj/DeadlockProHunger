@@ -1,21 +1,17 @@
 import { badgeRange, rankBand, type RankBandId } from '@/lib/analytics/rankBands'
 import { sampleTier, type SampleTier } from '@/lib/analytics/sampleTier'
 import { wilsonInterval, type Interval } from '@/lib/analytics/wilson'
+import { badgeLabel } from '@/lib/deadlock/rankAssets'
 
 /*
  * Pure Players model. Win rates always carry n and a 95% interval on the per-player scale.
  * Nothing here rates skill: the profile states results, never "good"/"bad" judgments.
  */
 
-const NUMERALS = ['', 'I', 'II', 'III', 'IV', 'V', 'VI']
-
 export type HeroLite = { id: number; name: string; slug: string; iconUrl: string | null; role: string | null }
 
-export function rankLabel(badge: number | null | undefined, tierNames: Map<number, string>): string | null {
-  if (!badge) return null
-  const tier = Math.floor(badge / 10)
-  return `${tierNames.get(tier) ?? `Tier ${tier}`} ${NUMERALS[badge % 10] ?? ''}`.trim()
-}
+/** "Ascendant VI" for a badge (text-only sites; emblems go through rankFromBadge). */
+export const rankLabel = badgeLabel
 
 export type Record_ = { wins: number; matches: number; winRate: number; interval: Interval; sample: SampleTier }
 

@@ -78,7 +78,7 @@ export default async function MetaPage({ searchParams }: { searchParams: SearchP
           </p>
         )}
 
-        <MetaFilters query={query} windowLabels={data.windowLabels} rankLabels={data.rankLabels} rankShares={data.rankShares} />
+        <MetaFilters query={query} windowLabels={data.windowLabels} rankLabels={data.rankLabels} ranks={data.ranks} rankShares={data.rankShares} />
         <ScopeLine scope={scope} />
       </div>
 

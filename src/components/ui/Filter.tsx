@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import type { ReactNode } from 'react'
 import { cx } from '@/lib/cx'
 
 export type FilterOption = {
@@ -6,6 +7,8 @@ export type FilterOption = {
   label: string
   /** URL that applies this option. Filter state lives in the URL so views are shareable. */
   href: string
+  /** Small leading visual (e.g. a rank band's emblems); decorative, the label carries the meaning. */
+  icon?: ReactNode
 }
 
 type FilterProps = {
@@ -37,13 +40,14 @@ export function Filter({ label, options, value, className }: FilterProps) {
                 scroll={false}
                 aria-current={active ? 'true' : undefined}
                 className={cx(
-                  'inline-flex h-9 items-center rounded-pill border px-3.5 font-ui text-sm whitespace-nowrap pointer-coarse:h-11',
+                  'inline-flex h-9 items-center gap-1.5 rounded-pill border px-3.5 font-ui text-sm whitespace-nowrap pointer-coarse:h-11',
                   'transition-[background-color,border-color,color] duration-(--dur-fast) ease-awaken',
                   active
                     ? 'border-primary bg-primary font-medium text-on-primary'
                     : 'border-border-control text-text-muted hover:border-text-muted hover:text-text',
                 )}
               >
+                {option.icon}
                 {option.label}
               </Link>
             </li>

@@ -62,7 +62,7 @@ export function Podium({ rows, mode }: { rows: BoardRow[]; mode: Mode }) {
           <span className="min-w-0 flex-1">
             <span className="block truncate"><PlayerName row={row} /></span>
             <span className="mt-0.5 flex flex-wrap items-center gap-2">
-              {row.badge ? <RankBadge tierName={row.tierName} subrank={row.badge ? row.badge % 10 : undefined} src={row.tierImage ?? undefined} size="sm" /> : null}
+              {row.rank ? <RankBadge rank={row.rank} className="font-ui text-sm text-text" /> : null}
               {mode.kind === 'performance' && row.value !== null && <span className="font-ui text-sm font-semibold text-text tabular">{formatMetric(row.value, mode.metric)}</span>}
             </span>
           </span>
@@ -99,7 +99,7 @@ export function BoardTable({ rows, mode }: { rows: BoardRow[]; mode: Mode }) {
               <th scope="row" className="px-3 py-1.5 text-left font-normal"><PlayerName row={row} /></th>
               {mode.kind === 'performance' && <td className="px-3 py-1.5 text-right font-semibold text-text tabular">{row.value !== null ? formatMetric(row.value, mode.metric) : '—'}</td>}
               {mode.kind !== 'regional' && <td className="px-3 py-1.5 text-right text-text-muted tabular">{row.matches !== null ? formatInteger(row.matches) : '—'}</td>}
-              <td className="px-3 py-1.5">{row.badge ? <RankBadge tierName={row.tierName} subrank={row.badge ? row.badge % 10 : undefined} src={row.tierImage ?? undefined} size="sm" /> : <span className="text-text-muted">—</span>}</td>
+              <td className="px-3 py-1.5">{row.rank ? <RankBadge rank={row.rank} className="font-ui text-sm text-text" /> : <span className="text-text-muted">—</span>}</td>
               <td className="px-3 py-1.5"><ChangeBadge change={row.change} /></td>
               {mode.kind === 'regional' && (
                 <td className="px-3 py-1.5">
@@ -131,7 +131,7 @@ export function BoardCards({ rows, mode }: { rows: BoardRow[]; mode: Mode }) {
           <span className="min-w-0 flex-1">
             <span className="block truncate"><PlayerName row={row} /></span>
             <span className="mt-1 flex flex-wrap items-center gap-2">
-              {row.badge ? <RankBadge tierName={row.tierName} subrank={row.badge ? row.badge % 10 : undefined} src={row.tierImage ?? undefined} size="sm" /> : null}
+              {row.rank ? <RankBadge rank={row.rank} className="font-ui text-sm text-text" /> : null}
               <ChangeBadge change={row.change} />
             </span>
           </span>

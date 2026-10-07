@@ -1,7 +1,7 @@
  import 'server-only'
 import { badgeRange, RANK_BANDS, rankBand, rankBandLabel, type RankBand, type RankBandId } from '@/lib/analytics/rankBands'
 import { getPatchFeed, getRanks, type HeroStatsQuery } from '@/lib/deadlock/endpoints'
-import { rankImageUrl } from '@/lib/deadlock/heroImages'
+import { rankCatalog, type RankCatalog } from '@/lib/deadlock/rankAssets'
 import { patchDateFromTitle } from '@/lib/deadlock/patchDate'
 import type { MetaWindow } from './query'
 
@@ -24,8 +24,8 @@ export type ResolvedScope = {
   /** Analytics filters for the selected window (hour-rounded end, so presets share cache keys). */
   statsQuery: HeroStatsQuery
   tierNames: Map<number, string>
-  /** Tier badge image URL per tier (null when the source has none). */
-  tierImages: Map<number, string | null>
+  /** Every rank tier with its emblem (lib/deadlock/rankAssets): resolve ranks for display through it. */
+  ranks: RankCatalog
   rankLabels: Record<RankBandId, string>
   windowLabels: Record<MetaWindow, string>
   /** Forum changelog patches, newest first, dated from their titles. */
@@ -60,7 +60,7 @@ export async function resolveScope(input: { window: MetaWindow; rank: RankBandId
   const band = rankBand(input.rank)
   const badges = badgeRange(band)
   const tierNames = new Map(ranks.map((r) => [r.tier, r.name]))
-  const tierImages = new Map(ranks.map((r) => [r.tier, rankImageUrl(r.images)]))
+  const rankTiers = rankCatalog(ranks)
   const rankLabels = Object.fromEntries(RANK_BANDS.map((b) => [b.id, rankBandLabel(b, tierNames)])) as Record<RankBandId, string>
   const windowLabels: Record<MetaWindow, string> = {
     patch: patchStart === null ? 'Current patch' : `Current patch (since ${DATE.format(patchStart * 1000)})`,
@@ -82,7 +82,7 @@ export async function resolveScope(input: { window: MetaWindow; rank: RankBandId
       matchMode: input.mode === 'ranked' ? 'ranked' : 'ranked,unranked',
     },
     tierNames,
-    tierImages,
+    ranks: rankTiers,
     rankLabels,
     windowLabels,
     patches,

@@ -32,7 +32,7 @@ export default async function HeroesPage({ searchParams }: { searchParams: Searc
       />
       {data.ok ? (
         <>
-          <HeroDirectory heroes={data.heroes} scope={scope} initialView={view} windowLabels={data.windowLabels} rankLabels={data.rankLabels} />
+          <HeroDirectory heroes={data.heroes} scope={scope} initialView={view} windowLabels={data.windowLabels} rankLabels={data.rankLabels} ranks={data.ranks} />
           <ScopeLine scope={data.scope} />
         </>
       ) : (

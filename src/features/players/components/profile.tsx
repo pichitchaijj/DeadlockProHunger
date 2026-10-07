@@ -2,9 +2,11 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { ConfidenceBadge } from '@/components/data/ConfidenceBadge'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
+import { RankBadge } from '@/components/game-assets/RankBadge'
 import { CountUp } from '@/components/motion/CountUp'
 import { Reveal } from '@/components/motion/Reveal'
 import { cx } from '@/lib/cx'
+import { rankFromBadge, type RankCatalog } from '@/lib/deadlock/rankAssets'
 import { formatDuration, formatInteger, formatPercent, formatRelativeTime } from '@/lib/format'
 import { domainLabel, toPercent, winRateDomain } from '@/lib/scale'
 import { capitalize } from '@/features/meta/model'
@@ -213,7 +215,7 @@ export function RecentMatches({ matches }: { matches: HistoryMatch[] }) {
   )
 }
 
-export function HistoryTable({ matches, tierNames }: { matches: HistoryMatch[]; tierNames: Map<number, string> }) {
+export function HistoryTable({ matches, ranks }: { matches: HistoryMatch[]; ranks: RankCatalog }) {
   return (
     <>
     {/* Phones: cards (result, hero, K/D/A first; date, length, souls, mode and rank on the second line). */}
@@ -229,7 +231,7 @@ export function HistoryTable({ matches, tierNames }: { matches: HistoryMatch[]; 
           </span>
           <span className="text-caption text-text-muted tabular">
             {DATE.format(m.startedAt)} · {formatDuration(m.durationS)} · {formatInteger(m.netWorth)} souls · {m.ranked ? 'Ranked' : 'Unranked'}
-            {rankLabel(m.badgeAfter, tierNames) ? ` · ${rankLabel(m.badgeAfter, tierNames)}` : ''}
+            {m.badgeAfter ? <> · <RankBadge rank={rankFromBadge(ranks, m.badgeAfter)} size="xs" /></> : ''}
           </span>
         </li>
       ))}
@@ -263,7 +265,7 @@ export function HistoryTable({ matches, tierNames }: { matches: HistoryMatch[]; 
               <td className="px-3 py-2 text-right text-text-muted tabular">{formatInteger(m.netWorth)}</td>
               <td className="px-3 py-2 text-right text-text-muted tabular">{formatDuration(m.durationS)}</td>
               <td className="px-3 py-2 text-text-muted">{m.ranked ? 'Ranked' : 'Unranked'}</td>
-              <td className="px-3 py-2 whitespace-nowrap text-text-muted">{rankLabel(m.badgeAfter, tierNames) ?? '—'}</td>
+              <td className="px-3 py-2 whitespace-nowrap text-text-muted">{m.badgeAfter ? <RankBadge rank={rankFromBadge(ranks, m.badgeAfter)} /> : '—'}</td>
             </tr>
           ))}
         </tbody>

@@ -9,7 +9,6 @@ import { Filter } from '@/components/ui/Filter'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState, LoadingState } from '@/components/ui/States'
-import { RANK_BANDS } from '@/lib/analytics/rankBands'
 import { cx } from '@/lib/cx'
 import { getActiveHeroes } from '@/lib/deadlock/endpoints'
 import { BuildListCard } from '@/features/builds/components/BuildListCard'
@@ -18,6 +17,7 @@ import { getBuildsListing } from '@/features/builds/loaders'
 import { LABEL_TEXT } from '@/features/builds/model'
 import { buildsHref, CATEGORIES, parseBuildsQuery, type BuildsQuery } from '@/features/builds/query'
 import { slugify } from '@/features/meta/model'
+import { rankBandOptions } from '@/features/meta/rankFilter'
 import { resolveScope } from '@/features/meta/scope'
 import { DataNotice } from '@/components/data/DataState'
 import { attempt } from '@/lib/deadlock/errors'
@@ -89,7 +89,7 @@ export default async function BuildsPage({ searchParams }: { searchParams: Searc
         <div className="grid gap-5 lg:grid-cols-2">
           <Filter label="Patch / time (for win rates)" value={query.window} options={WINDOWS.map(([value, label]) => ({ value, label, href: buildsHref(query, { window: value }) }))} />
           {scope && (
-            <Filter label="Rank (match average)" value={query.rank} options={RANK_BANDS.map((b) => ({ value: b.id, label: scope.rankLabels[b.id], href: buildsHref(query, { rank: b.id }) }))} />
+            <Filter label="Rank (match average)" value={query.rank} options={rankBandOptions(scope.rankLabels, scope.ranks, (rank) => buildsHref(query, { rank }))} />
           )}
         </div>
       </div>

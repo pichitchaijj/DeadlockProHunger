@@ -5,7 +5,7 @@ import { ButtonLink } from '@/components/ui/Button'
 import { Filter } from '@/components/ui/Filter'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 
-import { RANK_BANDS } from '@/lib/analytics/rankBands'
+import { rankBandOptions } from '@/features/meta/rankFilter'
 import { HeroPicker, TeamSlots } from '@/features/draft/components/Board'
 import { Balance, Recommendations, RoleCoverage, WeakPoints } from '@/features/draft/components/Insights'
 import { RelationMap } from '@/features/draft/components/RelationMap'
@@ -53,7 +53,7 @@ export default async function DraftPage({ searchParams }: { searchParams: Search
         <>
           <div className="grid gap-4 rounded-md border border-border bg-surface/60 p-(--spacing-card) md:grid-cols-2">
             <Filter label="Patch / time" value={query.window} options={(['patch', '7d', '30d'] as const).map((w) => ({ value: w, label: data.windowLabels[w].replace(/ \(since .*\)/, ''), href: draftHref(query, { window: w }) }))} />
-            <Filter label="Rank (match average)" value={query.rank} options={RANK_BANDS.map((b) => ({ value: b.id, label: data.rankLabels[b.id], href: draftHref(query, { rank: b.id }) }))} />
+            <Filter label="Rank (match average)" value={query.rank} options={rankBandOptions(data.rankLabels, data.ranks, (rank) => draftHref(query, { rank }))} />
           </div>
 
           <TeamSlots query={query} allies={data.allies} enemies={data.enemies} base={data.baseWinRate} />

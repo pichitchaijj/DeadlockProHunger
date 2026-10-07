@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useRef, useState, type KeyboardEvent } from 'react'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
+import { RankBadge } from '@/components/game-assets/RankBadge'
 import { Reveal } from '@/components/motion/Reveal'
 import { ChevronDownIcon } from '@/components/ui/icons'
 import { cx } from '@/lib/cx'
@@ -80,7 +81,7 @@ export function MatchesExplorer({ rows, now }: { rows: MatchRow[]; now: number }
                     <td className="px-3 py-2.5"><ResultText row={row} /></td>
                     <td className="px-3 py-2.5"><TeamStrips teams={row.teams} /></td>
                     <td className="px-3 py-2.5 text-right text-text tabular">{formatDuration(row.durationS)}</td>
-                    <td className="px-3 py-2.5 whitespace-nowrap text-text-muted">{row.rank ?? '—'}</td>
+                    <td className="px-3 py-2.5 whitespace-nowrap text-text-muted">{row.rank ? <RankBadge rank={row.rank} /> : '—'}</td>
                     <td className="px-3 py-2.5 whitespace-nowrap text-text-muted">{row.patch ?? '—'}</td>
                   </tr>
                 )
@@ -157,7 +158,7 @@ function MatchPreview({ row }: { row: MatchRow }) {
           {DATE_TIME.format(row.startedAt)} · {formatDuration(row.durationS)} · {row.mode}
         </p>
         <p className="text-caption text-text-muted">
-          {row.rank ? `Average rank ${row.rank}` : 'No average rank'} · {row.patch ? `${row.patch} patch` : 'Patch unknown'}
+          {row.rank ? <>Average rank <RankBadge rank={row.rank} size="xs" /></> : 'No average rank'} · {row.patch ? `${row.patch} patch` : 'Patch unknown'}
         </p>
         <p className="mt-1 text-sm"><ResultText row={row} /></p>
         <Link href={`/matches/${row.id}`} className="mt-1 self-start font-ui text-sm font-semibold text-primary hover:text-highlight">Open full match →</Link>
@@ -224,7 +225,7 @@ function MobileMatchCard({ row, now }: { row: MatchRow; now: number }) {
       <div className="mt-3"><TeamStrips teams={row.teams} /></div>
       <p className="mt-3 text-caption text-text-muted">
         {row.mode}
-        {row.rank && ` · ${row.rank}`}
+        {row.rank && <> · <RankBadge rank={row.rank} size="xs" /></>}
         {row.patch && ` · ${row.patch} patch`}
       </p>
       <PlayersDetails row={row} />

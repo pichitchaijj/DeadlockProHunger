@@ -5,6 +5,7 @@ import { hasPerspective, matchesHref, parseMatchesQuery } from '@/features/match
 /* Synthetic inputs only. */
 const heroes = new Map([1, 2, 3, 4].map((id) => [id, { id, name: `H${id}`, slug: `h${id}`, iconUrl: null }]))
 const tierNames = new Map([[8, 'Oracle']])
+const ranks = [{ tier: 8, name: 'Oracle', metal: 'Diamond', image: 'https://assets.example/rank08_lg.webp' }]
 
 const raw = {
   match_id: 5,
@@ -21,21 +22,21 @@ const raw = {
 
 describe('toMatchRow', () => {
   it('maps raw teams, badges and patches to readable values', () => {
-    const row = toMatchRow(raw, { heroes, tierNames, patches: [{ title: '09-29-2026', day: Date.UTC(2026, 8, 29) / 1000 }], focusHeroId: null, focusAccountId: null, focusLabel: null })
+    const row = toMatchRow(raw, { heroes, ranks, patches: [{ title: '09-29-2026', day: Date.UTC(2026, 8, 29) / 1000 }], focusHeroId: null, focusAccountId: null, focusLabel: null })
     expect(row.teams.map((t) => `${t.label}:${t.won}`)).toEqual(['Team 1:false', 'Team 2:true'])
-    expect(row.rank).toBe('Oracle IV')
+    expect(row.rank).toMatchObject({ label: 'Oracle IV', tier: 8, subrank: 4, src: 'https://assets.example/rank08_lg.webp' })
     expect(row.patch).toBe('Sep 29')
     expect(row.focus).toBeNull()
     expect(row.teams[1].netWorth).toBe(40_000)
   })
 
   it('gives the filtered hero a perspective', () => {
-    const row = toMatchRow(raw, { heroes, tierNames, patches: [], focusHeroId: 1, focusAccountId: null, focusLabel: null })
+    const row = toMatchRow(raw, { heroes, ranks, patches: [], focusHeroId: 1, focusAccountId: null, focusLabel: null })
     expect(row.focus).toEqual({ label: 'H1', won: false, kda: '1 / 2 / 3' })
   })
 
   it('prefers the filtered player over the hero', () => {
-    const row = toMatchRow(raw, { heroes, tierNames, patches: [], focusHeroId: 1, focusAccountId: 11, focusLabel: 'Someone' })
+    const row = toMatchRow(raw, { heroes, ranks, patches: [], focusHeroId: 1, focusAccountId: 11, focusLabel: 'Someone' })
     expect(row.focus?.won).toBe(true)
     expect(row.focus?.label).toBe('Someone')
   })

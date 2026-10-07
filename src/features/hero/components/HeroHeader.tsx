@@ -11,7 +11,7 @@ import { Reveal } from '@/components/motion/Reveal'
 import { Filter } from '@/components/ui/Filter'
 import { ArrowRightIcon } from '@/components/ui/icons'
 import type { Insight } from '@/lib/analytics/insights'
-import { RANK_BANDS } from '@/lib/analytics/rankBands'
+import { rankBandOptions } from '@/features/meta/rankFilter'
 import { cx } from '@/lib/cx'
 import { capitalize } from '@/features/meta/model'
 import { ComplexityDots } from '@/features/heroes/components/HeroDirectoryCard'
@@ -86,7 +86,7 @@ export function HeroHeader({ ctx, query }: { ctx: HeroContext; query: HeroQuery 
           <Filter
             label="Rank (match average)"
             value={query.rank}
-            options={RANK_BANDS.map((b) => ({ value: b.id, label: ctx.scope.rankLabels[b.id], href: heroHref(hero.slug, query, { rank: b.id }) }))}
+            options={rankBandOptions(ctx.scope.rankLabels, ctx.scope.ranks, (rank) => heroHref(hero.slug, query, { rank }))}
           />
         </div>
         <ScopeLine scope={ctx.statScope} />

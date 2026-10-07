@@ -2,10 +2,12 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
 import { ItemIcon } from '@/components/game-assets/ItemIcon'
+import { RankBadge } from '@/components/game-assets/RankBadge'
 import { CountUp } from '@/components/motion/CountUp'
 import { Reveal } from '@/components/motion/Reveal'
 import { Badge } from '@/components/ui/Badge'
 import { cx } from '@/lib/cx'
+import type { RankDisplay } from '@/lib/deadlock/rankAssets'
 import { formatCompact, formatDuration, formatInteger } from '@/lib/format'
 import { SIDE_LABEL, type MatchView, type PlayerView, type Side, type TeamTotals } from '../model'
 import { ScrollRegion } from '@/components/ui/ScrollRegion'
@@ -31,7 +33,7 @@ export function Section({ id, title, description, children }: { id: string; titl
 
 // ── 1. Summary ───────────────────────────────────────────────────────
 
-export function MatchSummary({ view, patch, rank }: { view: MatchView; patch: string | null; rank: [string | null, string | null] }) {
+export function MatchSummary({ view, patch, rank }: { view: MatchView; patch: string | null; rank: [RankDisplay | null, RankDisplay | null] }) {
   const result = view.outcome === 'win' && view.winner !== null ? `${SIDE_LABEL[view.winner]} won` : view.outcome === 'draw' ? 'Draw' : 'No result recorded'
   return (
     <section aria-labelledby="match-title" className="flex animate-awaken flex-col gap-5">
@@ -46,7 +48,7 @@ export function MatchSummary({ view, patch, rank }: { view: MatchView; patch: st
             <span className="font-display text-display-xl leading-none font-extrabold text-text tabular">
               <CountUp value={view.teams[side].kills} format="integer" />
             </span>
-            <span className="text-caption text-text-muted">kills{rank[side] ? ` · avg. ${rank[side]}` : ''}</span>
+            <span className="text-caption text-text-muted">kills{rank[side] && <> · avg. <RankBadge rank={rank[side]} size="xs" /></>}</span>
             {view.winner === side && <Badge tone="positive">Winner</Badge>}
           </div>
         ))}

@@ -31,7 +31,7 @@ export type Section<T> = { ok: true; data: T; asOf: number; stale: boolean } | {
 function section<T>(key: string, revalidate: number, maxAgeMs: number, load: () => Promise<T>) {
   const cached = unstable_cache(
     stableKey('home-section', async () => ({ data: await load(), asOf: Date.now() })),
-    ['home', key, 'v1'],
+    ['home', key, 'v2'], // bump when a section's cached shape changes (v2: averageRank is a RankDisplay)
     { revalidate, tags: ['home'] },
   )
   return cache(async (): Promise<Section<T>> => {

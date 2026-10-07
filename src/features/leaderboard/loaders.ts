@@ -1,13 +1,14 @@
 import 'server-only'
 import { leaderboardSnapshotKey } from '@/lib/db/mappers'
 import { readSnapshot } from '@/lib/db/store'
-import { badgeRange, rankBand } from '@/lib/analytics/rankBands'
+import { badgeRange, rankBand, type RankBandId } from '@/lib/analytics/rankBands'
 import { getAccountRanks } from '@/lib/deadlock/buildEndpoints'
 import { getActiveHeroes } from '@/lib/deadlock/endpoints'
 import { getLeaderboard, getPlayerScoreboard, getPublicProfiles, type Region } from '@/lib/deadlock/playerEndpoints'
 import { slugify } from '@/features/meta/model'
 import { resolveScope } from '@/features/meta/scope'
-import { filterLeaderboard, leaderboardRows, rankLabel, type HeroLite } from '@/features/players/model'
+import { filterLeaderboard, leaderboardRows, type HeroLite } from '@/features/players/model'
+import { rankFromBadge, type RankCatalog } from '@/lib/deadlock/rankAssets'
 import { rankChange, scoreboardRows, type BoardRow, type RankChange } from './model'
 import type { LeaderboardQuery } from './query'
 import { heroIconUrl } from '@/lib/deadlock/heroImages'
@@ -22,16 +23,13 @@ async function context(query: LeaderboardQuery) {
     apiHeroes.map((h) => [h.id, { id: h.id, name: h.name, slug: slugify(h.name), iconUrl: heroIconUrl(h.images), role: h.hero_type ?? null }]),
   )
   const hero = query.hero === 'all' ? null : ([...heroes.values()].find((h) => h.slug === query.hero) ?? null)
-  const tierNames = scope?.tierNames ?? new Map<number, string>()
-  const tierImages = scope?.tierImages ?? new Map<number, string | null>()
+  const ranks = scope?.ranks ?? []
   return {
     heroes,
     hero,
-    tierNames,
+    ranks,
     rankLabels: scope?.rankLabels ?? null,
-    label: (b: number | null) => rankLabel(b, tierNames),
-    tier: (b: number | null) => (b ? (tierNames.get(Math.floor(b / 10)) ?? null) : null),
-    tierImage: (b: number | null) => (b ? (tierImages.get(Math.floor(b / 10)) ?? null) : null),
+    rank: (b: number | null) => rankFromBadge(ranks, b),
   }
 }
 
@@ -56,7 +54,8 @@ export type BoardData = {
   note: string
   heroes: HeroLite[]
   hero: HeroLite | null
-  rankLabels: Record<string, string> | null
+  rankLabels: Record<RankBandId, string> | null
+  ranks: RankCatalog
 }
 
 export async function getLeaderboardData(query: LeaderboardQuery): Promise<BoardData> {
@@ -85,9 +84,7 @@ export async function getLeaderboardData(query: LeaderboardQuery): Promise<Board
     return {
       rows: filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((r) => ({
         ...r,
-        rankLabel: ctx.label(r.badge),
-        tierName: ctx.tier(r.badge),
-        tierImage: ctx.tierImage(r.badge),
+        rank: ctx.rank(r.badge),
         change: r.accountId !== null ? (changes.get(r.accountId) ?? null) : null,
         matches: null,
         value: null,
@@ -101,6 +98,7 @@ export async function getLeaderboardData(query: LeaderboardQuery): Promise<Board
       heroes,
       hero: ctx.hero,
       rankLabels: ctx.rankLabels,
+    ranks: ctx.ranks,
     }
   }
 
@@ -124,14 +122,13 @@ export async function getLeaderboardData(query: LeaderboardQuery): Promise<Board
     names: new Map(profiles.map((p) => [p.account_id, p.personaname])),
     changes: ranks.changes,
     badges: ranks.badges,
-    label: ctx.label,
-    tier: ctx.tier,
+    rank: ctx.rank,
     winRate: !ranked && query.metric === 'winrate',
   })
   const pages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE))
   const page = Math.min(query.page, pages)
   return {
-    rows: rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((r) => ({ ...r, tierImage: ctx.tierImage(r.badge) })),
+    rows: rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
     page,
     pages,
     total: rows.length,
@@ -141,5 +138,6 @@ export async function getLeaderboardData(query: LeaderboardQuery): Promise<Board
     heroes,
     hero: ctx.hero,
     rankLabels: ctx.rankLabels,
+    ranks: ctx.ranks,
   }
 }

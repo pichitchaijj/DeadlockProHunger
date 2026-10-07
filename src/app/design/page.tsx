@@ -45,7 +45,7 @@ import { Table, type SortDirection, type TableColumn } from '@/components/ui/Tab
 import { Tag } from '@/components/ui/Tag'
 import { wilsonInterval } from '@/lib/analytics/wilson'
 import { formatPercent } from '@/lib/format'
-import { demoHeroRows, demoLowScope, demoScope, demoTimes, demoTrend, type DemoHeroRow } from '@/mocks/designSystem'
+import { demoHeroRows, demoLowScope, demoRanks, demoScope, demoTimes, demoTrend, type DemoHeroRow } from '@/mocks/designSystem'
 import { InteractiveDemos } from './InteractiveDemos'
 
 export const metadata: Metadata = {
@@ -337,11 +337,11 @@ export default async function DesignSystemPage({ searchParams }: { searchParams:
               position={1}
               name="DemoPlayer"
               href="/design#cards"
-              rank={{ tierName: 'Demo Tier', subrank: 6 }}
+              rank={demoRanks.player}
               recent={{ matches: 20, winRate: 0.65 }}
               topHeroes={[{ name: 'Sample Alpha' }, { name: 'Sample Bravo' }, { name: 'Sample Delta' }]}
             />
-            <PlayerCard name="Unranked Demo" href="/design#cards" rank={{ tierName: null }} />
+            <PlayerCard name="Unranked Demo" href="/design#cards" rank={null} />
             <BuildCard
               name="Demo spirit burst build"
               href="/design#cards"
@@ -358,7 +358,7 @@ export default async function DesignSystemPage({ searchParams }: { searchParams:
               href="/design#cards"
               startedAt={demoTimes.matchStartedAt}
               durationS={1934}
-              averageRank="Demo Tier IV"
+              averageRank={demoRanks.match}
               perspective={{ won: true, heroName: 'Sample Alpha', kda: '12 / 3 / 9' }}
               teams={[
                 { label: 'Team 1', won: true, heroes: ['Sample Alpha', 'Sample Bravo', 'Sample Charlie', 'Sample Delta', 'Sample Echo', 'Sample Foxtrot'].map((name) => ({ name })) },

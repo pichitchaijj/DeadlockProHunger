@@ -60,7 +60,7 @@ export default async function AnalyzePage({ searchParams }: { searchParams: Sear
     <PageContainer className="flex flex-col gap-(--spacing-section)">
       <div className="flex flex-col gap-6">
         {header}
-        <Controls query={query} heroes={pickerResult.ok ? pickerResult.value : meta.model.heroes} rankLabels={meta.rankLabels} windowLabels={meta.windowLabels} selectedName={ctx?.hero.name ?? null} />
+        <Controls query={query} heroes={pickerResult.ok ? pickerResult.value : meta.model.heroes} rankLabels={meta.rankLabels} ranks={meta.ranks} windowLabels={meta.windowLabels} selectedName={ctx?.hero.name ?? null} />
       </div>
 
       {!heroResult.ok ? (

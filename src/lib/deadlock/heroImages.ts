@@ -6,12 +6,3 @@ export const heroIconUrl = (images: HeroImages) => images?.icon_image_small_webp
 
 /** Hero card URL, WebP first. */
 export const heroCardUrl = (images: HeroImages) => images?.icon_hero_card_webp ?? images?.icon_hero_card ?? null
-
-type RankImages = { large?: string | null; large_webp?: string | null } | null | undefined
-
-/**
- * Rank tier badge URL (assets CDN, WebP first). Per-subrank images exist too, but they are rendered on
- * demand by api.deadlock-api.com: using them would make every visitor's browser call the API directly,
- * so the subrank is shown as text (RankBadge) instead.
- */
-export const rankImageUrl = (images: RankImages) => images?.large_webp ?? images?.large ?? null

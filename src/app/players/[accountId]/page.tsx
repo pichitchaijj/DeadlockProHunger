@@ -65,22 +65,14 @@ export default async function PlayerPage({ params, searchParams }: { params: Par
           <Avatar name={name} src={data.avatar ?? undefined} size="lg" />
           <div className="flex min-w-0 flex-col gap-1">
             <h1 id="player-name" className="font-display text-display-l font-extrabold break-words text-text uppercase">{name}</h1>
-            <p className="text-sm text-text-muted">
-              {data.rank ? (
-                <>
-                  {data.rank.tierName ? (
-                    <RankBadge tierName={data.rank.tierName} subrank={data.rank.badge % 10} src={data.rank.image ?? undefined} className="align-middle font-semibold" />
-                  ) : (
-                    <span className="font-semibold text-text">{data.rank.label}</span>
-                  )}
-                  {data.rank.at && ` · after their latest ranked match (${DATE.format(data.rank.at)})`}
-                </>
-              ) : data.placements ? (
-                `In placement matches (${data.placements} left)`
-              ) : (
-                'No current rank reported'
-              )}
-            </p>
+            {data.rank ? (
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-text-muted">
+                <RankBadge rank={data.rank} variant="full" />
+                {data.rank.at && <span>after their latest ranked match ({DATE.format(data.rank.at)})</span>}
+              </div>
+            ) : (
+              <p className="text-sm text-text-muted">{data.placements ? `In placement matches (${data.placements} left)` : 'No current rank reported'}</p>
+            )}
             <p className="text-caption text-text-muted">
               SteamID3 {accountId}
               {data.profileUrl && (
@@ -134,7 +126,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Par
       </div>
 
       <Panel id="history" title="Match history" description={`${formatInteger(h.matches.length)} matches, newest first.`}>
-        <HistoryTable matches={h.matches.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)} tierNames={data.tierNames} />
+        <HistoryTable matches={h.matches.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)} ranks={data.ranks} />
         {pages > 1 && (
           <nav aria-label="History pages" className="flex flex-wrap gap-2">
             {Array.from({ length: pages }, (_, i) => i + 1)

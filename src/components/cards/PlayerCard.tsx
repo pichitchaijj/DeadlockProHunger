@@ -6,13 +6,15 @@ import { formatInteger } from '@/lib/format'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
 import { RankBadge } from '@/components/game-assets/RankBadge'
 import { Avatar } from '@/components/ui/Avatar'
+import type { RankDisplay } from '@/lib/deadlock/rankAssets'
 import { WinRate } from './WinRate'
 
 export type PlayerCardProps = {
   name: string
   href: string
   avatarSrc?: string
-  rank: { tierName: string | null; subrank?: number; imageSrc?: string }
+  /** Resolved rank (lib/deadlock/rankAssets); null = unranked. */
+  rank: RankDisplay | null
   /** Recent-form summary; the containing view states the window. */
   recent?: { matches: number; winRate: number }
   topHeroes?: Array<{ name: string; imageSrc?: string }>
@@ -51,7 +53,7 @@ export function PlayerCard({
             {name}
           </Link>
         </h3>
-        <RankBadge tierName={rank.tierName} subrank={rank.subrank} src={rank.imageSrc} size="sm" />
+        <RankBadge rank={rank} className="font-ui text-sm text-text" />
       </div>
 
       {topHeroes.length > 0 && (

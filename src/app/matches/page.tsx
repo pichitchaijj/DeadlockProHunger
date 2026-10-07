@@ -8,7 +8,6 @@ import { SearchIcon } from '@/components/ui/icons'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState, LoadingState } from '@/components/ui/States'
-import { RANK_BANDS } from '@/lib/analytics/rankBands'
 import { formatInteger, formatRelativeTime } from '@/lib/format'
 import { getActiveHeroes } from '@/lib/deadlock/endpoints'
 import { HeroSelect } from '@/features/builds/components/HeroSelect'
@@ -17,6 +16,7 @@ import { MatchesExplorer } from '@/features/matches/components/MatchesExplorer'
 import { getLiveSummary, getMatchesPage, MATCH_LIMIT } from '@/features/matches/loaders'
 import { DATES, DURATIONS, hasPerspective, matchesHref, parseMatchesQuery, type MatchesQuery } from '@/features/matches/query'
 import { slugify } from '@/features/meta/model'
+import { rankBandOptions } from '@/features/meta/rankFilter'
 import { resolveScope } from '@/features/meta/scope'
 import { DataNotice } from '@/components/data/DataState'
 import { attempt } from '@/lib/deadlock/errors'
@@ -81,7 +81,7 @@ export default async function MatchesPage({ searchParams }: { searchParams: Sear
             options={[{ value: 'any', label: 'Any', href: matchesHref(query, { duration: 'any' }) }, ...(Object.keys(DURATIONS) as Array<keyof typeof DURATIONS>).map((d) => ({ value: d, label: DURATIONS[d].label, href: matchesHref(query, { duration: d }) }))]}
           />
           {scope && (
-            <Filter label="Rank (match average)" value={query.rank} options={RANK_BANDS.map((b) => ({ value: b.id, label: scope.rankLabels[b.id], href: matchesHref(query, { rank: b.id }) }))} />
+            <Filter label="Rank (match average)" value={query.rank} options={rankBandOptions(scope.rankLabels, scope.ranks, (rank) => matchesHref(query, { rank }))} />
           )}
           {perspective ? (
             <Filter

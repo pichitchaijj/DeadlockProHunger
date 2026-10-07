@@ -7,7 +7,7 @@ import { Filter } from '@/components/ui/Filter'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState, LoadingState } from '@/components/ui/States'
-import { RANK_BANDS } from '@/lib/analytics/rankBands'
+import { rankBandOptions } from '@/features/meta/rankFilter'
 import { cx } from '@/lib/cx'
 import { REGIONS, SCOREBOARD_METRICS, type ScoreboardMetric } from '@/lib/deadlock/constants'
 import { HeroSelect } from '@/features/builds/components/HeroSelect'
@@ -82,7 +82,7 @@ async function Board({ query }: { query: LeaderboardQuery }) {
               {query.scope !== 'global' && (
                 <div className="grid gap-4 xl:grid-cols-2">
                   <Filter label="Role (first listed top hero)" value={query.role} options={[{ value: 'all', label: 'All', href: leaderboardHref(query, { role: 'all' }) }, ...ROLES.map((r) => ({ value: r, label: capitalize(r), href: leaderboardHref(query, { role: r }) }))]} />
-                  {data.rankLabels && <Filter label="Current rank" value={query.rank} options={RANK_BANDS.map((b) => ({ value: b.id, label: data.rankLabels![b.id], href: leaderboardHref(query, { rank: b.id }) }))} />}
+                  {data.rankLabels && <Filter label="Current rank" value={query.rank} options={rankBandOptions(data.rankLabels, data.ranks, (rank) => leaderboardHref(query, { rank }))} />}
                 </div>
               )}
             </>
@@ -92,7 +92,7 @@ async function Board({ query }: { query: LeaderboardQuery }) {
               <div className="grid gap-4 xl:grid-cols-3">
                 <Filter label="Minimum matches" value={String(query.min)} options={([20, 50, 100] as const).map((n) => ({ value: String(n), label: `${n}+`, href: leaderboardHref(query, { min: n }) }))} />
                 <Filter label="Window" value={query.window} options={[{ value: '7d', label: '7 days', href: leaderboardHref(query, { window: '7d' }) }, { value: '30d', label: '30 days', href: leaderboardHref(query, { window: '30d' }) }]} />
-                {data.rankLabels && <Filter label="Match rank" value={query.rank} options={RANK_BANDS.map((b) => ({ value: b.id, label: data.rankLabels![b.id], href: leaderboardHref(query, { rank: b.id }) }))} />}
+                {data.rankLabels && <Filter label="Match rank" value={query.rank} options={rankBandOptions(data.rankLabels, data.ranks, (rank) => leaderboardHref(query, { rank }))} />}
               </div>
             </>
           )}

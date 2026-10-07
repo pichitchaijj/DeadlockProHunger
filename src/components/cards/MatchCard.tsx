@@ -3,6 +3,8 @@ import { cx } from '@/lib/cx'
 import { cardClasses } from '@/components/ui/Card'
 import { formatDuration, formatRelativeTime } from '@/lib/format'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
+import { RankBadge } from '@/components/game-assets/RankBadge'
+import type { RankDisplay } from '@/lib/deadlock/rankAssets'
 
 type TeamSummary = {
   /** Neutral team label, e.g. "Team 1". */
@@ -17,8 +19,8 @@ export type MatchCardProps = {
   /** Unix ms. */
   startedAt: number
   durationS: number
-  /** Average rank label, e.g. "Oracle IV"; omit for unranked modes. */
-  averageRank?: string
+  /** Average rank (lib/deadlock/rankAssets); omit for unranked modes. */
+  averageRank?: RankDisplay
   teams: [TeamSummary, TeamSummary]
   /** Player perspective (match history): their result and line. */
   perspective?: { won: boolean; heroName: string; kda: string }
@@ -52,7 +54,7 @@ export function MatchCard({
         </h3>
         <p className="text-caption text-text-muted tabular">
           {formatRelativeTime(startedAt)} · {formatDuration(durationS)}
-          {averageRank && <> · Avg {averageRank}</>}
+          {averageRank && <> · Avg <RankBadge rank={averageRank} size="xs" /></>}
         </p>
       </header>
 
