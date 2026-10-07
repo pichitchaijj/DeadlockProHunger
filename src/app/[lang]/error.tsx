@@ -15,8 +15,8 @@ export default function RouteError({ error, reset }: { error: Error & { digest?:
   useEffect(() => {
     console.error('[route] unhandled error', error)
   }, [error])
-  const t = useTranslations('Errors')
-  const common = useTranslations('Common')
+  const t = useTranslations('errors')
+  const common = useTranslations('common')
 
   return (
     <PageContainer width="reading">

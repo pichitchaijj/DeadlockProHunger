@@ -1,0 +1,17 @@
+{
+  "winRate": "Win rate",
+  "byAuthor": "by {author}",
+  "updated": "updated {time}",
+  "buildTags": "Build tags",
+  "noMatchData": "No match data for this build yet",
+  "favoritesThisWeek": "{count} favorites this week",
+  "match": "Match {id}",
+  "averageRank": "Avg",
+  "win": "Win",
+  "loss": "Loss",
+  "won": "Won",
+  "lost": "Lost",
+  "teamHeroes": "{team} heroes",
+  "mostPlayed": "Most played heroes",
+  "matches": "{count, plural, one {# match} other {# matches}}"
+}

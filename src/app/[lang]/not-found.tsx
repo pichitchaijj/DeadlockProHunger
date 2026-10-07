@@ -8,8 +8,8 @@ import { EmptyState } from '@/components/ui/States'
  * navigation that aren't built yet) render it inside app/global-not-found.tsx.
  */
 export default function NotFound() {
-  const t = useTranslations('NotFound')
-  const common = useTranslations('Common')
+  const t = useTranslations('notFound')
+  const common = useTranslations('common')
   return (
     <PageContainer width="reading">
       <h1 className="sr-only">{t('heading')}</h1>

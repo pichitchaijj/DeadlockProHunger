@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useId, useRef, useState, type InputHTMLAttributes } from 'react'
 import { cx } from '@/lib/cx'
 import { CloseIcon, SearchIcon } from './icons'
@@ -29,6 +30,7 @@ export function SearchInput({
   ...props
 }: SearchInputProps) {
   const id = useId()
+  const t = useTranslations('common')
   const inputRef = useRef<HTMLInputElement>(null)
   const [hasValue, setHasValue] = useState(Boolean(value ?? defaultValue))
 
@@ -80,7 +82,7 @@ export function SearchInput({
           <button
             type="button"
             onClick={clear}
-            aria-label="Clear search"
+            aria-label={t('clearSearch')}
             className="absolute top-1/2 right-1 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-sm text-text-muted hover:bg-surface-raised hover:text-text"
           >
             <CloseIcon size={16} />

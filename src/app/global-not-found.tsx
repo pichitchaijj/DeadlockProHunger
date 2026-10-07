@@ -15,7 +15,7 @@ import './globals.css'
 export const viewport: Viewport = siteViewport
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations('NotFound')
+  const t = await getTranslations('notFound')
   return { ...siteMetadata, title: `Deadlockprohunger — ${t('heading')}` }
 }
 

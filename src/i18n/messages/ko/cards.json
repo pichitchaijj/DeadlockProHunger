@@ -1,0 +1,17 @@
+{
+  "winRate": "승률",
+  "byAuthor": "작성자 {author}",
+  "updated": "업데이트 {time}",
+  "buildTags": "빌드 태그",
+  "noMatchData": "이 빌드의 경기 데이터가 아직 없습니다",
+  "favoritesThisWeek": "이번 주 즐겨찾기 {count}",
+  "match": "매치 {id}",
+  "averageRank": "평균",
+  "win": "승리",
+  "loss": "패배",
+  "won": "승리",
+  "lost": "패배",
+  "teamHeroes": "{team} 영웅",
+  "mostPlayed": "가장 많이 플레이한 영웅",
+  "matches": "{count, plural, other {#경기}}"
+}

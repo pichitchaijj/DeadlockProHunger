@@ -1,9 +1,11 @@
-import { createElement } from 'react'
+import { NextIntlClientProvider } from 'next-intl'
+import { createElement, type ReactElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { RankBadge, RankBandIcons } from '@/components/game-assets/RankBadge'
 import { RANK_ICON_PX } from '@/components/game-assets/RankEmblem'
 import { rankFromBadge, rankFromTier, type RankCatalog } from '@/lib/deadlock/rankAssets'
+import en from '@/i18n/messages/en'
 
 /* Synthetic catalog; URLs are placeholders. */
 const catalog: RankCatalog = [
@@ -12,7 +14,12 @@ const catalog: RankCatalog = [
   { tier: 11, name: 'Eternus', metal: null, image: null },
 ]
 const oracle = rankFromBadge(catalog, 84)!
-const html = (props: Parameters<typeof RankBadge>[0]) => renderToStaticMarkup(createElement(RankBadge, props))
+/** Renders inside the English translation provider, as the app does (RankBadge reads "Unranked", "Tier:"). */
+function inEnglish(Provider: typeof NextIntlClientProvider, node: ReactElement) {
+  // oxlint-disable-next-line react/no-children-prop -- this test file is .ts (no JSX); createElement needs children in props for the provider type
+  return renderToStaticMarkup(createElement(Provider, { locale: 'en', messages: en, children: node }))
+}
+const html = (props: Parameters<typeof RankBadge>[0]) => inEnglish(NextIntlClientProvider, createElement(RankBadge, props))
 
 describe('RankBadge', () => {
   it('compact: emblem + readable name, emblem decorative (name is printed)', () => {
@@ -93,7 +100,9 @@ describe('game-asset kill switch', () => {
     vi.stubEnv('NEXT_PUBLIC_GAME_ASSETS', 'off')
     vi.resetModules()
     const { RankBadge: Badge } = await import('@/components/game-assets/RankBadge')
-    const out = renderToStaticMarkup(createElement(Badge, { rank: oracle }))
+    // Fresh module graph after resetModules: the provider must come from the same next-intl instance.
+    const { NextIntlClientProvider: Provider } = await import('next-intl')
+    const out = inEnglish(Provider, createElement(Badge, { rank: oracle }))
     expect(out).not.toContain('<img')
     expect(out).toContain('data-rank-fallback')
     expect(out).toContain('>Oracle IV<')

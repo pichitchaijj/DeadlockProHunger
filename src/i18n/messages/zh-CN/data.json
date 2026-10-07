@@ -1,0 +1,29 @@
+{
+  "sample": {
+    "low": "样本少",
+    "moderate": "样本中等",
+    "high": "样本充足"
+  },
+  "confidence": "{tier}，{count, plural, other {# 场}}",
+  "confidenceInterval": "{tier}，{count, plural, other {# 场}}，95% 置信区间 {low} 至 {high}",
+  "trend": {
+    "rising": "上升",
+    "falling": "下降",
+    "stable": "持平"
+  },
+  "tier": "{tier} 梯队",
+  "tierTitle": "{tier} 梯队：{rule}",
+  "tierRules": {
+    "S": "胜率区间完全高于 52%",
+    "A": "胜率区间完全高于 50%",
+    "B": "胜率区间包含 50%",
+    "C": "胜率区间完全低于 50%"
+  },
+  "noTier": "无梯队，场次不足",
+  "noTierTitle": "场次不足，无法划分梯队",
+  "updated": "更新于 <when>{time}</when>",
+  "stale": "数据过期",
+  "staleTitle": "数据源已超过正常时间未更新，当前显示最近一次有效数据。",
+  "unranked": "无段位",
+  "rankTier": "等级："
+}

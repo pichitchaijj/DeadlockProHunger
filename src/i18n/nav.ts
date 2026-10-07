@@ -7,7 +7,7 @@ import { primaryNav, secondaryNav, type NavItem } from '@/config/navigation'
  * Client nav components receive the result as props, so no translations ship to the browser for them.
  */
 export function useLocalizedNav(): { primary: NavItem[]; secondary: NavItem[] } {
-  const t = useTranslations('Nav.links')
+  const t = useTranslations('nav.links')
   const localize = (item: NavItem): NavItem => ({
     ...item,
     label: t(`${item.id}.label`),

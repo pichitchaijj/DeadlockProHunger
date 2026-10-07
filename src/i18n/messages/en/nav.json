@@ -1,0 +1,65 @@
+{
+  "more": "More",
+  "explore": "Explore",
+  "later": "Later",
+  "language": "Language",
+  "languageCurrent": "Language: {name}",
+  "links": {
+    "home": {
+      "label": "Home",
+      "description": "What matters in Deadlock right now"
+    },
+    "meta": {
+      "label": "Meta",
+      "description": "Strongest heroes by rank and window"
+    },
+    "heroes": {
+      "label": "Heroes",
+      "description": "Matchups, items and ability orders"
+    },
+    "builds": {
+      "label": "Builds",
+      "description": "Community builds with real win rates"
+    },
+    "matches": {
+      "label": "Matches",
+      "description": "Find a match or browse high-rank games"
+    },
+    "analyze": {
+      "label": "Analyze",
+      "description": "Analyze one hero in depth: trends, peers, builds, matchups"
+    },
+    "players": {
+      "label": "Players",
+      "description": "Search players, ranks and recent form"
+    },
+    "leaderboard": {
+      "label": "Leaderboard",
+      "description": "Top players by region"
+    },
+    "compare": {
+      "label": "Compare",
+      "description": "Heroes, builds or players side by side"
+    },
+    "draft": {
+      "label": "Draft Lab",
+      "description": "Team synergy, matchups and next picks"
+    },
+    "items": {
+      "label": "Items",
+      "description": "Item performance and timings"
+    },
+    "patch": {
+      "label": "Patch",
+      "description": "Patch notes, what changed and before / after stats"
+    },
+    "tools": {
+      "label": "Tools",
+      "description": "Utilities for players"
+    },
+    "community": {
+      "label": "Community",
+      "description": "Projects and contributors"
+    }
+  }
+}

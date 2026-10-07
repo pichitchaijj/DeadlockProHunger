@@ -1,0 +1,29 @@
+{
+  "sample": {
+    "low": "サンプル少",
+    "moderate": "サンプル中",
+    "high": "サンプル多"
+  },
+  "confidence": "{tier}、{count, plural, other {# 試合}}",
+  "confidenceInterval": "{tier}、{count, plural, other {# 試合}}、95% 信頼区間 {low}〜{high}",
+  "trend": {
+    "rising": "上昇",
+    "falling": "下降",
+    "stable": "横ばい"
+  },
+  "tier": "ティア {tier}",
+  "tierTitle": "ティア {tier}：{rule}",
+  "tierRules": {
+    "S": "勝率の区間がすべて 52% を上回る",
+    "A": "勝率の区間がすべて 50% を上回る",
+    "B": "勝率の区間が 50% を含む",
+    "C": "勝率の区間がすべて 50% を下回る"
+  },
+  "noTier": "ティアなし（試合数不足）",
+  "noTierTitle": "ティアを決めるには試合数が足りません",
+  "updated": "更新：<when>{time}</when>",
+  "stale": "更新遅延",
+  "staleTitle": "データソースがいつもより長く更新されていません。最後に取得できた正常なデータを表示しています。",
+  "unranked": "ランクなし",
+  "rankTier": "ティア："
+}

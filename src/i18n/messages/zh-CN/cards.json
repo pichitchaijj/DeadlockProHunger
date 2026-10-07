@@ -1,0 +1,17 @@
+{
+  "winRate": "胜率",
+  "byAuthor": "作者 {author}",
+  "updated": "更新于 {time}",
+  "buildTags": "出装标签",
+  "noMatchData": "此出装暂无比赛数据",
+  "favoritesThisWeek": "本周收藏 {count}",
+  "match": "比赛 {id}",
+  "averageRank": "平均",
+  "win": "胜",
+  "loss": "负",
+  "won": "胜",
+  "lost": "负",
+  "teamHeroes": "{team} 英雄",
+  "mostPlayed": "最常用英雄",
+  "matches": "{count, plural, other {# 场}}"
+}

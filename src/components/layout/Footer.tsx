@@ -4,9 +4,13 @@ import type { NavItem } from '@/config/navigation'
 import { useLocalizedNav } from '@/i18n/nav'
 import { BrandMark } from './BrandMark'
 
-/** Site footer. The unofficial-project notice is required on every page. */
+/**
+ * Site footer. The unofficial-project notice is required on every page; every translation keeps its
+ * full meaning (unofficial, not affiliated with or endorsed by Valve, marks belong to Valve).
+ */
 export function Footer() {
-  const t = useTranslations('Nav')
+  const t = useTranslations('nav')
+  const f = useTranslations('footer')
   const { primary, secondary } = useLocalizedNav()
 
   return (
@@ -14,24 +18,23 @@ export function Footer() {
       <div className="page-container grid gap-10 py-12 md:grid-cols-[1.4fr_1fr_1fr]">
         <div className="flex flex-col gap-4">
           <BrandMark />
-          <p className="max-w-sm text-sm text-text-muted">
-            Community analytics and strategy for Deadlock. Data → insight → decision → action.
-          </p>
+          <p className="max-w-sm text-sm text-text-muted">{f('tagline')}</p>
         </div>
         <FooterLinks id="explore" title={t('explore')} items={primary} />
         <FooterLinks id="more" title={t('more')} items={secondary} />
       </div>
       <div className="border-t border-border">
         <p className="page-container py-6 text-caption text-text-muted">
-          Deadlockprohunger is an unofficial fan project. It is not affiliated with or endorsed by
-          Valve. Deadlock and related marks are property of Valve Corporation. Game data provided by{' '}
-          <a
-            href="https://deadlock-api.com"
-            className="text-text underline decoration-steel underline-offset-2 hover:decoration-primary"
-          >
-            deadlock-api.com
-          </a>
-          .
+          {f.rich('notice', {
+            source: (chunks) => (
+              <a
+                href="https://deadlock-api.com"
+                className="text-text underline decoration-steel underline-offset-2 hover:decoration-primary"
+              >
+                {chunks}
+              </a>
+            ),
+          })}
         </p>
       </div>
     </footer>

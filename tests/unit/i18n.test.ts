@@ -1,16 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { primaryNav, secondaryNav } from '@/config/navigation'
 import { defaultLocale, isLocale, locales } from '@/i18n/config'
-import { mergeMessages, missingKeys, unknownKeys, type MessageTree } from '@/i18n/merge'
 import { routing } from '@/i18n/routing'
 import { dateFormat, formatCompact, formatInteger, formatRelativeTime } from '@/lib/format'
-import en from '@/i18n/messages/en.json'
-import ja from '@/i18n/messages/ja.json'
-import ko from '@/i18n/messages/ko.json'
-import th from '@/i18n/messages/th.json'
-import zhCN from '@/i18n/messages/zh-CN.json'
-
-const dictionaries: Record<string, MessageTree> = { th, ja, ko, 'zh-CN': zhCN }
 
 describe('locale config', () => {
   it('supports exactly the five launch locales, English first and default', () => {
@@ -25,39 +16,6 @@ describe('locale config', () => {
     expect(routing.localePrefix).toBe('as-needed')
     expect(routing.localeDetection).toBe(false)
     expect(routing.localeCookie).toBe(false)
-  })
-
-})
-
-describe('messages', () => {
-  it('falls back to English key by key, never to a raw key or empty string', () => {
-    const source = { a: 'A', group: { b: 'B', c: 'C' } }
-    const merged = mergeMessages(source, { group: { b: 'บี', c: '  ' } })
-    expect(merged).toEqual({ a: 'A', group: { b: 'บี', c: 'C' } })
-    expect(mergeMessages(source, undefined)).toBe(source)
-  })
-
-  it('ignores values of the wrong shape', () => {
-    const merged = mergeMessages({ a: 'A', g: { b: 'B' } }, { a: { x: 'x' }, g: 'flat' } as never)
-    expect(merged).toEqual({ a: 'A', g: { b: 'B' } })
-  })
-
-  it.each(Object.entries(dictionaries))('%s has no keys that English lacks', (_, dict) => {
-    expect(unknownKeys(en, dict)).toEqual([])
-  })
-
-  it.each(Object.entries(dictionaries))('%s: every merged message resolves to text', (_, dict) => {
-    expect(missingKeys(en, mergeMessages(en, dict))).toEqual([])
-  })
-
-  it('has a label and description for every nav item', () => {
-    for (const item of [...primaryNav, ...secondaryNav]) {
-      expect(en.Nav.links[item.id]).toEqual({ label: item.label, description: item.description })
-    }
-  })
-
-  it('names every locale', () => {
-    expect(Object.keys(en.Languages).sort()).toEqual([...locales].sort())
   })
 })
 

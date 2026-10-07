@@ -1,0 +1,17 @@
+{
+  "heading": "Something went wrong",
+  "title": "This page couldn’t load",
+  "description": "Something went wrong while building this page. No numbers are shown rather than possibly wrong ones.",
+  "reference": "Reference {digest}",
+  "generic": {
+    "title": "Data unavailable",
+    "description": "We couldn’t load this data right now. It may be a temporary problem with the data source."
+  },
+  "source": {
+    "rateLimit": "The data source is limiting requests right now. This section fills in again within a few minutes; nothing is shown in its place.",
+    "timeout": "The data source didn’t answer in time. Try again shortly.",
+    "invalid": "The data source answered in a format we don’t recognize, so it isn’t shown rather than risk showing it wrong.",
+    "notFound": "The data source has no data for this right now.",
+    "unavailable": "The data source didn’t respond. It may be a temporary problem; try again shortly."
+  }
+}

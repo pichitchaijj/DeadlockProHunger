@@ -1,0 +1,26 @@
+{
+  "dialog": "Search",
+  "input": "Search heroes, builds, players, matches, items, patches and tools",
+  "placeholder": "Search heroes, builds, players, match IDs…",
+  "results": "Results",
+  "goTo": "Go to",
+  "pagesAndTools": "Pages & tools",
+  "searching": "Searching…",
+  "error": "Data search didn’t respond. Pages and tools still work.",
+  "limited": "Too many searches in a short time. Wait a moment; pages and tools still work.",
+  "count": "{count, plural, one {# result} other {# results}}",
+  "countPartial": "{count, plural, one {# result} other {# results}} (some sources didn’t respond)",
+  "empty": "Nothing matches “{query}”. Try a hero, item, player name or a match ID.",
+  "forum": "Forum ↗",
+  "navigate": "navigate",
+  "open": "open",
+  "close": "close",
+  "groups": {
+    "heroes": "Heroes",
+    "builds": "Builds",
+    "players": "Players",
+    "matches": "Matches",
+    "items": "Items",
+    "patches": "Patches"
+  }
+}

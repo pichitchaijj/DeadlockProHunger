@@ -1,5 +1,5 @@
+import { useTranslations } from 'next-intl'
 import type { Tier } from '@/lib/analytics/tiers'
-import { TIER_RULES } from '@/lib/analytics/tiers'
 import { cx } from '@/lib/cx'
 
 const styles: Record<Tier, string> = {
@@ -11,10 +11,11 @@ const styles: Record<Tier, string> = {
 
 /** Meta tier letter. `null` = not enough data for a tier (shown as an em dash, never as a low tier). */
 export function TierBadge({ tier, size = 'md', className }: { tier: Tier | null; size?: 'sm' | 'md' | 'lg'; className?: string }) {
+  const t = useTranslations('data')
   const box = size === 'lg' ? 'size-12 text-3xl' : size === 'sm' ? 'size-6 text-sm' : 'size-8 text-lg'
   return (
     <span
-      title={tier ? `Tier ${tier}: ${TIER_RULES[tier]}` : 'Not enough matches for a tier'}
+      title={tier ? t('tierTitle', { tier, rule: t(`tierRules.${tier}`) }) : t('noTierTitle')}
       className={cx(
         'inline-flex shrink-0 items-center justify-center rounded-xs border font-display font-extrabold leading-none',
         tier ? styles[tier] : 'border-dashed border-border-strong text-text-muted',
@@ -23,7 +24,7 @@ export function TierBadge({ tier, size = 'md', className }: { tier: Tier | null;
       )}
     >
       <span aria-hidden="true">{tier ?? '–'}</span>
-      <span className="sr-only">{tier ? `Tier ${tier}` : 'No tier, not enough matches'}</span>
+      <span className="sr-only">{tier ? t('tier', { tier }) : t('noTier')}</span>
     </span>
   )
 }

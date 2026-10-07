@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import type { HTMLAttributes, ReactNode } from 'react'
 import { cx } from '@/lib/cx'
 
@@ -37,9 +38,10 @@ export function Badge({ tone = 'neutral', icon, className, children, ...props }:
 
 /** Mock-data marker. Required on any UI rendering demo data. */
 export function DemoDataBadge({ className }: { className?: string }) {
+  const t = useTranslations('common')
   return (
-    <Badge tone="special" className={className} title="Illustrative mock data, not real statistics">
-      Demo data
+    <Badge tone="special" className={className} title={t('demoDataTitle')}>
+      {t('demoData')}
     </Badge>
   )
 }

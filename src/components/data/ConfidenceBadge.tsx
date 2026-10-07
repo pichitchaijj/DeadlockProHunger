@@ -1,7 +1,8 @@
-import { SAMPLE_TIER_LABEL, sampleTier, type SampleScale, type SampleTier } from '@/lib/analytics/sampleTier'
+import { useLocale, useTranslations } from 'next-intl'
+import { sampleTier, type SampleScale, type SampleTier } from '@/lib/analytics/sampleTier'
 import type { Interval } from '@/lib/analytics/wilson'
 import { cx } from '@/lib/cx'
-import { formatCompact, formatInteger, formatPercent } from '@/lib/format'
+import { formatCompact, formatPercent } from '@/lib/format'
 
 type ConfidenceBadgeProps = {
   /** Matches behind the statistic. */
@@ -23,9 +24,12 @@ const tones: Record<SampleTier, { dots: number; className: string }> = {
 export function ConfidenceBadge({ sampleSize, interval, scale = 'population', className }: ConfidenceBadgeProps) {
   const tier = sampleTier(sampleSize, scale)
   const { dots, className: tone } = tones[tier]
-  const description = `${SAMPLE_TIER_LABEL[tier]}, ${formatInteger(sampleSize)} matches${
-    interval ? `, 95% interval ${formatPercent(interval.low)} to ${formatPercent(interval.high)}` : ''
-  }`
+  const t = useTranslations('data')
+  const locale = useLocale()
+  const label = t(`sample.${tier}`)
+  const description = interval
+    ? t('confidenceInterval', { tier: label, count: sampleSize, low: formatPercent(interval.low), high: formatPercent(interval.high) })
+    : t('confidence', { tier: label, count: sampleSize })
 
   return (
     <span
@@ -42,7 +46,7 @@ export function ConfidenceBadge({ sampleSize, interval, scale = 'population', cl
         ))}
       </span>
       <span aria-hidden="true" className="tabular">
-        n={formatCompact(sampleSize)}
+        n={formatCompact(sampleSize, locale)}
       </span>
       {interval && <IntervalBar interval={interval} />}
       <span className="sr-only">{description}</span>

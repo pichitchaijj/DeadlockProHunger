@@ -1,7 +1,7 @@
-import { IntlErrorCode } from 'next-intl'
 import { getRequestConfig } from 'next-intl/server'
 import { lang } from 'next/root-params'
 import { defaultLocale, isLocale } from './config'
+import { messageFallback, onIntlError } from './fallback'
 import { loadMessages } from './messages'
 
 /**
@@ -20,12 +20,7 @@ export default getRequestConfig(async (params) => {
     locale,
     messages: await loadMessages(locale),
     timeZone: 'UTC',
-    onError(error) {
-      // English is complete (typed) and merged under every locale, so this means a key missing everywhere.
-      if (error.code === IntlErrorCode.MISSING_MESSAGE) console.error(`[i18n] ${error.message}`)
-      else console.error('[i18n]', error)
-    },
-    // Never show a raw key to users.
-    getMessageFallback: () => '',
+    onError: onIntlError,
+    getMessageFallback: messageFallback,
   }
 })

@@ -1,3 +1,4 @@
+import { useLocale, useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { sampleTier } from '@/lib/analytics/sampleTier'
 import { cx } from '@/lib/cx'
@@ -35,6 +36,8 @@ export function BuildCard({
   className,
 }: BuildCardProps) {
   const lowSample = performance ? sampleTier(performance.matches) === 'low' : false
+  const t = useTranslations('cards')
+  const locale = useLocale()
 
   return (
     <article
@@ -55,14 +58,14 @@ export function BuildCard({
           </h3>
           <p className="truncate text-caption text-text-muted">
             {heroName}
-            {authorName && <> · by {authorName}</>}
-            {updatedAt !== undefined && <> · updated {formatRelativeTime(updatedAt)}</>}
+            {authorName && <> · {t('byAuthor', { author: authorName })}</>}
+            {updatedAt !== undefined && <> · {t('updated', { time: formatRelativeTime(updatedAt, undefined, locale) })}</>}
           </p>
         </div>
       </header>
 
       {tags.length > 0 && (
-        <ul className="flex flex-wrap gap-1.5" aria-label="Build tags">
+        <ul className="flex flex-wrap gap-1.5" aria-label={t('buildTags')}>
           {tags.map((tag) => (
             <li key={tag} className="rounded-pill border border-border-strong px-2 py-0.5 text-caption text-text-muted">
               {tag}
@@ -75,17 +78,17 @@ export function BuildCard({
         {performance ? (
           <div className="flex items-end gap-3">
             <div>
-              <p className="text-caption text-text-muted">Win rate</p>
+              <p className="text-caption text-text-muted">{t('winRate')}</p>
               <WinRate value={performance.winRate} muted={lowSample} />
             </div>
             <ConfidenceBadge sampleSize={performance.matches} />
           </div>
         ) : (
-          <p className="text-caption text-text-muted">No match data for this build yet</p>
+          <p className="text-caption text-text-muted">{t('noMatchData')}</p>
         )}
         {weeklyFavorites !== undefined && (
           <p className="text-caption text-text-muted tabular">
-            {formatCompact(weeklyFavorites)} favorites this week
+            {t('favoritesThisWeek', { count: formatCompact(weeklyFavorites, locale) })}
           </p>
         )}
       </footer>

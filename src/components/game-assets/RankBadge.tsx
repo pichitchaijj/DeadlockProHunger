@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import { cx } from '@/lib/cx'
 import type { RankDisplay } from '@/lib/deadlock/rankAssets'
 import { RankEmblem, type RankIconSize } from './RankEmblem'
@@ -20,8 +21,10 @@ type RankBadgeProps = {
 }
 
 /** Rank identifier: the emblem is the visual, the rank name always stays readable beside it. */
-export function RankBadge({ rank, variant = 'compact', size, iconOnly = false, emptyLabel = 'Unranked', className }: RankBadgeProps) {
-  const label = rank?.label ?? emptyLabel
+export function RankBadge({ rank, variant = 'compact', size, iconOnly = false, emptyLabel, className }: RankBadgeProps) {
+  const t = useTranslations('data')
+  // Rank names are game data (rank.label); only the empty state and the tier prefix are UI text.
+  const label = rank?.label ?? emptyLabel ?? t('unranked')
 
   if (iconOnly) return <RankEmblem rank={rank} size={size ?? 'sm'} alt={label} className={className} />
 
@@ -33,7 +36,7 @@ export function RankBadge({ rank, variant = 'compact', size, iconOnly = false, e
           <span className={cx('font-ui font-semibold', rank ? 'text-text' : 'text-text-muted')}>{label}</span>
           {rank?.metal && (
             <span className="text-caption text-text-muted">
-              <span className="sr-only">Tier: </span>
+              <span className="sr-only">{t('rankTier')} </span>
               {rank.metal}
             </span>
           )}

@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import { useId } from 'react'
 import { cx } from '@/lib/cx'
 import { UserIcon } from '@/components/ui/icons'
@@ -8,6 +9,7 @@ import { UserIcon } from '@/components/ui/icons'
  */
 export function LoginPlaceholder({ variant = 'compact', className }: { variant?: 'compact' | 'block'; className?: string }) {
   const hintId = useId()
+  const t = useTranslations('header')
 
   return (
     <span className={cx(variant === 'block' ? 'flex flex-col gap-1.5' : 'inline-flex', className)}>
@@ -15,7 +17,7 @@ export function LoginPlaceholder({ variant = 'compact', className }: { variant?:
         type="button"
         aria-disabled="true"
         aria-describedby={hintId}
-        title="Sign-in is coming later"
+        title={t('signInSoon')}
         className={cx(
           'inline-flex items-center justify-center gap-2 rounded-sm border border-border-control font-ui text-sm font-semibold',
           'cursor-not-allowed text-text-muted',
@@ -23,10 +25,10 @@ export function LoginPlaceholder({ variant = 'compact', className }: { variant?:
         )}
       >
         <UserIcon size={18} />
-        Sign in
+        {t('signIn')}
       </button>
       <span id={hintId} className={variant === 'block' ? 'text-caption text-text-muted' : 'sr-only'}>
-        Accounts are coming later. Everything is available without signing in.
+        {t('accountsLater')}
       </span>
     </span>
   )

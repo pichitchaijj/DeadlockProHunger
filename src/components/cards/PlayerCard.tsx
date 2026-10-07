@@ -1,8 +1,8 @@
+import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { sampleTier } from '@/lib/analytics/sampleTier'
 import { cx } from '@/lib/cx'
 import { cardClasses } from '@/components/ui/Card'
-import { formatInteger } from '@/lib/format'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
 import { RankBadge } from '@/components/game-assets/RankBadge'
 import { Avatar } from '@/components/ui/Avatar'
@@ -33,6 +33,7 @@ export function PlayerCard({
   position,
   className,
 }: PlayerCardProps) {
+  const t = useTranslations('cards')
   return (
     <article
       className={cx(
@@ -57,7 +58,7 @@ export function PlayerCard({
       </div>
 
       {topHeroes.length > 0 && (
-        <ul className="hidden gap-1 sm:flex" aria-label="Most played heroes">
+        <ul className="hidden gap-1 sm:flex" aria-label={t('mostPlayed')}>
           {topHeroes.slice(0, 3).map((hero) => (
             <li key={hero.name}>
               <HeroPortrait name={hero.name} src={hero.imageSrc} size="sm" />
@@ -69,7 +70,7 @@ export function PlayerCard({
       {recent && (
         <div className="text-right">
           <WinRate value={recent.winRate} muted={sampleTier(recent.matches) === 'low'} showBar={false} />
-          <p className="text-caption text-text-muted tabular">{formatInteger(recent.matches)} matches</p>
+          <p className="text-caption text-text-muted tabular">{t('matches', { count: recent.matches })}</p>
         </div>
       )}
     </article>

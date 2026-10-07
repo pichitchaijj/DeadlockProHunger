@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import { cx } from '@/lib/cx'
 import { formatPointDelta } from '@/lib/format'
 import { ArrowDownIcon, ArrowUpIcon, MinusIcon } from '@/components/ui/icons'
@@ -20,14 +21,15 @@ type TrendBadgeProps = {
 }
 
 const config = {
-  rising: { icon: ArrowUpIcon, label: 'Rising', className: 'text-positive border-positive/40 bg-positive/10' },
-  falling: { icon: ArrowDownIcon, label: 'Falling', className: 'text-orange border-orange/40 bg-orange/10' },
-  stable: { icon: MinusIcon, label: 'Stable', className: 'text-text-muted border-border-strong' },
+  rising: { icon: ArrowUpIcon, className: 'text-positive border-positive/40 bg-positive/10' },
+  falling: { icon: ArrowDownIcon, className: 'text-orange border-orange/40 bg-orange/10' },
+  stable: { icon: MinusIcon, className: 'text-text-muted border-border-strong' },
 } as const
 
 /** Direction is always conveyed by icon + word, not color alone. */
 export function TrendBadge({ direction, delta, comparison, pulse = false, className }: TrendBadgeProps) {
-  const { icon: Icon, label, className: tone } = config[direction]
+  const { icon: Icon, className: tone } = config[direction]
+  const label = useTranslations('data.trend')(direction)
   const text = direction !== 'stable' && delta !== undefined ? `${label} ${formatPointDelta(delta)}` : label
 
   return (

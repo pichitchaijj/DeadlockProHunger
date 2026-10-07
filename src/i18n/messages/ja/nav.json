@@ -1,0 +1,65 @@
+{
+  "more": "その他",
+  "explore": "探す",
+  "later": "予定",
+  "language": "言語",
+  "languageCurrent": "言語：{name}",
+  "links": {
+    "home": {
+      "label": "ホーム",
+      "description": "今の Deadlock で注目すべきこと"
+    },
+    "meta": {
+      "label": "メタ",
+      "description": "ランク・期間別の強いヒーロー"
+    },
+    "heroes": {
+      "label": "ヒーロー",
+      "description": "マッチアップ、アイテム、アビリティ順"
+    },
+    "builds": {
+      "label": "ビルド",
+      "description": "実際の勝率つきコミュニティビルド"
+    },
+    "matches": {
+      "label": "試合",
+      "description": "試合を探す・高ランクの試合を見る"
+    },
+    "analyze": {
+      "label": "分析",
+      "description": "1 体のヒーローを詳しく分析：推移、比較、ビルド、マッチアップ"
+    },
+    "players": {
+      "label": "プレイヤー",
+      "description": "プレイヤー、ランク、最近の成績を検索"
+    },
+    "leaderboard": {
+      "label": "リーダーボード",
+      "description": "地域別の上位プレイヤー"
+    },
+    "compare": {
+      "label": "比較",
+      "description": "ヒーロー、ビルド、プレイヤーを並べて比較"
+    },
+    "draft": {
+      "label": "Draft Lab",
+      "description": "チームのシナジー、マッチアップ、次のピック"
+    },
+    "items": {
+      "label": "アイテム",
+      "description": "アイテムの成績と購入タイミング"
+    },
+    "patch": {
+      "label": "パッチ",
+      "description": "パッチノート、変更点、前後の統計"
+    },
+    "tools": {
+      "label": "ツール",
+      "description": "プレイヤー向けツール"
+    },
+    "community": {
+      "label": "コミュニティ",
+      "description": "プロジェクトと貢献者"
+    }
+  }
+}

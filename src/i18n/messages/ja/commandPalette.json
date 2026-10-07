@@ -1,0 +1,26 @@
+{
+  "dialog": "検索",
+  "input": "ヒーロー、ビルド、プレイヤー、試合、アイテム、パッチ、ツールを検索",
+  "placeholder": "ヒーロー・ビルド・プレイヤー・試合 ID を検索…",
+  "results": "検索結果",
+  "goTo": "移動先",
+  "pagesAndTools": "ページとツール",
+  "searching": "検索中…",
+  "error": "データ検索が応答しませんでした。ページとツールは引き続き使えます。",
+  "limited": "短時間に検索が多すぎます。少し待ってください。ページとツールは引き続き使えます。",
+  "count": "{count, plural, other {# 件}}",
+  "countPartial": "{count, plural, other {# 件}}（一部のデータソースが応答しませんでした）",
+  "empty": "「{query}」に一致する結果はありません。ヒーロー名、アイテム名、プレイヤー名、または試合 ID で検索してください。",
+  "forum": "フォーラム ↗",
+  "navigate": "移動",
+  "open": "開く",
+  "close": "閉じる",
+  "groups": {
+    "heroes": "ヒーロー",
+    "builds": "ビルド",
+    "players": "プレイヤー",
+    "matches": "試合",
+    "items": "アイテム",
+    "patches": "パッチ"
+  }
+}

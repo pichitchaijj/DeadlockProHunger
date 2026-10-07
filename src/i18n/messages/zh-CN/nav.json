@@ -1,0 +1,65 @@
+{
+  "more": "更多",
+  "explore": "浏览",
+  "later": "即将推出",
+  "language": "语言",
+  "languageCurrent": "语言：{name}",
+  "links": {
+    "home": {
+      "label": "首页",
+      "description": "Deadlock 当下值得关注的内容"
+    },
+    "meta": {
+      "label": "版本强势",
+      "description": "按段位和时间范围查看最强英雄"
+    },
+    "heroes": {
+      "label": "英雄",
+      "description": "对位、物品和技能加点顺序"
+    },
+    "builds": {
+      "label": "出装",
+      "description": "带真实胜率的社区出装"
+    },
+    "matches": {
+      "label": "比赛",
+      "description": "查找比赛或浏览高段位对局"
+    },
+    "analyze": {
+      "label": "分析",
+      "description": "深入分析单个英雄：趋势、同类对比、出装、对位"
+    },
+    "players": {
+      "label": "玩家",
+      "description": "搜索玩家、段位和近期表现"
+    },
+    "leaderboard": {
+      "label": "排行榜",
+      "description": "各地区顶尖玩家"
+    },
+    "compare": {
+      "label": "对比",
+      "description": "并排对比英雄、出装或玩家"
+    },
+    "draft": {
+      "label": "Draft Lab",
+      "description": "队伍协同、对位和下一手选择"
+    },
+    "items": {
+      "label": "物品",
+      "description": "物品表现与购买时机"
+    },
+    "patch": {
+      "label": "补丁",
+      "description": "补丁说明、改动内容及前后数据"
+    },
+    "tools": {
+      "label": "工具",
+      "description": "玩家实用工具"
+    },
+    "community": {
+      "label": "社区",
+      "description": "项目与贡献者"
+    }
+  }
+}

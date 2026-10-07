@@ -1,7 +1,8 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useEffect, useId, useMemo, useState, type KeyboardEvent } from 'react'
-import { primaryNav, secondaryNav, type NavItem } from '@/config/navigation'
+import { primaryNav, secondaryNav } from '@/config/navigation'
 import { useRouter } from '@/i18n/navigation'
 import { cx } from '@/lib/cx'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
@@ -11,23 +12,23 @@ import { useModalDialog } from '@/components/ui/Dialog'
 import { ArrowRightIcon, SearchIcon } from '@/components/ui/icons'
 import { MIN_QUERY, matchScore, type SearchGroup, type SearchResult } from '@/features/search/model'
 
-type Row = SearchResult & { later?: boolean }
+type Row = SearchResult & { later?: boolean; /** English label, also searchable in other locales. */ alias?: string }
 type Group = { id: string; label: string; rows: Row[] }
 
-const toRow = (item: NavItem): Row => ({
-  id: `nav-${item.href}`,
-  label: item.label,
-  description: item.description,
-  kind: 'internal',
-  href: item.href,
-  later: item.phase === 'later',
-})
-const NAV_ROWS = [...primaryNav, ...secondaryNav].map(toRow)
+const NAV_ITEMS = [...primaryNav, ...secondaryNav]
 
-/** Pages and tools match on label first, then description. Instant and client-side. */
-function pageRows(q: string): Row[] {
-  if (!q) return NAV_ROWS
-  return NAV_ROWS.map((r) => ({ r, s: matchScore(r.label, q) >= 0 ? matchScore(r.label, q) : matchScore(r.description, q) >= 0 ? 9 : -1 }))
+/**
+ * Pages and tools match on label first (the translated one, then English), then description.
+ * Instant and client-side.
+ */
+function pageRows(rows: Row[], q: string): Row[] {
+  if (!q) return rows
+  const score = (r: Row) => {
+    const label = [matchScore(r.label, q), r.alias ? matchScore(r.alias, q) : -1].filter((s) => s >= 0)
+    if (label.length) return Math.min(...label)
+    return matchScore(r.description, q) >= 0 ? 9 : -1
+  }
+  return rows.map((r) => ({ r, s: score(r) }))
     .filter(({ s }) => s >= 0)
     .sort((a, b) => a.s - b.s)
     .map(({ r }) => r)
@@ -91,18 +92,36 @@ const selectable = (r: Row) => r.kind !== 'info'
  */
 export function CommandPalette({ open, onClose }: { open: boolean; onClose: () => void }) {
   const router = useRouter()
+  const t = useTranslations('commandPalette')
+  const nav = useTranslations('nav')
   const dialogRef = useModalDialog(open)
   const listboxId = useId()
   const [query, setQuery] = useState('')
   const [activeId, setActiveId] = useState<string | null>(null)
   const remote = useRemoteSearch(query)
 
+  // Navigation destinations in the active locale (labels from the nav catalog, routes from navigation.ts).
+  const navRows = useMemo<Row[]>(
+    () =>
+      NAV_ITEMS.map((item) => ({
+        id: `nav-${item.href}`,
+        label: nav(`links.${item.id}.label`),
+        alias: item.label,
+        description: nav(`links.${item.id}.description`),
+        kind: 'internal',
+        href: item.href,
+        later: item.phase === 'later',
+      })),
+    [nav],
+  )
+
   const groups = useMemo<Group[]>(() => {
-    const list: Group[] = remote.groups.map((g) => ({ id: g.id, label: g.label, rows: g.results }))
-    const pages = pageRows(query.trim())
-    if (pages.length) list.push({ id: 'pages', label: query.trim() ? 'Pages & tools' : 'Go to', rows: pages })
+    // Group headings are UI text, translated by group id; the results themselves are data, shown as returned.
+    const list: Group[] = remote.groups.map((g) => ({ id: g.id, label: t(`groups.${g.id}`), rows: g.results }))
+    const pages = pageRows(navRows, query.trim())
+    if (pages.length) list.push({ id: 'pages', label: query.trim() ? t('pagesAndTools') : t('goTo'), rows: pages })
     return list
-  }, [remote.groups, query])
+  }, [remote.groups, query, navRows, t])
   const flat = useMemo(() => groups.flatMap((g) => g.rows), [groups])
   const enabled = useMemo(() => flat.filter(selectable), [flat])
   // Keep the highlighted row when results refresh; otherwise fall back to the first selectable one.
@@ -152,19 +171,19 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
     q.length < MIN_QUERY
       ? ''
       : remote.status === 'loading'
-        ? 'Searching…'
+        ? t('searching')
         : remote.status === 'error'
-          ? 'Data search didn’t respond. Pages and tools still work.'
+          ? t('error')
           : remote.status === 'limited'
-            ? 'Too many searches in a short time. Wait a moment; pages and tools still work.'
-            :`${flat.length} result${flat.length === 1 ? '' : 's'}${remote.partial ? ' (some sources didn’t respond)' : ''}`
+            ? t('limited')
+            : t(remote.partial ? 'countPartial' : 'count', { count: flat.length })
 
   return (
     // Backdrop click is a pointer convenience; Escape (onCancel) is the keyboard equivalent.
     // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
     <dialog
       ref={dialogRef}
-      aria-label="Search"
+      aria-label={t('dialog')}
       onCancel={(event) => {
         event.preventDefault()
         close()
@@ -184,7 +203,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
         <input
           type="text"
           role="combobox"
-          aria-label="Search heroes, builds, players, matches, items, patches and tools"
+          aria-label={t('input')}
           aria-expanded="true"
           aria-controls={listboxId}
           aria-autocomplete="list"
@@ -195,7 +214,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
             setActiveId(null)
           }}
           onKeyDown={onKeyDown}
-          placeholder="Search heroes, builds, players, match IDs…"
+          placeholder={t('placeholder')}
           autoComplete="off"
           spellCheck={false}
           maxLength={40}
@@ -207,12 +226,12 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
 
       <p role="status" className="sr-only">{status}</p>
 
-      <div id={listboxId} role="listbox" aria-label="Results" className="min-h-0 flex-1 overflow-y-auto p-2">
+      <div id={listboxId} role="listbox" aria-label={t('results')} className="min-h-0 flex-1 overflow-y-auto p-2">
         {flat.length === 0 && (
           <p className="px-3 py-8 text-center text-sm text-text-muted">
             {remote.status === 'loading' || remote.status === 'error' || remote.status === 'limited'
               ? status
-              : `Nothing matches “${q}”. Try a hero, item, player name or a match ID.`}
+              : t('empty', { query: q })}
           </p>
         )}
         {groups.map((group) => (
@@ -243,8 +262,8 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2">
                       <span className={cx('truncate font-ui text-sm font-semibold', selected ? 'text-highlight' : 'text-text')}>{row.label}</span>
-                      {row.later && <Marker>Later</Marker>}
-                      {row.kind === 'external' && <Marker>Forum ↗</Marker>}
+                      {row.later && <Marker>{nav('later')}</Marker>}
+                      {row.kind === 'external' && <Marker>{t('forum')}</Marker>}
                     </span>
                     <span className="block truncate text-caption text-text-muted">{row.description}</span>
                   </span>
@@ -257,9 +276,9 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
       </div>
 
       <footer className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border px-4 py-2.5 text-caption text-text-muted">
-        <span><Kbd>↑</Kbd> <Kbd>↓</Kbd> navigate</span>
-        <span><Kbd>Enter</Kbd> open</span>
-        <span><Kbd>Esc</Kbd> close</span>
+        <span><Kbd>↑</Kbd> <Kbd>↓</Kbd> {t('navigate')}</span>
+        <span><Kbd>Enter</Kbd> {t('open')}</span>
+        <span><Kbd>Esc</Kbd> {t('close')}</span>
       </footer>
     </dialog>
   )

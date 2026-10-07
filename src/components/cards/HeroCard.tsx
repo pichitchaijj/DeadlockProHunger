@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { sampleTier } from '@/lib/analytics/sampleTier'
 import { cx } from '@/lib/cx'
@@ -25,6 +26,7 @@ export type HeroCardProps = {
 /** Hero tile for grids and lists. The whole card is one link. */
 export function HeroCard({ name, href, imageSrc, subtitle, stats, className }: HeroCardProps) {
   const lowSample = stats ? sampleTier(stats.matches) === 'low' : false
+  const t = useTranslations('cards')
 
   return (
     <Link
@@ -50,7 +52,7 @@ export function HeroCard({ name, href, imageSrc, subtitle, stats, className }: H
       </span>
       {stats && (
         <span className="text-right">
-          <span className="sr-only">Win rate </span>
+          <span className="sr-only">{t('winRate')} </span>
           <WinRate value={stats.winRate} muted={lowSample} />
         </span>
       )}

@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import type { ReactNode } from 'react'
 import { cx } from '@/lib/cx'
 import { AlertIcon, ReticleIcon } from './icons'
@@ -52,14 +53,11 @@ type ErrorStateProps = {
   className?: string
 }
 
-/** Plain-language failure. Never shows placeholder numbers. */
-export function ErrorState({
-  title = 'Data unavailable',
-  description = 'We couldn’t load this data right now. It may be a temporary problem with the data source.',
-  ...props
-}: ErrorStateProps) {
+/** Plain-language failure. Never shows placeholder numbers. Defaults come from `errors.generic`. */
+export function ErrorState({ title, description, ...props }: ErrorStateProps) {
+  const t = useTranslations('errors.generic')
   return (
-    <StateFrame icon={<AlertIcon size={40} />} tone="error" role="alert" title={title} description={description} {...props} />
+    <StateFrame icon={<AlertIcon size={40} />} tone="error" role="alert" title={title ?? t('title')} description={description ?? t('description')} {...props} />
   )
 }
 

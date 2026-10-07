@@ -1,0 +1,17 @@
+{
+  "winRate": "อัตราชนะ",
+  "byAuthor": "โดย {author}",
+  "updated": "อัปเดต {time}",
+  "buildTags": "แท็กบิลด์",
+  "noMatchData": "ยังไม่มีข้อมูลแมตช์สำหรับบิลด์นี้",
+  "favoritesThisWeek": "ถูกใจ {count} ครั้งในสัปดาห์นี้",
+  "match": "แมตช์ {id}",
+  "averageRank": "เฉลี่ย",
+  "win": "ชนะ",
+  "loss": "แพ้",
+  "won": "ชนะ",
+  "lost": "แพ้",
+  "teamHeroes": "ฮีโร่ฝั่ง {team}",
+  "mostPlayed": "ฮีโร่ที่เล่นบ่อยที่สุด",
+  "matches": "{count, plural, other {# แมตช์}}"
+}

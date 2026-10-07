@@ -1,3 +1,4 @@
+import { useLocale, useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { cx } from '@/lib/cx'
 import { cardClasses } from '@/components/ui/Card'
@@ -37,6 +38,8 @@ export function MatchCard({
   perspective,
   className,
 }: MatchCardProps) {
+  const t = useTranslations('cards')
+  const locale = useLocale()
   return (
     <article
       className={cx(
@@ -49,19 +52,19 @@ export function MatchCard({
       <header className="flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="font-ui text-sm font-semibold text-text">
           <Link href={href} className="after:absolute after:inset-0 after:rounded-md hover:text-highlight">
-            Match {matchId}
+            {t('match', { id: matchId })}
           </Link>
         </h3>
         <p className="text-caption text-text-muted tabular">
-          {formatRelativeTime(startedAt)} · {formatDuration(durationS)}
-          {averageRank && <> · Avg <RankBadge rank={averageRank} size="xs" /></>}
+          {formatRelativeTime(startedAt, undefined, locale)} · {formatDuration(durationS)}
+          {averageRank && <> · {t('averageRank')} <RankBadge rank={averageRank} size="xs" /></>}
         </p>
       </header>
 
       {perspective && (
         <p className="font-ui text-sm">
           <span className={cx('font-semibold', perspective.won ? 'text-positive' : 'text-negative')}>
-            {perspective.won ? 'Win' : 'Loss'}
+            {perspective.won ? t('win') : t('loss')}
           </span>
           <span className="text-text-muted">
             {' '}· {perspective.heroName} · <span className="tabular">{perspective.kda}</span>
@@ -75,10 +78,10 @@ export function MatchCard({
             <span className="w-16 shrink-0 text-caption">
               <span className="block text-text-muted">{team.label}</span>
               <span className={cx('font-semibold', team.won ? 'text-positive' : 'text-text-muted')}>
-                {team.won ? 'Won' : 'Lost'}
+                {team.won ? t('won') : t('lost')}
               </span>
             </span>
-            <ul className="flex flex-wrap gap-1" aria-label={`${team.label} heroes`}>
+            <ul className="flex flex-wrap gap-1" aria-label={t('teamHeroes', { team: team.label })}>
               {team.heroes.map((hero) => (
                 <li key={hero.name}>
                   <HeroPortrait name={hero.name} src={hero.imageSrc} size="sm" />

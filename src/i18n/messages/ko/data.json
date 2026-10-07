@@ -1,0 +1,29 @@
+{
+  "sample": {
+    "low": "표본 적음",
+    "moderate": "표본 보통",
+    "high": "표본 많음"
+  },
+  "confidence": "{tier}, {count, plural, other {#경기}}",
+  "confidenceInterval": "{tier}, {count, plural, other {#경기}}, 95% 신뢰구간 {low}~{high}",
+  "trend": {
+    "rising": "상승",
+    "falling": "하락",
+    "stable": "보합"
+  },
+  "tier": "{tier} 티어",
+  "tierTitle": "{tier} 티어: {rule}",
+  "tierRules": {
+    "S": "승률 구간 전체가 52% 초과",
+    "A": "승률 구간 전체가 50% 초과",
+    "B": "승률 구간에 50% 포함",
+    "C": "승률 구간 전체가 50% 미만"
+  },
+  "noTier": "티어 없음, 경기 수 부족",
+  "noTierTitle": "티어를 정하기에 경기 수가 부족합니다",
+  "updated": "업데이트: <when>{time}</when>",
+  "stale": "갱신 지연",
+  "staleTitle": "데이터 소스가 평소보다 오래 갱신되지 않았습니다. 마지막으로 정상 수집된 데이터를 표시합니다.",
+  "unranked": "랭크 없음",
+  "rankTier": "티어:"
+}

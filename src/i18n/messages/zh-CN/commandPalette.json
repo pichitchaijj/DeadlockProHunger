@@ -1,0 +1,26 @@
+{
+  "dialog": "搜索",
+  "input": "搜索英雄、出装、玩家、比赛、物品、补丁和工具",
+  "placeholder": "搜索英雄、出装、玩家、比赛 ID…",
+  "results": "搜索结果",
+  "goTo": "前往",
+  "pagesAndTools": "页面与工具",
+  "searching": "搜索中…",
+  "error": "数据搜索无响应。页面和工具仍可使用。",
+  "limited": "短时间内搜索次数过多，请稍候。页面和工具仍可使用。",
+  "count": "{count, plural, other {# 条结果}}",
+  "countPartial": "{count, plural, other {# 条结果}}（部分数据源无响应）",
+  "empty": "没有与“{query}”匹配的结果。请尝试英雄、物品、玩家名称或比赛 ID。",
+  "forum": "论坛 ↗",
+  "navigate": "切换",
+  "open": "打开",
+  "close": "关闭",
+  "groups": {
+    "heroes": "英雄",
+    "builds": "出装",
+    "players": "玩家",
+    "matches": "比赛",
+    "items": "物品",
+    "patches": "补丁"
+  }
+}

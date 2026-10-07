@@ -13,6 +13,8 @@ import { useDisclosureMenu } from '@/components/ui/useDisclosureMenu'
 export type LanguageSwitcherLabels = {
   /** "Language", in the active locale. */
   language: string
+  /** The switcher button's accessible name: "Language: English", in the active locale. */
+  current: string
   /** Each language's name in the active locale ("Thai"), shown under its own name ("ไทย"). */
   names: Record<Locale, string>
 }
@@ -76,7 +78,7 @@ function SwitcherMenu({ labels, locale, options }: { labels: LanguageSwitcherLab
         type="button"
         aria-expanded={open}
         aria-controls={panelId}
-        aria-label={`${labels.language}: ${localeEndonyms[locale]}`}
+        aria-label={labels.current}
         onClick={() => setOpen((v) => !v)}
         className={cx(
           'flex h-10 items-center gap-1.5 rounded-sm px-2.5 font-display text-[0.95rem] font-semibold tracking-[0.08em] uppercase',

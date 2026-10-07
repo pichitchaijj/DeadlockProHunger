@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from 'next'
-import { NextIntlClientProvider } from 'next-intl'
 import { Barlow_Condensed, Inter } from 'next/font/google'
 import type { ReactNode } from 'react'
 import type { Locale } from '@/i18n/config'
-import { loadMessages } from '@/i18n/messages'
+import { IntlClientProvider } from '@/i18n/IntlClientProvider'
+import { clientMessages, loadMessages } from '@/i18n/messages'
 import { CommandPaletteProvider } from './command/CommandPaletteProvider'
 import { Footer } from './Footer'
 import { SiteHeader } from './header/SiteHeader'
@@ -15,9 +15,9 @@ import { SkipLink } from './SkipLink'
  * (app/global-not-found.tsx), which renders outside every layout and so needs the same document.
  * Each route file imports globals.css itself.
  *
- * NextIntlClientProvider gives client components the active locale (locale-aware links in the header,
- * menus and pages: src/i18n/navigation.ts). It carries only the messages client components read
- * (Common, Errors for error.tsx); everything else is translated on the server.
+ * IntlClientProvider (next-intl) gives client components the active locale (locale-aware links in the header,
+ * menus and pages: src/i18n/navigation.ts) and only the active locale's client namespaces
+ * (CLIENT_NAMESPACES); everything else is translated on the server.
  */
 
 const display = Barlow_Condensed({
@@ -62,7 +62,7 @@ export async function SiteDocument({ lang, children }: { lang: Locale; children:
   return (
     <html lang={lang} className={`${display.variable} ${displaySlant.variable} ${ui.variable}`}>
       <body className="flex min-h-dvh flex-col">
-        <NextIntlClientProvider locale={lang} messages={{ Common: messages.Common, Errors: messages.Errors }}>
+        <IntlClientProvider locale={lang} messages={clientMessages(messages)}>
           <SkipLink />
           <CommandPaletteProvider>
             <SiteHeader />
@@ -71,7 +71,7 @@ export async function SiteDocument({ lang, children }: { lang: Locale; children:
             </main>
             <Footer />
           </CommandPaletteProvider>
-        </NextIntlClientProvider>
+        </IntlClientProvider>
       </body>
     </html>
   )

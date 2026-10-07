@@ -1,6 +1,7 @@
 'use client'
 
 import { Link, usePathname } from '@/i18n/navigation'
+import { useTranslations } from 'next-intl'
 import { useState, type ReactNode } from 'react'
 import { isActivePath, type NavItem } from '@/config/navigation'
 import { cx } from '@/lib/cx'
@@ -20,6 +21,7 @@ export function MobileNav({ primary, secondary, labels, languages }: { primary: 
   // App path without the locale prefix (/th/heroes → /heroes), compared with the nav hrefs.
   const pathname = usePathname()
   const { open: openSearch } = useCommandPalette()
+  const t = useTranslations('header')
   const [open, setOpen] = useState(false)
   const close = () => setOpen(false)
 
@@ -28,7 +30,7 @@ export function MobileNav({ primary, secondary, labels, languages }: { primary: 
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="Open menu"
+        aria-label={t('openMenu')}
         aria-haspopup="dialog"
         aria-expanded={open}
         className="inline-flex size-11 items-center justify-center rounded-sm text-text hover:bg-surface-raised"
@@ -36,8 +38,8 @@ export function MobileNav({ primary, secondary, labels, languages }: { primary: 
         <MenuIcon />
       </button>
 
-      <Drawer open={open} onClose={close} side="right" title="Menu">
-        <nav aria-label="Mobile" className="flex flex-col gap-6">
+      <Drawer open={open} onClose={close} side="right" title={t('menu')}>
+        <nav aria-label={t('mobileNav')} className="flex flex-col gap-6">
           <button
             type="button"
             onClick={() => {
@@ -47,7 +49,7 @@ export function MobileNav({ primary, secondary, labels, languages }: { primary: 
             className="flex h-12 items-center gap-3 rounded-sm border border-border-control bg-surface-sunken px-4 text-left font-ui text-sm text-text-muted"
           >
             <SearchIcon size={18} />
-            Search pages, players, matches…
+            {t('searchPages')}
           </button>
 
           <ul className="flex flex-col">

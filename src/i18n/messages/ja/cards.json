@@ -1,0 +1,17 @@
+{
+  "winRate": "勝率",
+  "byAuthor": "作成：{author}",
+  "updated": "更新 {time}",
+  "buildTags": "ビルドタグ",
+  "noMatchData": "このビルドの試合データはまだありません",
+  "favoritesThisWeek": "今週のお気に入り {count}",
+  "match": "試合 {id}",
+  "averageRank": "平均",
+  "win": "勝利",
+  "loss": "敗北",
+  "won": "勝利",
+  "lost": "敗北",
+  "teamHeroes": "{team} のヒーロー",
+  "mostPlayed": "よく使うヒーロー",
+  "matches": "{count, plural, other {# 試合}}"
+}

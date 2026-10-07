@@ -1,0 +1,65 @@
+{
+  "more": "더 보기",
+  "explore": "둘러보기",
+  "later": "예정",
+  "language": "언어",
+  "languageCurrent": "언어: {name}",
+  "links": {
+    "home": {
+      "label": "홈",
+      "description": "지금 Deadlock에서 중요한 것"
+    },
+    "meta": {
+      "label": "메타",
+      "description": "랭크·기간별 강한 영웅"
+    },
+    "heroes": {
+      "label": "영웅",
+      "description": "상성, 아이템, 능력 순서"
+    },
+    "builds": {
+      "label": "빌드",
+      "description": "실제 승률이 있는 커뮤니티 빌드"
+    },
+    "matches": {
+      "label": "매치",
+      "description": "매치를 찾거나 상위 랭크 경기 보기"
+    },
+    "analyze": {
+      "label": "분석",
+      "description": "영웅 하나를 깊이 분석: 추세, 비교, 빌드, 상성"
+    },
+    "players": {
+      "label": "플레이어",
+      "description": "플레이어, 랭크, 최근 성적 검색"
+    },
+    "leaderboard": {
+      "label": "리더보드",
+      "description": "지역별 상위 플레이어"
+    },
+    "compare": {
+      "label": "비교",
+      "description": "영웅, 빌드, 플레이어를 나란히 비교"
+    },
+    "draft": {
+      "label": "Draft Lab",
+      "description": "팀 시너지, 상성, 다음 픽"
+    },
+    "items": {
+      "label": "아이템",
+      "description": "아이템 성과와 구매 시점"
+    },
+    "patch": {
+      "label": "패치",
+      "description": "패치 노트, 변경 사항, 전후 통계"
+    },
+    "tools": {
+      "label": "도구",
+      "description": "플레이어를 위한 도구"
+    },
+    "community": {
+      "label": "커뮤니티",
+      "description": "프로젝트와 기여자"
+    }
+  }
+}

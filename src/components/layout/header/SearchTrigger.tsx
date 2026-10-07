@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { cx } from '@/lib/cx'
 import { SearchIcon } from '@/components/ui/icons'
 import { useCommandPalette } from '../command/CommandPaletteProvider'
@@ -10,13 +11,14 @@ import { useCommandPalette } from '../command/CommandPaletteProvider'
  */
 export function SearchTrigger({ variant = 'field', className }: { variant?: 'field' | 'icon'; className?: string }) {
   const { open, shortcutLabel } = useCommandPalette()
+  const t = useTranslations('header')
 
   if (variant === 'icon') {
     return (
       <button
         type="button"
         onClick={open}
-        aria-label="Search"
+        aria-label={t('search')}
         aria-haspopup="dialog"
         aria-keyshortcuts="Control+K Meta+K"
         className={cx(
@@ -43,7 +45,7 @@ export function SearchTrigger({ variant = 'field', className }: { variant?: 'fie
       )}
     >
       <SearchIcon size={18} />
-      <span className="mr-6">Search</span>
+      <span className="mr-6">{t('search')}</span>
       <kbd className="ml-auto rounded-xs border border-border-strong bg-surface px-1.5 py-0.5 font-ui text-caption text-text-muted group-hover:text-text">
         {shortcutLabel}
       </kbd>

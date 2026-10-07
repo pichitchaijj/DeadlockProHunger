@@ -1,0 +1,29 @@
+{
+  "sample": {
+    "low": "Low sample",
+    "moderate": "Moderate sample",
+    "high": "High sample"
+  },
+  "confidence": "{tier}, {count, plural, one {# match} other {# matches}}",
+  "confidenceInterval": "{tier}, {count, plural, one {# match} other {# matches}}, 95% interval {low} to {high}",
+  "trend": {
+    "rising": "Rising",
+    "falling": "Falling",
+    "stable": "Stable"
+  },
+  "tier": "Tier {tier}",
+  "tierTitle": "Tier {tier}: {rule}",
+  "tierRules": {
+    "S": "Win-rate interval entirely above 52%",
+    "A": "Win-rate interval entirely above 50%",
+    "B": "Win-rate interval includes 50%",
+    "C": "Win-rate interval entirely below 50%"
+  },
+  "noTier": "No tier, not enough matches",
+  "noTierTitle": "Not enough matches for a tier",
+  "updated": "Updated <when>{time}</when>",
+  "stale": "Stale",
+  "staleTitle": "The data source hasn’t refreshed this in longer than usual. Showing the last good data.",
+  "unranked": "Unranked",
+  "rankTier": "Tier:"
+}

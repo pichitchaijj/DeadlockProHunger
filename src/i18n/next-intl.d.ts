@@ -1,10 +1,10 @@
 import type { Locale } from './config'
-import type en from './messages/en.json'
+import type { Messages } from './messages/en'
 
-// Typed locales and message keys: a key missing from en.json is a type error.
+// Typed locales and message keys: a key missing from the English catalog is a type error.
 declare module 'next-intl' {
   interface AppConfig {
     Locale: Locale
-    Messages: typeof en
+    Messages: Messages
   }
 }

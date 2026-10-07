@@ -1,0 +1,26 @@
+{
+  "dialog": "검색",
+  "input": "영웅, 빌드, 플레이어, 매치, 아이템, 패치, 도구 검색",
+  "placeholder": "영웅, 빌드, 플레이어, 매치 ID 검색…",
+  "results": "검색 결과",
+  "goTo": "바로 가기",
+  "pagesAndTools": "페이지 및 도구",
+  "searching": "검색 중…",
+  "error": "데이터 검색이 응답하지 않았습니다. 페이지와 도구는 계속 사용할 수 있습니다.",
+  "limited": "짧은 시간에 검색이 너무 많습니다. 잠시 기다려 주세요. 페이지와 도구는 계속 사용할 수 있습니다.",
+  "count": "{count, plural, other {#개 결과}}",
+  "countPartial": "{count, plural, other {#개 결과}} (일부 데이터 소스가 응답하지 않음)",
+  "empty": "“{query}”와(과) 일치하는 결과가 없습니다. 영웅, 아이템, 플레이어 이름 또는 매치 ID로 검색해 보세요.",
+  "forum": "포럼 ↗",
+  "navigate": "이동",
+  "open": "열기",
+  "close": "닫기",
+  "groups": {
+    "heroes": "영웅",
+    "builds": "빌드",
+    "players": "플레이어",
+    "matches": "매치",
+    "items": "아이템",
+    "patches": "패치"
+  }
+}
