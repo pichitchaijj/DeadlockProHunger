@@ -1,3 +1,4 @@
+import { useLocale, useTranslations } from 'next-intl'
 import { InView } from '@/components/motion/InView'
 import { SAMPLE_TIER_THRESHOLDS } from '@/lib/analytics/sampleTier'
 import { formatInteger, formatPercent } from '@/lib/format'
@@ -12,9 +13,13 @@ const TAIL = 0.99
 /**
  * Win rate by purchase minute (line + 95% interval band, 50% reference) over purchase volume per minute
  * (bars, middle half of purchases shaded). Stretched SVGs with HTML axis labels (docs/MOBILE.md), so the
- * chart fits any width; the table under "Show data" holds every value.
+ * chart fits any width; the table under "Show data" holds every value. Items detail only (items.chart).
  */
 export function PurchaseTimingChart({ points, typical }: Props) {
+  const t = useTranslations('items.chart')
+  const winRate = useTranslations('cards')('winRate')
+  const locale = useLocale()
+  const min = formatInteger(SAMPLE_TIER_THRESHOLDS.moderate, locale)
   const plotted = plottable(points)
   const xMax = Math.max(minuteAtShare(points, TAIL), plotted.at(-1)?.minute ?? 0) + 1
   const shown = points.filter((p) => p.minute < xMax)
@@ -37,10 +42,10 @@ export function PurchaseTimingChart({ points, typical }: Props) {
   const best = plotted.reduce<MinutePoint | null>((a, p) => (!a || p.winRate > a.winRate ? p : a), null)
   const worst = plotted.reduce<MinutePoint | null>((a, p) => (!a || p.winRate < a.winRate ? p : a), null)
   const summary = [
-    typical && `Half of all purchases happen between minute ${typical.from} and ${typical.to}.`,
+    typical && t('typical', { from: typical.from, to: typical.to }),
     best && worst && plotted.length >= 2
-      ? `Across minutes with ${formatInteger(SAMPLE_TIER_THRESHOLDS.moderate)}+ purchases, the win rate ranges from ${formatPercent(worst.winRate)} (bought in minute ${worst.minute}) to ${formatPercent(best.winRate)} (minute ${best.minute}).`
-      : `No single minute has ${formatInteger(SAMPLE_TIER_THRESHOLDS.moderate)}+ purchases, so win rates by minute aren’t drawn.`,
+      ? t('range', { min, low: formatPercent(worst.winRate), lowMinute: worst.minute, high: formatPercent(best.winRate), highMinute: best.minute })
+      : t('noRange', { min }),
   ]
     .filter(Boolean)
     .join(' ')
@@ -82,13 +87,13 @@ export function PurchaseTimingChart({ points, typical }: Props) {
                   </g>
                 ))}
               </svg>
-              <span className="absolute top-1.5 left-2 text-caption text-text-muted">Win rate by purchase minute</span>
+              <span className="absolute top-1.5 left-2 text-caption text-text-muted">{t('plotLabel')}</span>
             </div>
           </>
         )}
 
         <div className="relative h-16 text-right text-caption text-text-muted" aria-hidden="true">
-          <span className="absolute right-0 bottom-0">Buys</span>
+          <span className="absolute right-0 bottom-0">{t('buys')}</span>
         </div>
         <div className="relative h-16 overflow-hidden rounded-sm border border-border bg-surface-sunken">
           <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" className="absolute inset-0 size-full animate-fade-in">
@@ -102,31 +107,29 @@ export function PurchaseTimingChart({ points, typical }: Props) {
 
         <div aria-hidden="true" />
         <div className="relative h-5 text-caption text-text-muted tabular" aria-hidden="true">
-          {ticks.map((t) => (
-            <span key={t} className="absolute -translate-x-1/2 first:translate-x-0" style={{ left: `${(t / xMax) * 100}%` }}>
-              {t}m
+          {ticks.map((tick) => (
+            <span key={tick} className="absolute -translate-x-1/2 first:translate-x-0" style={{ left: `${(tick / xMax) * 100}%` }}>
+              {t('tick', { minute: tick })}
             </span>
           ))}
         </div>
       </div>
 
       <figcaption className="text-caption text-text-muted">
-        {summary} Line: win rate of players who bought the item in that minute, with its 95% interval (band); minutes with fewer than{' '}
-        {formatInteger(SAMPLE_TIER_THRESHOLDS.moderate)} purchases are left out. Dashed line: 50%. Bars: share of purchases per minute; shaded: the middle half of
-        purchases.
+        {summary} {t('legend', { min })}
       </figcaption>
 
       <details className="text-sm">
-        <summary className="cursor-pointer py-3 font-ui font-semibold text-primary hover:text-highlight">Show data</summary>
+        <summary className="cursor-pointer py-3 font-ui font-semibold text-primary hover:text-highlight">{t('showData')}</summary>
         <div className="mt-2 max-h-72 overflow-y-auto rounded-sm border border-border">
           <table className="w-full font-ui text-sm">
-            <caption className="sr-only">Purchases and win rate by purchase minute, the values behind the chart</caption>
+            <caption className="sr-only">{t('tableCaption')}</caption>
             <thead className="sticky top-0 bg-surface text-eyebrow">
               <tr>
-                <th scope="col" className="px-3 py-2 text-left">Minute</th>
-                <th scope="col" className="px-3 py-2 text-right">Purchases</th>
-                <th scope="col" className="px-3 py-2 text-right">Win rate</th>
-                <th scope="col" className="hidden px-3 py-2 text-right sm:table-cell">95% interval</th>
+                <th scope="col" className="px-3 py-2 text-left">{t('minute')}</th>
+                <th scope="col" className="px-3 py-2 text-right">{t('purchases')}</th>
+                <th scope="col" className="px-3 py-2 text-right">{winRate}</th>
+                <th scope="col" className="hidden px-3 py-2 text-right sm:table-cell">{t('interval')}</th>
               </tr>
             </thead>
             <tbody>
@@ -136,10 +139,10 @@ export function PurchaseTimingChart({ points, typical }: Props) {
                     {p.minute}–{p.minute + 1}
                   </td>
                   <td className="px-3 py-1.5 text-right text-text tabular">
-                    {formatInteger(p.matches)} <span className="text-text-muted">({formatPercent(p.share)})</span>
+                    {formatInteger(p.matches, locale)} <span className="text-text-muted">({formatPercent(p.share)})</span>
                   </td>
                   <td className="px-3 py-1.5 text-right tabular">
-                    {p.sample === 'low' ? <span className="text-text-muted" title="Low sample">{formatPercent(p.winRate)}*</span> : <span className="text-text">{formatPercent(p.winRate)}</span>}
+                    {p.sample === 'low' ? <span className="text-text-muted" title={t('lowSample')}>{formatPercent(p.winRate)}*</span> : <span className="text-text">{formatPercent(p.winRate)}</span>}
                   </td>
                   <td className="hidden px-3 py-1.5 text-right text-text-muted tabular sm:table-cell">
                     {formatPercent(p.interval.low)}–{formatPercent(p.interval.high)}
@@ -149,7 +152,7 @@ export function PurchaseTimingChart({ points, typical }: Props) {
             </tbody>
           </table>
         </div>
-        <p className="mt-2 text-caption text-text-muted">* Fewer than {formatInteger(SAMPLE_TIER_THRESHOLDS.moderate)} purchases (Low sample): not drawn.</p>
+        <p className="mt-2 text-caption text-text-muted">{t('footnote', { min })}</p>
       </details>
     </InView>
   )

@@ -22,6 +22,11 @@ type StatCardProps = {
   interval?: Interval
   /** Plain-language "Why?" explanation (layer L2), revealed on demand. */
   why?: ReactNode
+  /**
+   * The disclosure's own text. Shared by pages localized at different times, so the card doesn't
+   * translate itself: a localized caller passes its labels; without them it stays English.
+   */
+  whyLabels?: { show: string; hide: string }
   /** Optional sparkline or action link under the value. */
   footer?: ReactNode
   /**
@@ -34,6 +39,8 @@ type StatCardProps = {
   className?: string
 }
 
+const WHY_LABELS = { show: 'Why?', hide: 'Hide explanation' }
+
 /** Insight card (layer L1): one number that answers one question, with its context. */
 export function StatCard({
   label,
@@ -44,6 +51,7 @@ export function StatCard({
   scope,
   interval,
   why,
+  whyLabels = WHY_LABELS,
   footer,
   showScope = true,
   featured = false,
@@ -81,8 +89,8 @@ export function StatCard({
       {why && (
         <details className="group border-t border-border pt-3">
           <summary className="inline-flex min-h-11 min-w-11 cursor-pointer list-none items-center font-ui text-sm font-medium text-primary hover:text-highlight [&::-webkit-details-marker]:hidden">
-            <span className="group-open:hidden">Why?</span>
-            <span className="hidden group-open:inline">Hide explanation</span>
+            <span className="group-open:hidden">{whyLabels.show}</span>
+            <span className="hidden group-open:inline">{whyLabels.hide}</span>
           </summary>
           <div className="mt-2 animate-awaken text-sm text-text-muted">{why}</div>
         </details>

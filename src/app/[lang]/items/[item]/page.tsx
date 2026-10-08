@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
+import { OG_LOCALE } from '@/i18n/config'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { DataNotice } from '@/components/data/DataState'
@@ -27,22 +29,30 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>
 /** How many heroes the "who buys it" list shows. */
 const HERO_LIMIT = 9
 
+/** The item name is game data (from the catalog); only the surrounding words are translated. */
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const item = await findItem((await params).item).catch(() => null)
-  return item
-    ? { title: `${item.name} · Items`, description: `${item.name}: win rate, buy rate and purchase timings by hero, rank and patch, with sample sizes.` }
-    : { title: 'Item' }
+  const [item, t, locale] = await Promise.all([findItem((await params).item).catch(() => null), getTranslations('items.meta'), getLocale()])
+  if (!item) return { title: t('fallbackTitle') }
+  const title = t('detailTitle', { item: item.name })
+  const description = t('detailDescription', { item: item.name })
+  return { title, description, openGraph: { title, description, locale: OG_LOCALE[locale], type: 'website' } }
 }
 
 export default async function ItemPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   const [{ item: slug }, raw] = await Promise.all([params, searchParams])
   const query = parseItemScope(raw)
-  const itemLoad = await attempt('[item] catalog failed', findItem(slug))
+  const [itemLoad, t, builds, common, locale] = await Promise.all([
+    attempt('[item] catalog failed', findItem(slug)),
+    getTranslations('items'),
+    getTranslations('builds.list'),
+    getTranslations('common'),
+    getLocale(),
+  ])
 
   if (!itemLoad.ok) {
     return (
       <PageContainer>
-        <DataNotice error={itemLoad.kind} what="Item" action={<ButtonLink href={itemHref(slug, query)} variant="secondary" size="sm">Try again</ButtonLink>} />
+        <DataNotice error={itemLoad.kind} what="Item" action={<ButtonLink href={itemHref(slug, query)} variant="secondary" size="sm">{common('tryAgain')}</ButtonLink>} />
       </PageContainer>
     )
   }
@@ -51,26 +61,24 @@ export default async function ItemPage({ params, searchParams }: { params: Param
 
   const [heroes, ctxLoad] = await Promise.all([heroOptions(), attempt('[item] scope failed', getItemContext(query))])
   const href = (changes: Partial<ItemScopeQuery>) => itemHref(item.slug, query, changes)
+  // Slot is the game's item category (data); "Tier" and "souls" are UI words around numbers.
+  const eyebrow = [item.slot && capitalize(item.slot), item.tier && t('tier', { tier: item.tier }), item.cost && t('cost', { cost: formatInteger(item.cost, locale) })]
 
   return (
     <PageContainer className="flex flex-col gap-(--spacing-section)">
       <div className="flex flex-col gap-6">
         <Link href={itemsHref({ ...DEFAULT_ITEMS_QUERY, ...query })} className="self-start font-ui text-sm font-semibold text-primary hover:text-highlight pointer-coarse:min-h-11">
-          ← All items
+          {t('detail.back')}
         </Link>
         <div className="flex items-center gap-4">
           <ItemIcon name={item.name} src={item.icon} slot={item.slot} tier={item.tier} size={64} decorative />
-          <SectionHeader
-            as="h1"
-            eyebrow={[item.slot && capitalize(item.slot), item.tier && `Tier ${item.tier}`, item.cost && `${formatInteger(item.cost)} souls`].filter(Boolean).join(' · ') || 'Item'}
-            title={item.name}
-          />
+          <SectionHeader as="h1" eyebrow={eyebrow.filter(Boolean).join(' · ') || t('meta.fallbackTitle')} title={item.name} />
         </div>
 
         {!ctxLoad.ok ? (
-          <DataNotice error={ctxLoad.kind} what="Item statistics" action={<ButtonLink href={href({})} variant="secondary" size="sm">Try again</ButtonLink>} />
+          <DataNotice error={ctxLoad.kind} what="Item statistics" action={<ButtonLink href={href({})} variant="secondary" size="sm">{common('tryAgain')}</ButtonLink>} />
         ) : ctxLoad.value === 'unknown-hero' ? (
-          <EmptyState title="Unknown hero" action={<ButtonLink href={href({ hero: 'all' })} variant="secondary" size="sm">All heroes</ButtonLink>} />
+          <EmptyState title={builds('unknownHero')} action={<ButtonLink href={href({ hero: 'all' })} variant="secondary" size="sm">{builds('allHeroes')}</ButtonLink>} />
         ) : (
           <>
             <ItemFilters query={query} href={href} heroes={heroes} rankLabels={ctxLoad.value.scope.rankLabels} ranks={ctxLoad.value.scope.ranks} />
@@ -86,33 +94,29 @@ export default async function ItemPage({ params, searchParams }: { params: Param
   )
 }
 
-function ItemSections({ item, query, ctx }: { item: ItemRef; query: ItemScopeQuery; ctx: ItemContext }) {
+async function ItemSections({ item, query, ctx }: { item: ItemRef; query: ItemScopeQuery; ctx: ItemContext }) {
+  const t = await getTranslations('items.detail')
   const key = itemHref(item.slug, query)
   return (
     <>
       <section aria-labelledby="performance-title" className="flex flex-col gap-5">
-        <SectionHeader id="performance-title" eyebrow="Layer 1" title="Item performance" description="How often it’s bought and how those matches ended." />
-        <Suspense key={key} fallback={<PerformanceSkeleton />}>
+        <SectionHeader id="performance-title" eyebrow={t('layer', { n: 1 })} title={t('performanceTitle')} description={t('performanceDescription')} />
+        <Suspense key={key} fallback={<PerformanceSkeleton label={t('loadingPerformance')} />}>
           <Performance item={item} query={query} ctx={ctx} />
         </Suspense>
       </section>
 
       <section aria-labelledby="timing-title" className="flex flex-col gap-5">
-        <SectionHeader
-          id="timing-title"
-          eyebrow="Layer 2"
-          title="Purchase timing"
-          description="When players buy it, and the win rate of players who bought it at each point in the match."
-        />
-        <Suspense key={key} fallback={<TimingSkeleton />}>
+        <SectionHeader id="timing-title" eyebrow={t('layer', { n: 2 })} title={t('timingTitle')} description={t('timingDescription')} />
+        <Suspense key={key} fallback={<TimingSkeleton label={t('loadingTimings')} />}>
           <Timing item={item} query={query} ctx={ctx} />
         </Suspense>
       </section>
 
       {ctx.hero === null && (
         <section aria-labelledby="heroes-title" className="flex flex-col gap-5">
-          <SectionHeader id="heroes-title" eyebrow="Layer 3" title="Who buys it" description="Heroes whose players buy it most often. Select one to see its numbers for that hero." />
-          <Suspense key={key} fallback={<HeroesSkeleton />}>
+          <SectionHeader id="heroes-title" eyebrow={t('layer', { n: 3 })} title={t('heroesTitle')} description={t('heroesDescription')} />
+          <Suspense key={key} fallback={<HeroesSkeleton label={t('loadingHeroes')} />}>
             <Heroes item={item} query={query} ctx={ctx} />
           </Suspense>
         </section>
@@ -121,17 +125,27 @@ function ItemSections({ item, query, ctx }: { item: ItemRef; query: ItemScopeQue
   )
 }
 
-const retry = (href: string) => <ButtonLink href={href} variant="secondary" size="sm">Try again</ButtonLink>
+const retry = (href: string, label: string) => (
+  <ButtonLink href={href} variant="secondary" size="sm">
+    {label}
+  </ButtonLink>
+)
+
+/** The detail sections' shared strings: the Items catalog, the retry label and the locale for counts. */
+async function sectionText() {
+  const [t, common, locale] = await Promise.all([getTranslations('items'), getTranslations('common'), getLocale()])
+  return { t, tryAgain: common('tryAgain'), min: formatInteger(ITEM_MIN_MATCHES, locale) }
+}
 
 async function Performance({ item, query, ctx }: { item: ItemRef; query: ItemScopeQuery; ctx: ItemContext }) {
-  const load = await attempt('[item] performance failed', getItemPerformance(item, ctx))
-  if (!load.ok) return <DataNotice error={load.kind} what="Item performance" action={retry(itemHref(item.slug, query))} />
+  const [load, { t, tryAgain, min }] = await Promise.all([attempt('[item] performance failed', getItemPerformance(item, ctx)), sectionText()])
+  if (!load.ok) return <DataNotice error={load.kind} what="Item performance" action={retry(itemHref(item.slug, query), tryAgain)} />
   if (!load.value) {
     return (
       <EmptyState
-        title="Not enough purchases"
-        description={`${item.name} was bought in fewer than ${formatInteger(ITEM_MIN_MATCHES)} matches in this scope, so no numbers are shown. Try a longer window, a wider rank band or all heroes.`}
-        action={<ButtonLink href={itemHref(item.slug, query, { window: '30d', rank: 'all' })} variant="secondary" size="sm">Last 30 days, all ranks</ButtonLink>}
+        title={t('detail.notEnoughTitle')}
+        description={t('detail.notEnoughDescription', { item: item.name, count: min })}
+        action={<ButtonLink href={itemHref(item.slug, query, { window: '30d', rank: 'all' })} variant="secondary" size="sm">{t('list.wideScope')}</ButtonLink>}
       />
     )
   }
@@ -139,11 +153,11 @@ async function Performance({ item, query, ctx }: { item: ItemRef; query: ItemSco
 }
 
 async function Timing({ item, query, ctx }: { item: ItemRef; query: ItemScopeQuery; ctx: ItemContext }) {
-  const load = await attempt('[item] timing failed', getItemTiming(item, ctx))
-  if (!load.ok) return <DataNotice error={load.kind} what="Purchase timing" action={retry(itemHref(item.slug, query))} />
+  const [load, { t, tryAgain }] = await Promise.all([attempt('[item] timing failed', getItemTiming(item, ctx)), sectionText()])
+  if (!load.ok) return <DataNotice error={load.kind} what="Purchase timing" action={retry(itemHref(item.slug, query), tryAgain)} />
   const { points, typical, phases, standout } = load.value
   if (points.length === 0 && phases.every((p) => p.stats === null)) {
-    return <EmptyState title="No purchase timings" description={`No purchase data for ${item.name} in this scope.`} />
+    return <EmptyState title={t('detail.noTimingsTitle')} description={t('detail.noTimingsDescription', { item: item.name })} />
   }
   const scopeText = `${ctx.statScope.windowLabel}, ${ctx.statScope.rankLabel}`
 
@@ -151,30 +165,28 @@ async function Timing({ item, query, ctx }: { item: ItemRef; query: ItemScopeQue
     <div className="flex flex-col gap-6">
       {points.length > 0 && (
         <div className="rounded-md border border-border bg-surface p-(--spacing-card) shadow-card">
-          <h3 className="mb-4 font-ui text-title font-semibold text-text">Performance by purchase time</h3>
+          <h3 className="mb-4 font-ui text-title font-semibold text-text">{t('detail.byTimeTitle')}</h3>
           <PurchaseTimingChart points={points} typical={typical} />
         </div>
       )}
 
       <div className="flex flex-col gap-3">
-        <h3 className="font-ui text-title font-semibold text-text">By match phase</h3>
+        <h3 className="font-ui text-title font-semibold text-text">{t('detail.byPhaseTitle')}</h3>
         <PurchasePhases phases={phases} />
-        <p className="text-caption text-text-muted">
-          Phases are the data source’s fixed time phases. “Net-worth adjusted” re-weights each phase’s win rate to the net-worth mix of players in that phase; it is still
-          observational. Fewer players reach the later phases (shorter matches end first).
-        </p>
+        <p className="text-caption text-text-muted">{t('detail.phaseNote')}</p>
       </div>
 
+      {/* The standout insight is an Insight Engine result (shared InsightCard), which stays English for now, like Hero detail's insights. */}
       {standout ? <InsightCard insight={purchaseTimingInsight(item.name, standout, phases, scopeText)} className="max-w-2xl" /> : <NoStandout />}
     </div>
   )
 }
 
 async function Heroes({ item, query, ctx }: { item: ItemRef; query: ItemScopeQuery; ctx: ItemContext }) {
-  const load = await attempt('[item] heroes failed', getItemHeroes(item, ctx))
-  if (!load.ok) return <DataNotice error={load.kind} what="Heroes" action={retry(itemHref(item.slug, query))} />
+  const [load, { t, tryAgain, min }] = await Promise.all([attempt('[item] heroes failed', getItemHeroes(item, ctx)), sectionText()])
+  if (!load.ok) return <DataNotice error={load.kind} what="Heroes" action={retry(itemHref(item.slug, query), tryAgain)} />
   if (load.value.length === 0) {
-    return <EmptyState title="Not enough data per hero" description={`No hero bought ${item.name} in ${formatInteger(ITEM_MIN_MATCHES)}+ matches in this scope.`} />
+    return <EmptyState title={t('detail.noHeroesTitle')} description={t('detail.noHeroesDescription', { item: item.name, count: min })} />
   }
   return <ItemHeroes rows={load.value.slice(0, HERO_LIMIT)} query={query} itemSlug={item.slug} />
 }

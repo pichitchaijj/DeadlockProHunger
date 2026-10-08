@@ -1,3 +1,4 @@
+import { useLocale, useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { WinRate } from '@/components/cards/WinRate'
 import { ConfidenceBadge } from '@/components/data/ConfidenceBadge'
@@ -11,62 +12,70 @@ import type { StatScope } from '@/lib/analytics/scope'
 import { ITEM_MIN_MATCHES } from '@/lib/deadlock/constants'
 import { formatInteger, formatPercent } from '@/lib/format'
 import { cx } from '@/lib/cx'
-import { STANDOUT_RULE, type HeroItemRow, type ItemRow, type PhaseRow } from '../model'
+import type { HeroItemRow, ItemRow, PhaseRow } from '../model'
 import { itemHref, type ItemScopeQuery } from '../query'
+
+/*
+ * Item detail parts (Items pages only), worded from the Items catalog (items.*). StatCard is shared,
+ * so its "Why?" disclosure gets its labels from here.
+ */
 
 /** Layer 1: the four headline numbers, each with its sample. */
 export function ItemPerformance({ row, scope }: { row: ItemRow; scope: StatScope }) {
+  const t = useTranslations('items.performance')
+  const winRate = useTranslations('cards')('winRate')
   const s: StatScope = { ...scope, sampleSize: row.matches }
+  const whyLabels = { show: t('why'), hide: t('hideWhy') }
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <StatCard
-        label="Win rate"
+        label={winRate}
         value={row.winRate}
         format="percent"
         scope={s}
         interval={row.interval}
         showScope={false}
         featured
-        why={`Matches won by players who bought ${row.name}, out of every match where it was bought. 95% interval ${formatPercent(row.interval.low)}–${formatPercent(row.interval.high)}. Players who are ahead buy more items, so this partly reflects the lead, not only the item.`}
+        why={t('winRateWhy', { item: row.name, low: formatPercent(row.interval.low), high: formatPercent(row.interval.high) })}
+        whyLabels={whyLabels}
       />
       {row.buyRate === null ? (
         <article className={cx(cardClasses({}), 'flex flex-col gap-3 p-(--spacing-card)')}>
-          <h3 className="text-eyebrow">Buy rate</h3>
-          <p className="text-sm text-text-muted">Unavailable: the total number of matches in this scope couldn’t be loaded, so no rate is shown.</p>
+          <h3 className="text-eyebrow">{t('buyRate')}</h3>
+          <p className="text-sm text-text-muted">{t('buyRateUnavailable')}</p>
         </article>
       ) : (
-        <StatCard
-          label="Buy rate"
-          value={row.buyRate}
-          format="percent"
-          scope={s}
-          showScope={false}
-          why="Share of player-matches in this scope in which the item was bought (the selected hero’s matches when a hero is chosen)."
-        />
+        <StatCard label={t('buyRate')} value={row.buyRate} format="percent" scope={s} showScope={false} why={t('buyRateWhy')} whyLabels={whyLabels} />
       )}
-      <StatCard label="Purchases" value={row.matches} format="integer" scope={s} showScope={false} why="Player-matches in which the item was bought." />
-      <StatCard label="Average buy time" value={row.avgBuyTimeS} format="duration" scope={s} showScope={false} why="Average match clock (minutes:seconds) at purchase." />
+      <StatCard label={t('purchases')} value={row.matches} format="integer" scope={s} showScope={false} why={t('purchasesWhy')} whyLabels={whyLabels} />
+      <StatCard label={t('avgBuyTime')} value={row.avgBuyTimeS} format="duration" scope={s} showScope={false} why={t('avgBuyTimeWhy')} whyLabels={whyLabels} />
     </div>
   )
 }
 
+/** Catalog keys for the model's phase keys (PURCHASE_PHASES). */
+const PHASE_KEYS = { early: 'early', mid: 'mid', late: 'late', 'very-late': 'veryLate' } as const satisfies Record<PhaseRow['key'], string>
+
 /** Purchase phases from the API's fixed time phases: share of purchases, raw and net-worth-adjusted win rate. */
 export function PurchasePhases({ phases }: { phases: PhaseRow[] }) {
+  const t = useTranslations('items.phases')
+  const winRate = useTranslations('cards')('winRate')
+  const locale = useLocale()
   return (
     <ol className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {phases.map((phase, i) => (
         <Reveal as="li" key={phase.key} index={i} className={cx(cardClasses({}), 'flex flex-col gap-3 p-4')}>
           <header className="flex items-start justify-between gap-2">
             <div>
-              <h3 className="font-ui text-sm font-semibold text-text">{phase.label}</h3>
-              <p className="text-caption text-text-muted">{phase.range}</p>
+              <h3 className="font-ui text-sm font-semibold text-text">{t(PHASE_KEYS[phase.key])}</h3>
+              <p className="text-caption text-text-muted">{t(`${PHASE_KEYS[phase.key]}Range`)}</p>
             </div>
             {phase.stats && <ConfidenceBadge sampleSize={phase.stats.matches} interval={phase.stats.interval} />}
           </header>
           {phase.stats ? (
             <dl className="grid grid-cols-2 gap-x-3 gap-y-2">
               <div className="col-span-2">
-                <dt className="text-caption text-text-muted">Bought in this phase</dt>
+                <dt className="text-caption text-text-muted">{t('boughtIn')}</dt>
                 <dd className="flex items-center gap-2">
                   <span className="font-display text-display-m font-bold text-text tabular">{formatPercent(phase.stats.share, 0)}</span>
                   <span aria-hidden="true" className="h-1.5 flex-1 rounded-pill bg-surface-sunken">
@@ -75,20 +84,20 @@ export function PurchasePhases({ phases }: { phases: PhaseRow[] }) {
                 </dd>
               </div>
               <div>
-                <dt className="text-caption text-text-muted">Win rate</dt>
+                <dt className="text-caption text-text-muted">{winRate}</dt>
                 <dd>
                   <WinRate value={phase.stats.winRate} />
                 </dd>
               </div>
               <div>
-                <dt className="text-caption text-text-muted" title="Re-weighted to this phase’s net-worth distribution (source: item-flow-stats)">
-                  Net-worth adjusted
+                <dt className="text-caption text-text-muted" title={t('adjustedTitle')}>
+                  {t('adjusted')}
                 </dt>
                 <dd className="font-ui text-sm font-semibold text-text tabular">{formatPercent(phase.stats.adjustedWinRate)}</dd>
               </div>
             </dl>
           ) : (
-            <p className="text-sm text-text-muted">Fewer than {formatInteger(ITEM_MIN_MATCHES)} purchases in this phase: not shown.</p>
+            <p className="text-sm text-text-muted">{t('fewer', { count: formatInteger(ITEM_MIN_MATCHES, locale) })}</p>
           )}
         </Reveal>
       ))}
@@ -96,19 +105,22 @@ export function PurchasePhases({ phases }: { phases: PhaseRow[] }) {
   )
 }
 
-/** Shown when no phase passes the rule: says so, with the rule, rather than picking the highest number. */
+/** Shown when no phase passes the rule (model STANDOUT_RULE): says so, with the rule, rather than picking the highest number. */
 export function NoStandout() {
+  const t = useTranslations('items')
   return (
     <div className="rounded-md border border-dashed border-border-strong px-(--spacing-card) py-4">
-      <h3 className="text-eyebrow">Purchase timing</h3>
-      <p className="mt-2 font-ui font-semibold text-text">No purchase phase stands out</p>
-      <p className="mt-1 text-sm text-text-muted">{STANDOUT_RULE} No phase meets all of these in this scope, so none is named.</p>
+      <h3 className="text-eyebrow">{t('detail.timingTitle')}</h3>
+      <p className="mt-2 font-ui font-semibold text-text">{t('phases.noneTitle')}</p>
+      <p className="mt-1 text-sm text-text-muted">{t('phases.noneDescription')}</p>
     </div>
   )
 }
 
 /** Heroes whose players buy the item most often (share of that hero’s matches), with their win rate. */
 export function ItemHeroes({ rows, query, itemSlug }: { rows: HeroItemRow[]; query: ItemScopeQuery; itemSlug: string }) {
+  const t = useTranslations('items.detail')
+  const locale = useLocale()
   return (
     <ol className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
       {rows.map((h, i) => (
@@ -120,9 +132,7 @@ export function ItemHeroes({ rows, query, itemSlug }: { rows: HeroItemRow[]; que
             <HeroPortrait name={h.name} src={h.iconUrl ?? undefined} size="sm" decorative />
             <span className="min-w-0 flex-1">
               <span className="block truncate font-ui text-sm font-semibold text-text group-hover:text-highlight">{h.name}</span>
-              <span className="block text-caption text-text-muted tabular">
-                Bought in {formatPercent(h.buyRate, 0)} of matches · {formatInteger(h.matches)}
-              </span>
+              <span className="block text-caption text-text-muted tabular">{t('heroRow', { rate: formatPercent(h.buyRate, 0), count: formatInteger(h.matches, locale) })}</span>
             </span>
             <WinRate value={h.winRate} className="items-end" />
           </Link>
@@ -132,9 +142,9 @@ export function ItemHeroes({ rows, query, itemSlug }: { rows: HeroItemRow[]; que
   )
 }
 
-export function PerformanceSkeleton() {
+export function PerformanceSkeleton({ label }: { label: string }) {
   return (
-    <LoadingState label="Loading item performance">
+    <LoadingState label={label}>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[0, 1, 2, 3].map((i) => (
           <Skeleton key={i} className="h-40" />
@@ -144,9 +154,9 @@ export function PerformanceSkeleton() {
   )
 }
 
-export function TimingSkeleton() {
+export function TimingSkeleton({ label }: { label: string }) {
   return (
-    <LoadingState label="Loading purchase timings">
+    <LoadingState label={label}>
       <div className="flex flex-col gap-4">
         <Skeleton className="h-64 sm:h-80" />
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -159,9 +169,9 @@ export function TimingSkeleton() {
   )
 }
 
-export function HeroesSkeleton() {
+export function HeroesSkeleton({ label }: { label: string }) {
   return (
-    <LoadingState label="Loading heroes">
+    <LoadingState label={label}>
       <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
         {[0, 1, 2, 3, 4, 5].map((i) => (
           <Skeleton key={i} className="h-16" />

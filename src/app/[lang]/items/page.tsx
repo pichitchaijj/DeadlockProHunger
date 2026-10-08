@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
-import { Suspense } from 'react'
+import { OG_LOCALE } from '@/i18n/config'
+import { Suspense, type ReactNode } from 'react'
 import { DataNotice } from '@/components/data/DataState'
 import { ScopeLine } from '@/components/data/ScopeLine'
 import { PageContainer } from '@/components/layout/PageContainer'
@@ -18,9 +20,13 @@ import { getItemContext, heroOptions, itemTotals, type ItemContext } from '@/fea
 import { filterAndSort } from '@/features/items/model'
 import { itemsHref, parseItemsQuery, type ItemSort, type ItemsQuery } from '@/features/items/query'
 
-export const metadata: Metadata = {
-  title: 'Items',
-  description: 'Deadlock item win rates, buy rates and purchase timings by hero, rank and patch, with sample sizes.',
+export async function generateMetadata(): Promise<Metadata> {
+  const [t, locale] = await Promise.all([getTranslations('items.meta'), getLocale()])
+  return {
+    title: t('listTitle'),
+    description: t('listDescription'),
+    openGraph: { title: t('listTitle'), description: t('listDescription'), locale: OG_LOCALE[locale], type: 'website' },
+  }
 }
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>
@@ -28,21 +34,24 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>
 /** The shell (filters) renders first; the item list streams in. */
 export default async function ItemsPage({ searchParams }: { searchParams: SearchParams }) {
   const query = parseItemsQuery(await searchParams)
-  const [heroes, ctxLoad] = await Promise.all([heroOptions(), attempt('[items] scope failed', getItemContext(query))])
+  const [heroes, ctxLoad, t, builds, common, locale] = await Promise.all([
+    heroOptions(),
+    attempt('[items] scope failed', getItemContext(query)),
+    getTranslations('items.list'),
+    getTranslations('builds.list'),
+    getTranslations('common'),
+    getLocale(),
+  ])
+  const term = (chunks: ReactNode) => <span className="font-semibold text-text">{chunks}</span>
 
   return (
     <PageContainer className="flex flex-col gap-8">
-      <SectionHeader
-        as="h1"
-        eyebrow="Items"
-        title="Item performance"
-        description="How often each item is bought, when, and how those matches ended. Open an item for its purchase timings."
-      />
+      <SectionHeader as="h1" eyebrow={t('eyebrow')} title={t('title')} description={t('description')} />
 
       {!ctxLoad.ok ? (
-        <DataNotice error={ctxLoad.kind} what="Items" action={<ButtonLink href={itemsHref(query)} variant="secondary" size="sm">Try again</ButtonLink>} />
+        <DataNotice error={ctxLoad.kind} what="Items" action={<ButtonLink href={itemsHref(query)} variant="secondary" size="sm">{common('tryAgain')}</ButtonLink>} />
       ) : ctxLoad.value === 'unknown-hero' ? (
-        <EmptyState title="Unknown hero" action={<ButtonLink href={itemsHref(query, { hero: 'all' })} variant="secondary" size="sm">All heroes</ButtonLink>} />
+        <EmptyState title={builds('unknownHero')} action={<ButtonLink href={itemsHref(query, { hero: 'all' })} variant="secondary" size="sm">{builds('allHeroes')}</ButtonLink>} />
       ) : (
         <>
           <div className="flex flex-col gap-4">
@@ -59,9 +68,9 @@ export default async function ItemsPage({ searchParams }: { searchParams: Search
 
           <section id="items-table" aria-labelledby="items-title" className="flex scroll-mt-24 flex-col gap-4">
             <h2 id="items-title" className="font-display text-display-m font-bold text-text uppercase">
-              All items
+              {t('allItems')}
             </h2>
-            <Suspense key={itemsHref(query)} fallback={<TableSkeleton />}>
+            <Suspense key={itemsHref(query)} fallback={<TableSkeleton label={t('loading')} />}>
               <ItemsResults query={query} ctx={ctxLoad.value} />
             </Suspense>
           </section>
@@ -69,53 +78,42 @@ export default async function ItemsPage({ searchParams }: { searchParams: Search
       )}
 
       <details className="rounded-md border border-border bg-surface-sunken px-(--spacing-card) py-4 text-sm text-text-muted">
-        <summary className="cursor-pointer py-3 font-ui font-semibold text-text">How these numbers work</summary>
+        <summary className="cursor-pointer py-3 font-ui font-semibold text-text">{t('howTitle')}</summary>
         <ul className="mt-3 flex flex-col gap-1.5">
-          <li>
-            <span className="font-semibold text-text">Win rate</span>: matches won by players who bought the item, out of all matches where it was bought, with a 95% interval.
-          </li>
-          <li>
-            <span className="font-semibold text-text">Buy rate</span>: share of player-matches in scope in which the item was bought (of the selected hero’s matches when a hero is chosen).
-          </li>
-          <li>
-            <span className="font-semibold text-text">Avg. buy time</span>: average match clock at purchase.
-          </li>
-          <li>Items bought in fewer than {formatInteger(ITEM_MIN_MATCHES)} matches in this scope aren’t listed. Corrupted purchases are excluded.</li>
-          <li>Players who are ahead buy more items sooner, so an item’s win rate partly reflects the lead, not only the item.</li>
+          <li>{t.rich('howWinRate', { term })}</li>
+          <li>{t.rich('howBuyRate', { term })}</li>
+          <li>{t.rich('howBuyTime', { term })}</li>
+          <li>{t('howMinimum', { count: formatInteger(ITEM_MIN_MATCHES, locale) })}</li>
+          <li>{t('howLead')}</li>
         </ul>
       </details>
     </PageContainer>
   )
 }
 
-const SORTS: Array<[ItemSort, string]> = [
-  ['buyRate', 'Buy rate'],
-  ['winRate', 'Win rate'],
-  ['matches', 'Purchases'],
-  ['buyTime', 'Buy time'],
-]
+const SORTS: ItemSort[] = ['buyRate', 'winRate', 'matches', 'buyTime']
 
 async function ItemsResults({ query, ctx }: { query: ItemsQuery; ctx: ItemContext }) {
-  const load = await attempt('[items] totals failed', itemTotals(ctx))
+  const [load, t, common, locale] = await Promise.all([attempt('[items] totals failed', itemTotals(ctx)), getTranslations('items.list'), getTranslations('common'), getLocale()])
   if (!load.ok) {
-    return <DataNotice error={load.kind} what="Item statistics" action={<ButtonLink href={itemsHref(query)} variant="secondary" size="sm">Try again</ButtonLink>} />
+    return <DataNotice error={load.kind} what="Item statistics" action={<ButtonLink href={itemsHref(query)} variant="secondary" size="sm">{common('tryAgain')}</ButtonLink>} />
   }
   const rows = filterAndSort(load.value, query.slot, query.sort, query.dir)
   if (rows.length === 0) {
     return (
       <EmptyState
-        title="No items to show"
-        description={`No item was bought in ${formatInteger(ITEM_MIN_MATCHES)}+ matches in this scope. Try a longer window or a wider rank band.`}
-        action={<ButtonLink href={itemsHref(query, { window: '30d', rank: 'all' })} variant="secondary" size="sm">Last 30 days, all ranks</ButtonLink>}
+        title={t('noItemsTitle')}
+        description={t('noItemsDescription', { count: formatInteger(ITEM_MIN_MATCHES, locale) })}
+        action={<ButtonLink href={itemsHref(query, { window: '30d', rank: 'all' })} variant="secondary" size="sm">{t('wideScope')}</ButtonLink>}
       />
     )
   }
 
   return (
     <div className="flex flex-col gap-3">
-      <nav aria-label="Sort items" className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 md:hidden">
-        <span className="self-center pr-1 text-eyebrow">Sort</span>
-        {SORTS.map(([sort, label]) => (
+      <nav aria-label={t('sortNav')} className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 md:hidden">
+        <span className="self-center pr-1 text-eyebrow">{t('sort')}</span>
+        {SORTS.map((sort) => (
           <Link
             key={sort}
             href={itemsHref(query, { sort, dir: 'desc' }, 'items-table')}
@@ -126,22 +124,21 @@ async function ItemsResults({ query, ctx }: { query: ItemsQuery; ctx: ItemContex
               query.sort === sort ? 'border-primary bg-primary font-medium text-on-primary' : 'border-border-control text-text-muted',
             )}
           >
-            {label}
+            {t(`sorts.${sort}`)}
           </Link>
         ))}
       </nav>
       <ItemTable rows={rows} query={query} />
       <p className="text-caption text-text-muted">
-        {rows.length} {rows.length === 1 ? 'item' : 'items'}.{' '}
-        {rows.some((r) => r.buyRate === null) && 'Buy rates are unavailable right now: the total number of matches in scope couldn’t be loaded.'}
+        {t('count', { count: rows.length })} {rows.some((r) => r.buyRate === null) && t('buyRateUnavailable')}
       </p>
     </div>
   )
 }
 
-function TableSkeleton() {
+function TableSkeleton({ label }: { label: string }) {
   return (
-    <LoadingState label="Loading item statistics">
+    <LoadingState label={label}>
       <div className="flex flex-col gap-2">
         {Array.from({ length: 8 }, (_, i) => (
           <Skeleton key={i} className="h-14" />
