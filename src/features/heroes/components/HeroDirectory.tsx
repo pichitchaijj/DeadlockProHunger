@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Reveal } from '@/components/motion/Reveal'
 import { Button } from '@/components/ui/Button'
@@ -27,11 +28,7 @@ type HeroDirectoryProps = {
   ranks: RankCatalog
 }
 
-const WINDOWS: Array<[MetaWindow, string]> = [
-  ['patch', 'Current patch'],
-  ['7d', '7 days'],
-  ['30d', '30 days'],
-]
+const WINDOWS: MetaWindow[] = ['patch', '7d', '30d']
 
 /**
  * Instant hero discovery. Scope (patch/rank) reloads data via links; search, role,
@@ -40,6 +37,10 @@ const WINDOWS: Array<[MetaWindow, string]> = [
  */
 export function HeroDirectory({ heroes, scope, initialView, windowLabels, rankLabels, ranks }: HeroDirectoryProps) {
   const [view, setView] = useState(initialView)
+  // Messages come from the page (WithClientMessages: heroes.list, cards). Roles are game data.
+  const t = useTranslations('heroes.list')
+  const winRate = useTranslations('cards')('winRate')
+  const sortLabel: Record<DirectorySort, string> = { name: t('sortName'), winRate, pickRate: t('pickRate'), matches: t('matches') }
   const resultsId = useId()
   const searchWrap = useRef<HTMLDivElement>(null)
   const visible = useMemo(() => filterHeroes(heroes, view), [heroes, view])
@@ -73,9 +74,9 @@ export function HeroDirectory({ heroes, scope, initialView, windowLabels, rankLa
         <div className="grid gap-5 lg:grid-cols-[minmax(16rem,1fr)_auto]">
           <div ref={searchWrap}>
             <SearchInput
-              label="Search heroes"
-              placeholder="Hero name or role"
-              hint="Press / to search from anywhere on this page."
+              label={t('search')}
+              placeholder={t('searchPlaceholder')}
+              hint={t('searchHint')}
               value={view.q}
               onChange={(event) => update({ q: event.target.value })}
               onClear={() => update({ q: '' })}
@@ -83,15 +84,15 @@ export function HeroDirectory({ heroes, scope, initialView, windowLabels, rankLa
             />
           </div>
           <label className="flex flex-col gap-1.5">
-            <span className="text-eyebrow">Sort by</span>
+            <span className="text-eyebrow">{t('sortBy')}</span>
             <select
               value={view.sort}
               onChange={(event) => update({ sort: event.target.value as DirectorySort })}
               className="h-11 rounded-sm border border-border-control bg-surface-sunken px-3 font-ui text-sm text-text hover:border-text-muted focus-visible:border-primary"
             >
-              {SORTS.map(([value, label]) => (
+              {SORTS.map(([value]) => (
                 <option key={value} value={value}>
-                  {label}
+                  {sortLabel[value]}
                 </option>
               ))}
             </select>
@@ -100,16 +101,16 @@ export function HeroDirectory({ heroes, scope, initialView, windowLabels, rankLa
 
         <div className="grid gap-5 md:grid-cols-2">
           <ToggleGroup
-            label="Role"
-            options={[{ value: 'all', label: 'All' }, ...ROLES.map((role) => ({ value: role, label: capitalize(role) }))]}
+            label={t('role')}
+            options={[{ value: 'all', label: t('all') }, ...ROLES.map((role) => ({ value: role, label: capitalize(role) }))]}
             value={view.role}
             onChange={(role) => update({ role: role as DirectoryView['role'] })}
           />
           <div id={moreId} className={secondary}>
           <ToggleGroup
-            label="Category: complexity (game rating)"
+            label={t('complexityGroup')}
             options={[
-              { value: 'all', label: 'All' },
+              { value: 'all', label: t('all') },
               ...[1, 2, 3, 4].map((n) => ({ value: String(n), label: <><ComplexityDots value={n} /><span aria-hidden="true">{n}</span></> })),
             ]}
             value={view.complexity === null ? 'all' : String(view.complexity)}
@@ -126,19 +127,19 @@ export function HeroDirectory({ heroes, scope, initialView, windowLabels, rankLa
           className="inline-flex h-11 items-center gap-2 self-start font-ui text-sm font-semibold text-text-muted hover:text-text md:hidden"
         >
           <FilterIcon size={18} />
-          {moreOpen ? 'Fewer filters' : 'More filters'}
-          {moreActive > 0 && <span className="rounded-pill bg-primary/20 px-2 text-caption text-text tabular">{moreActive} active</span>}
+          {moreOpen ? t('fewerFilters') : t('moreFilters')}
+          {moreActive > 0 && <span className="rounded-pill bg-primary/20 px-2 text-caption text-text tabular">{t('activeFilters', { count: moreActive })}</span>}
           <ChevronDownIcon size={16} className={cx('transition-transform duration-(--dur-fast)', moreOpen && 'rotate-180')} />
         </button>
 
         <div id={`${moreId}-scope`} className={cx('grid gap-5 border-t border-border pt-5 md:grid-cols-2', secondary)}>
           <Filter
-            label="Patch / time"
+            label={t('window')}
             value={scope.window}
-            options={WINDOWS.map(([value, label]) => ({ value, label, href: heroesHref({ ...scope, window: value }, view) }))}
+            options={WINDOWS.map((value) => ({ value, label: t(`windows.${value}`), href: heroesHref({ ...scope, window: value }, view) }))}
           />
           <Filter
-            label="Rank (match average)"
+            label={t('rank')}
             value={scope.rank}
             options={rankBandOptions(rankLabels, ranks, (rank) => heroesHref({ ...scope, rank }, view))}
           />
@@ -147,24 +148,26 @@ export function HeroDirectory({ heroes, scope, initialView, windowLabels, rankLa
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p role="status" aria-live="polite" className="text-sm text-text-muted">
-          Showing <span className="font-semibold text-text tabular">{visible.length}</span> of {heroes.length} heroes ·{' '}
+          {t.rich('showing', { shown: visible.length, total: heroes.length, count: (chunks) => <span className="font-semibold text-text tabular">{chunks}</span> })}
+          {/* Scope labels come from the shared Meta scope (not yet localized), kept apart from the sentence. */}
+          {' · '}
           {windowLabels[scope.window]}, {rankLabels[scope.rank]}
         </p>
         {filtered && (
           <Button variant="ghost" size="sm" onClick={() => setView({ ...DEFAULT_VIEW, sort: view.sort })}>
-            Clear filters
+            {t('clearFilters')}
           </Button>
         )}
       </div>
 
       {visible.length === 0 ? (
         <EmptyState
-          title="No heroes match"
-          description="Try a different name, or clear the role and complexity filters."
-          action={<Button variant="secondary" size="sm" onClick={() => setView({ ...DEFAULT_VIEW, sort: view.sort })}>Clear filters</Button>}
+          title={t('noMatchTitle')}
+          description={t('noMatchDescription')}
+          action={<Button variant="secondary" size="sm" onClick={() => setView({ ...DEFAULT_VIEW, sort: view.sort })}>{t('clearFilters')}</Button>}
         />
       ) : (
-        <ul id={resultsId} aria-label="Heroes" className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 md:grid-cols-3 md:gap-4 lg:grid-cols-4 xl:grid-cols-5">
+        <ul id={resultsId} aria-label={t('results')} className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 md:grid-cols-3 md:gap-4 lg:grid-cols-4 xl:grid-cols-5">
           {visible.map((hero, i) => (
             <Reveal as="li" key={hero.slug} index={i}>
               <HeroDirectoryCard hero={hero} index={i} />

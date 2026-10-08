@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import type { ReactNode } from 'react'
 import { ConfidenceBadge } from '@/components/data/ConfidenceBadge'
@@ -7,7 +8,7 @@ import { Reveal } from '@/components/motion/Reveal'
 import type { Comparison } from '@/lib/analytics/compare'
 import { cx } from '@/lib/cx'
 import { domainLabel, toPercent, winRateDomain } from '@/lib/scale'
-import { formatDuration, formatInteger, formatPercent } from '@/lib/format'
+import { formatDuration, formatPercent } from '@/lib/format'
 import type { AbilityOrder, HeroBuild, Pairing, ProgressionItem } from '../model'
 import { ScrollRegion } from '@/components/ui/ScrollRegion'
 
@@ -57,8 +58,13 @@ export function PairingList({ items, empty }: { items: Pairing[]; empty: string;
   )
 }
 
-/** Win rate per group on a 50%-centered scale with the 95% interval as a whisker. Bars grow in. */
-export function SplitBars({ comparison, unit }: { comparison: Comparison; unit: string }) {
+/**
+ * Win rate per group on a 50%-centered scale with the 95% interval as a whisker. Bars grow in.
+ * `labels` translates groups by key (e.g. match-length groups); groups without one keep their own label
+ * (rank bands, whose names are game data).
+ */
+export function SplitBars({ comparison, labels }: { comparison: Comparison; labels?: Record<string, string> }) {
+  const t = useTranslations('heroes.parts')
   const domain = winRateDomain(comparison.groups.filter((g) => g.matches > 0).flatMap((g) => [g.winRate, g.interval.low, g.interval.high]))
   const toPct = (v: number) => toPercent(v, domain)
   return (
@@ -67,10 +73,11 @@ export function SplitBars({ comparison, unit }: { comparison: Comparison; unit: 
         {comparison.groups.map((g, i) => {
           const low = g.sample === 'low'
           const lead = comparison.clear && comparison.best?.key === g.key
+          const label = labels?.[g.key] ?? g.label
           return (
             <li key={g.key} className="grid grid-cols-[7.5rem_1fr_3.5rem] items-center gap-3 max-sm:grid-cols-[6rem_1fr_3.25rem]">
               <span className={cx('font-ui text-sm leading-tight', lead ? 'font-semibold text-text' : 'text-text-muted')}>
-                {g.label}
+                {label}
               </span>
               <span aria-hidden="true" className="relative h-2.5 rounded-pill bg-surface-sunken">
                 <span className="absolute inset-y-[-4px] left-1/2 w-px bg-text-muted/50" />
@@ -93,16 +100,16 @@ export function SplitBars({ comparison, unit }: { comparison: Comparison; unit: 
                 {g.matches > 0 ? formatPercent(g.winRate) : '—'}
               </span>
               <span className="sr-only">
-                {g.label}: {g.matches > 0 ? `${formatPercent(g.winRate)} over ${formatInteger(g.matches)} ${unit}` : 'no data'}
-                {low && ', low sample'}
+                {g.matches > 0
+                  ? t(low ? 'splitValueLow' : 'splitValue', { group: label, rate: formatPercent(g.winRate), count: g.matches })
+                  : t('splitNoData', { group: label })}
               </span>
             </li>
           )
         })}
       </ul>
       <p className="text-caption text-text-muted">
-        Bar = win rate (scale {domainLabel(domain)}, center line 50%). Light whisker = 95% interval.{' '}
-        {comparison.clear ? 'The highlighted group is clearly ahead.' : 'No group is clearly ahead: intervals overlap.'}
+        {t('splitLegend', { scale: domainLabel(domain) })} {comparison.clear ? t('splitClear') : t('splitUnclear')}
       </p>
     </div>
   )
@@ -110,8 +117,21 @@ export function SplitBars({ comparison, unit }: { comparison: Comparison; unit: 
 
 const MAX_ITEMS_PER_SECTION = 12
 
+/*
+ * The build and ability parts below are shared with pages that aren't localized yet (Analyze, Compare,
+ * Build detail), so they don't translate themselves: a caller passes `labels`, and without them the
+ * text stays English. Heroes passes its translations (useBuildLabels / useAbilityLabels in tabs.tsx).
+ */
+
+export type BuildItemLabels = { moreItems: (count: number) => string; moreSections: (count: number) => string }
+
+const BUILD_ITEM_LABELS: BuildItemLabels = {
+  moreItems: (count) => `+${count} more items`,
+  moreSections: (count) => `+${count} more sections in the full build`,
+}
+
 /** A build's items in category order; items appear one after another (build item sequence). */
-export function BuildItemSequence({ build, maxCategories = 4 }: { build: HeroBuild; maxCategories?: number }) {
+export function BuildItemSequence({ build, maxCategories = 4, labels = BUILD_ITEM_LABELS }: { build: HeroBuild; maxCategories?: number; labels?: BuildItemLabels }) {
   let n = 0
   return (
     <ol className="flex flex-col gap-3">
@@ -129,21 +149,28 @@ export function BuildItemSequence({ build, maxCategories = 4 }: { build: HeroBui
             })}
           </ul>
           {category.items.length > MAX_ITEMS_PER_SECTION && (
-            <span className="text-caption text-text-muted">+{category.items.length - MAX_ITEMS_PER_SECTION} more items</span>
+            <span className="text-caption text-text-muted">{labels.moreItems(category.items.length - MAX_ITEMS_PER_SECTION)}</span>
           )}
         </li>
       ))}
-      {build.categories.length > maxCategories && <li className="text-caption text-text-muted">+{build.categories.length - maxCategories} more sections in the full build</li>}
+      {build.categories.length > maxCategories && <li className="text-caption text-text-muted">{labels.moreSections(build.categories.length - maxCategories)}</li>}
     </ol>
   )
 }
 
-export function BuildStatsLine({ build }: { build: HeroBuild }) {
-  if (!build.stats) return <p className="text-caption text-text-muted">No tracked matches for this build in this scope.</p>
+export type BuildStatsLabels = { noMatches: string; winRate: string }
+
+const BUILD_STATS_LABELS: BuildStatsLabels = {
+  noMatches: 'No tracked matches for this build in this scope.',
+  winRate: 'win rate when selected at game start',
+}
+
+export function BuildStatsLine({ build, labels = BUILD_STATS_LABELS }: { build: HeroBuild; labels?: BuildStatsLabels }) {
+  if (!build.stats) return <p className="text-caption text-text-muted">{labels.noMatches}</p>
   return (
     <p className="flex flex-wrap items-center gap-2 text-sm text-text">
       <span className={cx('font-semibold tabular', build.stats.sample === 'low' && 'text-text-muted')}>{formatPercent(build.stats.winRate)}</span>
-      <span className="text-text-muted">win rate when selected at game start</span>
+      <span className="text-text-muted">{labels.winRate}</span>
       <ConfidenceBadge sampleSize={build.stats.matches} />
     </p>
   )
@@ -151,18 +178,27 @@ export function BuildStatsLine({ build }: { build: HeroBuild }) {
 
 type AbilityMap = Map<number, { name: string; icon: string | null; kind: string | null }>
 
+export type AbilityLabels = { region: string; upgradeOrder: (steps: string) => string; ability: string; unknownAbility: string }
+
+const ABILITY_LABELS: AbilityLabels = {
+  region: 'Ability upgrade order',
+  upgradeOrder: (steps) => `Upgrade order: ${steps}`,
+  ability: 'Ability',
+  unknownAbility: 'Unknown ability',
+}
+
 /** Skill-order grid: rows = abilities, columns = upgrade steps. Cells fill in sequence. */
-export function AbilitySequence({ order, abilities }: { order: AbilityOrder; abilities: AbilityMap }) {
+export function AbilitySequence({ order, abilities, labels = ABILITY_LABELS }: { order: AbilityOrder; abilities: AbilityMap; labels?: AbilityLabels }) {
   const rows = [...new Set(order.sequence)].sort((a, b) => order.sequence.indexOf(a) - order.sequence.indexOf(b))
+  // Ability names are game data; only the fallback for a missing one is UI text.
+  const name = (id: number) => abilities.get(id)?.name ?? labels.unknownAbility
   return (
-    <ScrollRegion label="Ability upgrade order">
+    <ScrollRegion label={labels.region}>
       <table className="border-separate border-spacing-1 font-ui text-sm">
-        <caption className="sr-only">
-          Upgrade order: {order.sequence.map((id, i) => `${i + 1}. ${abilities.get(id)?.name ?? 'Unknown ability'}`).join(', ')}
-        </caption>
+        <caption className="sr-only">{labels.upgradeOrder(order.sequence.map((id, i) => `${i + 1}. ${name(id)}`).join(', '))}</caption>
         <thead>
           <tr>
-            <th scope="col" className="sr-only">Ability</th>
+            <th scope="col" className="sr-only">{labels.ability}</th>
             {order.sequence.map((_, i) => (
               <th key={i} scope="col" className="w-8 text-center text-caption font-normal text-text-muted tabular">
                 {i + 1}
@@ -177,8 +213,8 @@ export function AbilitySequence({ order, abilities }: { order: AbilityOrder; abi
               <tr key={id}>
                 <th scope="row" className="pr-2 text-left font-normal">
                   <span className="flex items-center gap-2 whitespace-nowrap">
-                    <AbilityIcon name={ability?.name ?? 'Ability'} src={ability?.icon ?? null} size={28} decorative />
-                    <span className="text-text">{ability?.name ?? 'Unknown ability'}</span>
+                    <AbilityIcon name={ability?.name ?? labels.ability} src={ability?.icon ?? null} size={28} decorative />
+                    <span className="text-text">{name(id)}</span>
                   </span>
                 </th>
                 {order.sequence.map((stepId, step) => (
@@ -206,13 +242,16 @@ export function AbilitySequence({ order, abilities }: { order: AbilityOrder; abi
 
 /** Item progression by phase. Win rates are shown muted with an explicit caveat. */
 export function ItemProgressionView({ phases }: { phases: Array<{ key: string; label: string; items: ProgressionItem[] }> }) {
+  const t = useTranslations('heroes.parts')
+  // Phase keys are early/mid/late (model); a phase without a translation keeps its own label.
+  const phaseLabel = (key: string, fallback: string) => (key === 'early' || key === 'mid' || key === 'late' ? t(`phases.${key}`) : fallback)
   return (
     <div className="grid gap-4 lg:grid-cols-3">
       {phases.map((phase, p) => (
         <div key={phase.key} className="flex flex-col gap-2">
-          <h4 className="text-eyebrow">{phase.label}</h4>
+          <h4 className="text-eyebrow">{phaseLabel(phase.key, phase.label)}</h4>
           {phase.items.length === 0 ? (
-            <p className="text-sm text-text-muted">No common items in this phase.</p>
+            <p className="text-sm text-text-muted">{t('noPhaseItems')}</p>
           ) : (
             <ol className="flex flex-col gap-1.5">
               {phase.items.map((item, i) => (
@@ -222,10 +261,10 @@ export function ItemProgressionView({ phases }: { phases: Array<{ key: string; l
                     <span className="min-w-0 flex-1">
                       <span className="block truncate font-ui text-sm font-semibold text-text">{item.name}</span>
                       <span className="block text-caption text-text-muted tabular">
-                        ~{formatDuration(item.avgBuyTimeS)} · bought in {formatPercent(item.buyRate, 0)}
+                        {t('buyStats', { time: formatDuration(item.avgBuyTimeS), rate: formatPercent(item.buyRate, 0) })}
                       </span>
                     </span>
-                    <span className="text-right text-caption text-text-muted tabular" title="Win rate of matches where the item was bought">
+                    <span className="text-right text-caption text-text-muted tabular" title={t('itemWinRate')}>
                       {formatPercent(item.winRate)}
                     </span>
                   </span>

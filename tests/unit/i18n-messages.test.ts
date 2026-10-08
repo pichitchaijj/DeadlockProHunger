@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest'
 import { primaryNav, secondaryNav } from '@/config/navigation'
 import { localeEndonyms, locales, type Locale } from '@/i18n/config'
 import { messageFallback } from '@/i18n/fallback'
-import { mergeMessages, missingKeys, unknownKeys, type MessageTree } from '@/i18n/merge'
+import { mergeMessages, missingKeys, pickMessages, unknownKeys, type MessageTree } from '@/i18n/merge'
 import en from '@/i18n/messages/en'
 import ja from '@/i18n/messages/ja'
 import ko from '@/i18n/messages/ko'
@@ -121,6 +121,16 @@ describe('fallback', () => {
   it('renders an unknown key as nothing, not as the key', () => {
     const t = createTranslator({ locale: 'ja', messages: ja, getMessageFallback: messageFallback, onError: () => {} })
     expect(t('nav.doesNotExist' as never)).toBe('')
+  })
+})
+
+describe('client message subsets', () => {
+  it('picks only the requested paths, nested as in the catalog', () => {
+    const picked = pickMessages(en, ['heroes.list', 'cards'])
+    expect(Object.keys(picked).sort()).toEqual(['cards', 'heroes'])
+    expect(Object.keys(picked.heroes as MessageTree)).toEqual(['list'])
+    expect(picked.cards).toBe(en.cards)
+    expect(pickMessages(en, ['heroes.doesNotExist'])).toEqual({})
   })
 })
 

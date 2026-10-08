@@ -42,3 +42,24 @@ export function unknownKeys(source: MessageTree, override: MessageTree, prefix =
     return typeof value === 'object' ? unknownKeys(base as MessageTree, value, path) : []
   })
 }
+
+/**
+ * The subset of `tree` at the given dotted paths, nested as in the source:
+ * pickMessages(m, ['heroes.list']) → { heroes: { list: … } }. Unknown paths are skipped.
+ */
+export function pickMessages(tree: MessageTree, paths: readonly string[]): MessageTree {
+  const out: MessageTree = {}
+  for (const path of paths) {
+    const keys = path.split('.')
+    let source: MessageTree | string | undefined = tree
+    for (const key of keys) source = typeof source === 'object' ? source[key] : undefined
+    if (source === undefined) continue
+    let target = out
+    keys.slice(0, -1).forEach((key) => {
+      const next = target[key]
+      target = (target[key] = typeof next === 'object' ? next : {}) as MessageTree
+    })
+    target[keys.at(-1)!] = source
+  }
+  return out
+}

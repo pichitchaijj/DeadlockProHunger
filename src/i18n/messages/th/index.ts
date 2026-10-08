@@ -6,10 +6,11 @@ import data from './data.json'
 import errors from './errors.json'
 import footer from './footer.json'
 import header from './header.json'
+import heroes from './heroes.json'
 import home from './home.json'
 import languages from './languages.json'
 import nav from './nav.json'
 import notFound from './notFound.json'
 
 /** Must match English key for key (`satisfies Messages`; tests also check placeholders). */
-export default { cards, commandPalette, common, data, errors, footer, header, home, languages, nav, notFound } satisfies Messages
+export default { cards, commandPalette, common, data, errors, footer, header, heroes, home, languages, nav, notFound } satisfies Messages

@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import type { ReactNode } from 'react'
 import { ConfidenceBadge } from '@/components/data/ConfidenceBadge'
@@ -18,15 +19,14 @@ import { ComplexityDots } from '@/features/heroes/components/HeroDirectoryCard'
 import type { HeroContext } from '../loaders'
 import { HERO_TABS, heroHref, type HeroQuery } from '../query'
 
-const WINDOWS = [
-  ['patch', 'Current patch'],
-  ['7d', '7 days'],
-  ['30d', '30 days'],
-] as const
+const WINDOWS = ['patch', '7d', '30d'] as const
 
 /** Identity + headline stats + scope. The intro fades in as one unit (no cinematic effects). */
 export function HeroHeader({ ctx, query }: { ctx: HeroContext; query: HeroQuery }) {
   const { hero, stats } = ctx
+  const t = useTranslations('heroes')
+  const winRate = useTranslations('cards')('winRate')
+  const heroesLabel = useTranslations('nav.links.heroes')('label')
   return (
     <section aria-labelledby="hero-name" className="grid animate-awaken gap-6 lg:grid-cols-[13rem_1fr] lg:gap-8">
       <div className="relative mx-auto aspect-[280/380] w-40 overflow-hidden rounded-md border border-border shadow-raised lg:w-full">
@@ -37,7 +37,7 @@ export function HeroHeader({ ctx, query }: { ctx: HeroContext; query: HeroQuery 
       <div className="flex min-w-0 flex-col gap-5">
         <div>
           <p className="text-eyebrow">
-            <Link href="/heroes" className="hover:text-text pointer-coarse:inline-flex pointer-coarse:min-h-11 pointer-coarse:items-center">Heroes</Link> <span aria-hidden="true">/</span> {hero.name}
+            <Link href="/heroes" className="hover:text-text pointer-coarse:inline-flex pointer-coarse:min-h-11 pointer-coarse:items-center">{heroesLabel}</Link> <span aria-hidden="true">/</span> {hero.name}
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-3">
             <h1 id="hero-name" className="font-display text-display-l font-extrabold text-text uppercase">
@@ -54,37 +54,37 @@ export function HeroHeader({ ctx, query }: { ctx: HeroContext; query: HeroQuery 
         {stats ? (
           <>
             <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-md border border-border bg-border lg:max-w-2xl">
-              <Stat label="Win rate">
+              <Stat label={winRate}>
                 <CountUp value={stats.winRate} format="percent" />
               </Stat>
-              <Stat label="Pick rate">
+              <Stat label={t('list.pickRate')}>
                 <CountUp value={stats.pickRate} format="percent" />
               </Stat>
-              <Stat label="Matches">
+              <Stat label={t('list.matches')}>
                 <CountUp value={stats.matches} format="compact" />
               </Stat>
             </dl>
             <div className="flex flex-wrap items-center gap-2">
               {stats.trend ? (
-                <TrendBadge direction={stats.trend.direction} delta={stats.trend.delta} comparison="last 7 days vs the 7 before" pulse />
+                <TrendBadge direction={stats.trend.direction} delta={stats.trend.delta} comparison={t('list.comparison')} pulse />
               ) : (
-                <span className="text-caption text-text-muted">Trend: not enough data for both weeks</span>
+                <span className="text-caption text-text-muted">{t('detail.trendMissing')}</span>
               )}
               <ConfidenceBadge sampleSize={stats.matches} interval={stats.interval} />
             </div>
           </>
         ) : (
-          <p className="text-sm text-text-muted">No matches for this hero in the selected scope.</p>
+          <p className="text-sm text-text-muted">{t('detail.noStats')}</p>
         )}
 
         <div className="grid gap-4 md:grid-cols-2">
           <Filter
-            label="Patch / time"
+            label={t('list.window')}
             value={query.window}
-            options={WINDOWS.map(([value, label]) => ({ value, label, href: heroHref(hero.slug, query, { window: value }) }))}
+            options={WINDOWS.map((value) => ({ value, label: t(`list.windows.${value}`), href: heroHref(hero.slug, query, { window: value }) }))}
           />
           <Filter
-            label="Rank (match average)"
+            label={t('list.rank')}
             value={query.rank}
             options={rankBandOptions(ctx.scope.rankLabels, ctx.scope.ranks, (rank) => heroHref(hero.slug, query, { rank }))}
           />
@@ -140,10 +140,11 @@ export function InsightGrid({ heroName, tier, insights }: { heroName: string; ti
 
 /** Section navigation. Each tab is a URL, so only the open tab's data is loaded. */
 export function HeroTabs({ slug, query }: { slug: string; query: HeroQuery }) {
+  const t = useTranslations('heroes.detail')
   return (
-    <nav aria-label="Hero sections" className="sticky top-16 z-30 -mx-(--spacing-gutter) border-b border-border bg-bg/90 px-(--spacing-gutter) backdrop-blur-md">
+    <nav aria-label={t('sections')} className="sticky top-16 z-30 -mx-(--spacing-gutter) border-b border-border bg-bg/90 px-(--spacing-gutter) backdrop-blur-md">
       <ul className="flex gap-1 overflow-x-auto [scrollbar-width:none]">
-        {HERO_TABS.map(([tab, label]) => {
+        {HERO_TABS.map(([tab]) => {
           const active = query.tab === tab
           return (
             <li key={tab} className="shrink-0">
@@ -156,7 +157,7 @@ export function HeroTabs({ slug, query }: { slug: string; query: HeroQuery }) {
                   active ? 'text-text' : 'text-text-muted hover:text-text',
                 )}
               >
-                {label}
+                {t(`tabs.${tab}`)}
                 <span aria-hidden="true" className={cx('absolute inset-x-3 bottom-0 h-0.5 bg-primary transition-opacity', active ? 'opacity-100' : 'opacity-0')} />
               </Link>
             </li>

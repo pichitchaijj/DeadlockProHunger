@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { WinRate } from '@/components/cards/WinRate'
 import { ConfidenceBadge } from '@/components/data/ConfidenceBadge'
@@ -15,6 +16,8 @@ import type { DirectoryHero } from '../loaders'
 export function HeroDirectoryCard({ hero, index }: { hero: DirectoryHero; index: number }) {
   const { stats } = hero
   const low = stats?.sample === 'low'
+  const t = useTranslations('heroes.list')
+  const winRate = useTranslations('cards')('winRate')
 
   return (
     <Link
@@ -39,25 +42,25 @@ export function HeroDirectoryCard({ hero, index }: { hero: DirectoryHero; index:
         <span className="flex flex-1 flex-col gap-3 p-3">
           <span className="grid grid-cols-2 gap-2">
             <span>
-              <span className="block text-caption text-text-muted">Win rate</span>
+              <span className="block text-caption text-text-muted">{winRate}</span>
               <WinRate value={stats.winRate} muted={low} />
             </span>
             <span>
-              <span className="block text-caption text-text-muted">Pick rate</span>
+              <span className="block text-caption text-text-muted">{t('pickRate')}</span>
               <span className={cx('font-ui text-sm font-semibold tabular', low ? 'text-text-muted' : 'text-text')}>{formatPercent(stats.pickRate)}</span>
             </span>
           </span>
           <span className="mt-auto flex flex-wrap items-center gap-1.5">
             {stats.trend && stats.trend.direction !== 'stable' && (
               <span className="animate-scale-in" style={{ animationDelay: `${300 + Math.min(index, 11) * 40}ms` }}>
-                <TrendBadge direction={stats.trend.direction} delta={stats.trend.delta} comparison="last 7 days vs the 7 before" />
+                <TrendBadge direction={stats.trend.direction} delta={stats.trend.delta} comparison={t('comparison')} />
               </span>
             )}
             <ConfidenceBadge sampleSize={stats.matches} />
           </span>
         </span>
       ) : (
-        <span className="flex flex-1 items-center p-3 text-caption text-text-muted">No matches in this scope</span>
+        <span className="flex flex-1 items-center p-3 text-caption text-text-muted">{t('noMatches')}</span>
       )}
     </Link>
   )
@@ -65,15 +68,16 @@ export function HeroDirectoryCard({ hero, index }: { hero: DirectoryHero; index:
 
 /** The game's complexity rating (1–4) as filled dots, with a text equivalent. */
 export function ComplexityDots({ value }: { value: number }) {
+  const t = useTranslations('heroes.list')
   return (
-    <span className="inline-flex items-center gap-1" title={`Complexity ${value} of 4 (game rating)`}>
+    <span className="inline-flex items-center gap-1" title={t('complexity', { value })}>
       <span aria-hidden="true" className="flex gap-0.5">
         {[1, 2, 3, 4].map((i) => (
           // Inside a pressed (solid cyan) filter chip the diamonds switch to the chip's dark text color.
           <span key={i} className={cx('size-1.5 rotate-45', i <= value ? 'bg-primary [[aria-pressed=true]_&]:bg-on-primary' : 'bg-steel [[aria-pressed=true]_&]:bg-on-primary/30')} />
         ))}
       </span>
-      <span className="sr-only">Complexity {value} of 4</span>
+      <span className="sr-only">{t('complexityShort', { value })}</span>
     </span>
   )
 }

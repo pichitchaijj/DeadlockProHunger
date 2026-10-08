@@ -6,12 +6,13 @@ import data from './data.json'
 import errors from './errors.json'
 import footer from './footer.json'
 import header from './header.json'
+import heroes from './heroes.json'
 import home from './home.json'
 import languages from './languages.json'
 import nav from './nav.json'
 import notFound from './notFound.json'
 
-const messages = { cards, commandPalette, common, data, errors, footer, header, home, languages, nav, notFound }
+const messages = { cards, commandPalette, common, data, errors, footer, header, heroes, home, languages, nav, notFound }
 
 export type Messages = typeof messages
 export default messages

@@ -40,6 +40,9 @@ export const formatLocales: Record<Locale, string> = {
   'zh-CN': 'zh-CN',
 }
 
+/** Open Graph locale per site locale (localized page metadata). */
+export const OG_LOCALE: Record<Locale, string> = { en: 'en_US', th: 'th_TH', ja: 'ja_JP', ko: 'ko_KR', 'zh-CN': 'zh_CN' }
+
 export function isLocale(value: string): value is Locale {
   return (locales as readonly string[]).includes(value)
 }

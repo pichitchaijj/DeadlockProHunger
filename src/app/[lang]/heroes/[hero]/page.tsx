@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { PageContainer } from '@/components/layout/PageContainer'
@@ -11,6 +12,7 @@ import { getHeroContext, getOverviewData, type HeroContext } from '@/features/he
 import { heroHref, parseHeroQuery, type HeroQuery } from '@/features/hero/query'
 import { DataNotice } from '@/components/data/DataState'
 import { attempt, classifyError } from '@/lib/deadlock/errors'
+import { OG_LOCALE } from '@/i18n/config'
 
 type Params = Promise<{ hero: string }>
 type SearchParams = Promise<Record<string, string | string[] | undefined>>
@@ -21,13 +23,16 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     .split('-')
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ')
-  return { title: name, description: `${name} in Deadlock: win rate, pick rate, matchups, builds and ability order, from match data.` }
+  const [t, locale] = await Promise.all([getTranslations('heroes.meta'), getLocale()])
+  const description = t('detailDescription', { hero: name })
+  return { title: name, description, openGraph: { title: name, description, locale: OG_LOCALE[locale], type: 'website' } }
 }
 
 export default async function HeroPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   const { hero: slug } = await params
   const query = parseHeroQuery(await searchParams)
 
+  const t = await getTranslations()
   let ctx: HeroContext | null
   try {
     ctx = await getHeroContext(slug, query)
@@ -35,8 +40,8 @@ export default async function HeroPage({ params, searchParams }: { params: Param
     console.error('[hero] context failed', error)
     return (
       <PageContainer>
-        <h1 className="sr-only">Hero</h1>
-        <DataNotice error={classifyError(error)} what="Hero data" action={<ButtonLink href={heroHref(slug, query)} variant="secondary" size="sm">Try again</ButtonLink>} />
+        <h1 className="sr-only">{t('heroes.detail.hero')}</h1>
+        <DataNotice error={classifyError(error)} what="Hero data" action={<ButtonLink href={heroHref(slug, query)} variant="secondary" size="sm">{t('common.tryAgain')}</ButtonLink>} />
       </PageContainer>
     )
   }
@@ -45,7 +50,7 @@ export default async function HeroPage({ params, searchParams }: { params: Param
   return (
     <PageContainer className="flex flex-col gap-10">
       <HeroHeader ctx={ctx} query={query} />
-      <Suspense fallback={<SectionSkeleton label="Loading insights" />}>
+      <Suspense fallback={<SectionSkeleton label={t('heroes.detail.loadingInsights')} />}>
         <InsightsAndOverview ctx={ctx} query={query} />
       </Suspense>
     </PageContainer>
@@ -57,7 +62,7 @@ export default async function HeroPage({ params, searchParams }: { params: Param
  * insight data, other tabs stream in on their own.
  */
 async function InsightsAndOverview({ ctx, query }: { ctx: HeroContext; query: HeroQuery }) {
-  const result = await attempt('[hero] overview failed', getOverviewData(ctx))
+  const [result, t] = await Promise.all([attempt('[hero] overview failed', getOverviewData(ctx)), getTranslations('heroes.detail')])
   const overview = result.ok ? result.value : null
 
   return (
@@ -66,7 +71,7 @@ async function InsightsAndOverview({ ctx, query }: { ctx: HeroContext; query: He
       <div className="flex flex-col gap-6">
         <HeroTabs slug={ctx.hero.slug} query={query} />
         <div id="hero-tab" key={query.tab + query.lane} className="animate-awaken">
-          <Suspense fallback={<SectionSkeleton label={`Loading ${query.tab}`} />}>
+          <Suspense fallback={<SectionSkeleton label={t('loadingSection', { section: t(`tabs.${query.tab}`) })} />}>
             {query.tab === 'overview' &&
               (overview ? (
                 <OverviewTab ctx={ctx} query={query} data={overview} />

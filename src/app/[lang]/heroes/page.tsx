@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { ScopeLine } from '@/components/data/ScopeLine'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { ButtonLink } from '@/components/ui/Button'
@@ -8,11 +9,20 @@ import { HeroDirectory } from '@/features/heroes/components/HeroDirectory'
 import { getDirectoryData } from '@/features/heroes/loaders'
 import { heroesHref, parseScope, parseView } from '@/features/heroes/query'
 import { DataNotice } from '@/components/data/DataState'
+import { WithClientMessages } from '@/i18n/WithClientMessages'
+import { OG_LOCALE } from '@/i18n/config'
 
-export const metadata: Metadata = {
-  title: 'Heroes',
-  description: 'Find any Deadlock hero fast: search, filter by role and complexity, and compare win rate, pick rate and trend.',
+export async function generateMetadata(): Promise<Metadata> {
+  const [t, locale] = await Promise.all([getTranslations('heroes.meta'), getLocale()])
+  return {
+    title: t('listTitle'),
+    description: t('listDescription'),
+    openGraph: { title: t('listTitle'), description: t('listDescription'), locale: OG_LOCALE[locale], type: 'website' },
+  }
 }
+
+/** The directory filters and counts in the browser: their messages are sent to this page only. */
+const DIRECTORY_MESSAGES = ['heroes.list', 'cards'] as const
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>
 
@@ -20,23 +30,25 @@ export default async function HeroesPage({ searchParams }: { searchParams: Searc
   const raw = await searchParams
   const scope = parseScope(raw)
   const view = parseView(raw)
-  const data = await getDirectoryData(scope)
+  const [data, t, common] = await Promise.all([getDirectoryData(scope), getTranslations('heroes.list'), getTranslations('common')])
 
   return (
     <PageContainer className="flex flex-col gap-8">
       <SectionHeader
         as="h1"
-        eyebrow="Heroes"
-        title="Hero directory"
-        description="Find a hero fast. Numbers use the same rules as the Meta page: low samples are muted and trends need non-overlapping intervals."
+        eyebrow={t('eyebrow')}
+        title={t('title')}
+        description={t('description')}
       />
       {data.ok ? (
         <>
-          <HeroDirectory heroes={data.heroes} scope={scope} initialView={view} windowLabels={data.windowLabels} rankLabels={data.rankLabels} ranks={data.ranks} />
+          <WithClientMessages paths={DIRECTORY_MESSAGES}>
+            <HeroDirectory heroes={data.heroes} scope={scope} initialView={view} windowLabels={data.windowLabels} rankLabels={data.rankLabels} ranks={data.ranks} />
+          </WithClientMessages>
           <ScopeLine scope={data.scope} />
         </>
       ) : (
-        <DataNotice error={data.kind} what="Hero directory" action={<ButtonLink href={heroesHref(scope, view)} variant="secondary" size="sm">Try again</ButtonLink>} />
+        <DataNotice error={data.kind} what="Hero directory" action={<ButtonLink href={heroesHref(scope, view)} variant="secondary" size="sm">{common('tryAgain')}</ButtonLink>} />
       )}
     </PageContainer>
   )
