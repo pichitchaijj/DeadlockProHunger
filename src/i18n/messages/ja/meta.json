@@ -1,0 +1,169 @@
+{
+  "meta": {
+    "title": "メタ",
+    "description": "いま強い Deadlock のヒーローを、ランクとパッチ別に、サンプル数と信頼度つきで。"
+  },
+  "header": {
+    "eyebrow": "メタ",
+    "title": "現在のメタ",
+    "description": "いま何が強いか、どれだけ確かか、何が変わりつつあるか。上から読み始め、必要なときだけ深く掘り下げてください。"
+  },
+  "counters": {
+    "matches": "分析した試合数",
+    "heroes": "十分なデータがあるヒーロー",
+    "patchAge": "パッチ経過",
+    "days": "{count, plural, other {日}}",
+    "unknown": "不明"
+  },
+  "patchNotice": {
+    "badge": "新パッチ",
+    "text": "現在のパッチは公開から {count, plural, other {# 日}}しか経っていません。サンプルは小さく、ティアは初期の兆候として扱ってください。"
+  },
+  "layers": {
+    "glance": {
+      "eyebrow": "レイヤー 1",
+      "title": "ひと目でわかる",
+      "description": "多くの人が必要とする 6 つの答え。サンプルの少ないヒーローはここでは使いません。"
+    },
+    "tiers": {
+      "eyebrow": "レイヤー 2",
+      "title": "ティア",
+      "description": "ティアは勝率とその確かさだけで決まります。ピック率はティアを変えません。"
+    },
+    "table": {
+      "eyebrow": "レイヤー 3",
+      "title": "全ヒーロー",
+      "description": "どの列でも並べ替えできます。「理由」を開くとヒーローの数値の内訳が見られます。"
+    }
+  },
+  "empty": {
+    "title": "表示できるヒーローがいません",
+    "description": "この範囲では、このロールに十分な試合数のヒーローがいません。より長い期間か、より広いランク帯を試してください。",
+    "action": "直近 30 日間を使う"
+  },
+  "hiddenLow": {
+    "text": "試合数が {threshold} 未満のヒーロー {count, plural, other {# 体}}を非表示にしています。",
+    "show": "薄く表示する"
+  },
+  "howTiers": {
+    "summary": "ティア・トレンド・信頼度のしくみ",
+    "tiers": "ティア",
+    "rule": "<b>{tier}</b>：{rule}",
+    "interval": "区間は 95% Wilson 区間です。プレイされた試合数から見て、真の勝率がほぼ確実に収まる範囲です。",
+    "trends": "トレンド",
+    "trendsText": "直近 7 日間とその前の 7 日間を比べます。2 週の区間が重ならないときだけ「上昇」または「下降」とし、それ以外は数値が少し動いても「横ばい」とします。",
+    "confidence": "信頼度",
+    "confidenceText": "低：{moderate} 試合未満（ティアなし、まとめには使わない）。中：{high} 試合まで。高：それ以上。ピック率はヒーローが登場した試合の割合です。"
+  },
+  "filters": {
+    "share": "ランクプレイヤーの約 {share} がこの帯にいます（直近 30 日間の最新ランクマッチ）。",
+    "advanced": "詳細フィルター",
+    "active": "（有効）",
+    "matchType": "試合の種類",
+    "rankedAndUnranked": "ランク + 非ランク",
+    "rankedOnly": "ランクのみ",
+    "lowSample": "サンプルの少ないヒーロー",
+    "hide": "非表示（{threshold} 試合未満）",
+    "show": "薄く表示",
+    "region": "地域",
+    "regionNote": "利用できません：ヒーロー統計のデータソースには地域フィルターがありません。",
+    "gameMode": "ゲームモード",
+    "gameModeNote": "通常（6v6）。Street Brawl は後日対応します。",
+    "showing": "表示中：<b>{window}</b>",
+    "reset": "フィルターをリセット"
+  },
+  "summary": {
+    "strongest": {
+      "title": "最も強いピック",
+      "note": "ティア S/A：勝率の区間が 50% を上回る",
+      "empty": "この範囲で明確に 50% を上回るヒーローはいません。"
+    },
+    "rising": "上昇",
+    "falling": "下降",
+    "weeklyNote": "直近 7 日間とその前の 7 日間、区間が重ならない",
+    "noChange": "通常の変動を超えて変化したヒーローはいません。",
+    "mostPlayed": {
+      "title": "最も使われている",
+      "note": "ヒーローが登場した試合の割合"
+    },
+    "highestWinRate": {
+      "title": "最高勝率",
+      "note": "{threshold} 試合以上のヒーローの中で"
+    },
+    "bestRole": {
+      "title": "成績が最も良いロール",
+      "clear": "明確な首位：区間が他のすべてのロールを上回る",
+      "unclear": "差は通常の変動の範囲内"
+    },
+    "notEnough": "この範囲ではデータが足りません。",
+    "noRoles": "ロールのデータがありません。"
+  },
+  "tiers": {
+    "count": "{count, plural, other {# 体}}",
+    "empty": "この範囲ではこのティアのヒーローはいません。",
+    "list": "ティア {tier} のヒーロー",
+    "winRate": "勝率"
+  },
+  "table": {
+    "caption": "ティア・勝率・ピック率・トレンド別のヒーロー",
+    "tier": "ティア",
+    "winRate": "勝率",
+    "trend": "トレンド",
+    "confidence": "信頼度",
+    "details": "詳細",
+    "notEnough": "データ不足",
+    "notEnoughTitle": "どちらかの週の試合数が {threshold} 未満です",
+    "sort": "並べ替え",
+    "sortLabel": "ヒーローを並べ替え",
+    "showAll": "ヒーロー {count} 体をすべて表示",
+    "showFewer": "表示を減らす"
+  },
+  "panel": {
+    "button": "理由",
+    "buttonLabel": "理由：{hero} の数値の内訳を表示",
+    "title": "{hero}：数値の内訳",
+    "daily": "日別勝率",
+    "sparkline": "日別勝率は {from} から {to}。破線は 50%。",
+    "disclaimer": "これは試合データから観測された数値であり、原因の説明ではありません。試合データからは、ヒーローがなぜこの成績なのかはわかりません。",
+    "open": "ヒーローページを開く"
+  },
+  "why": {
+    "labels": {
+      "result": "結果",
+      "certainty": "確かさ",
+      "popularity": "人気",
+      "trend": "トレンド",
+      "role": "ロール",
+      "perMatch": "1 試合あたり"
+    },
+    "result": "{matches} 試合中 {winRate} 勝利（{scope}）。",
+    "certainty": {
+      "low": "試合数は {matches} のみ：ティアを決めるには少なすぎます。",
+      "interval": "95% 区間 {low}–{high}。{tier}",
+      "tier": "ティア {tier}：{rule}。",
+      "rules": {
+        "S": "勝率の区間がすべて 52% を上回る",
+        "A": "勝率の区間がすべて 50% を上回る",
+        "B": "勝率の区間が 50% を含む",
+        "C": "勝率の区間がすべて 50% を下回る"
+      }
+    },
+    "popularity": "{pickRate} の試合でピックされ、{count} 体中 {rank, selectordinal, other {# 番目}}にピックが多い。",
+    "trend": {
+      "weeks": "直近 7 日間 {current}（{currentMatches} 試合）、その前の 7 日間 {previous}（{previousMatches} 試合）：{delta}。{verdict}",
+      "verdict": {
+        "tooFew": "どちらかの週の試合数が少なく、トレンドとは判断できません。",
+        "stable": "2 週の区間が重なるため、横ばいとして扱います。",
+        "rising": "2 週の区間が重ならないため、上昇とみなします。",
+        "falling": "2 週の区間が重ならないため、下降とみなします。"
+      },
+      "missing": "この範囲では{missing, select, previous {その前の 7 日間} other {直近 7 日間}}に試合がないため、トレンドは計算できません。"
+    },
+    "role": "{role} のヒーロー全体の勝率はこの範囲で {winRate}。{hero} はそこから {delta}。",
+    "perMatch": "平均 K/D/A {kills} / {deaths} / {assists}。平均最終ソウル {souls}（全ヒーロー平均比 {sign, select, plus {+} other {−}}{diff}）。",
+    "pulse": {
+      "mostPicked": "{hero} は {pickRate} の試合に登場しました（ピック率 = そのヒーローの試合数 ÷ 全試合数 ÷ 12 枠）。",
+      "mover": "直近 7 日間とその前の 7 日間を比べ、2 週の区間は重なっていません。"
+    }
+  }
+}

@@ -1,0 +1,169 @@
+{
+  "meta": {
+    "title": "版本强势",
+    "description": "当前哪些 Deadlock 英雄强势，按段位和补丁划分，并附样本量与置信度。"
+  },
+  "header": {
+    "eyebrow": "版本强势",
+    "title": "当前强势英雄",
+    "description": "现在什么强、我们有多确定、什么正在变化。从上往下看，需要时再深入。"
+  },
+  "counters": {
+    "matches": "已分析场次",
+    "heroes": "数据充足的英雄",
+    "patchAge": "补丁已上线",
+    "days": "{count, plural, other {天}}",
+    "unknown": "未知"
+  },
+  "patchNotice": {
+    "badge": "新补丁",
+    "text": "当前补丁仅上线 {count, plural, other {# 天}}。样本可能较小，请将梯队视为早期信号。"
+  },
+  "layers": {
+    "glance": {
+      "eyebrow": "第 1 层",
+      "title": "一览",
+      "description": "大多数人需要的六个答案。样本少的英雄不会出现在这里。"
+    },
+    "tiers": {
+      "eyebrow": "第 2 层",
+      "title": "梯队",
+      "description": "梯队只取决于胜率及其确定程度。选取率不会改变梯队。"
+    },
+    "table": {
+      "eyebrow": "第 3 层",
+      "title": "全部英雄",
+      "description": "任意列都可排序。打开“原因”查看英雄背后的数字。"
+    }
+  },
+  "empty": {
+    "title": "没有可显示的英雄",
+    "description": "在此范围内，此定位没有场次足够的英雄。请尝试更长的时间段或更宽的段位区间。",
+    "action": "使用最近 30 天"
+  },
+  "hiddenLow": {
+    "text": "已隐藏 {count, plural, other {# 个}}场次少于 {threshold} 的英雄。",
+    "show": "以淡色显示"
+  },
+  "howTiers": {
+    "summary": "梯队、趋势和置信度如何计算",
+    "tiers": "梯队",
+    "rule": "<b>{tier}</b>：{rule}",
+    "interval": "该区间是 95% Wilson 区间：根据已进行的场次，真实胜率很可能落在的范围。",
+    "trends": "趋势",
+    "trendsText": "我们比较最近 7 天和之前 7 天。只有两周的区间不重叠时，英雄才算“上升”或“下降”。否则即使数字略有变动，也算“持平”。",
+    "confidence": "置信度",
+    "confidenceText": "低：少于 {moderate} 场（无梯队，不用于汇总）。中：最多 {high} 场。高：超过该数。选取率是英雄出场的比赛占比。"
+  },
+  "filters": {
+    "share": "约 {share} 的排位玩家在此区间（最近 30 天的最新排位赛）。",
+    "advanced": "高级筛选",
+    "active": "（已启用）",
+    "matchType": "比赛类型",
+    "rankedAndUnranked": "排位 + 非排位",
+    "rankedOnly": "仅排位赛",
+    "lowSample": "样本少的英雄",
+    "hide": "隐藏（< {threshold} 场）",
+    "show": "以淡色显示",
+    "region": "地区",
+    "regionNote": "不可用：英雄统计数据源没有地区筛选。",
+    "gameMode": "游戏模式",
+    "gameModeNote": "普通（6v6）。Street Brawl 稍后支持。",
+    "showing": "正在显示 <b>{window}</b>",
+    "reset": "重置筛选"
+  },
+  "summary": {
+    "strongest": {
+      "title": "最强选择",
+      "note": "S/A 梯队：胜率区间高于 50%",
+      "empty": "在此范围内没有明显高于 50% 的英雄。"
+    },
+    "rising": "上升",
+    "falling": "下降",
+    "weeklyNote": "最近 7 天对比之前 7 天，区间不重叠",
+    "noChange": "没有英雄的变化超出正常波动。",
+    "mostPlayed": {
+      "title": "出场最多",
+      "note": "英雄出场的比赛占比"
+    },
+    "highestWinRate": {
+      "title": "最高胜率",
+      "note": "场次达到 {threshold}+ 的英雄中"
+    },
+    "bestRole": {
+      "title": "表现最好的定位",
+      "clear": "明确领先：区间高于其他所有定位",
+      "unclear": "差异在正常波动范围内"
+    },
+    "notEnough": "此范围内数据不足。",
+    "noRoles": "没有定位数据。"
+  },
+  "tiers": {
+    "count": "{count, plural, other {# 个英雄}}",
+    "empty": "在此范围内该梯队没有英雄。",
+    "list": "{tier} 梯队英雄",
+    "winRate": "胜率"
+  },
+  "table": {
+    "caption": "按梯队、胜率、选取率和趋势排列的英雄",
+    "tier": "梯队",
+    "winRate": "胜率",
+    "trend": "趋势",
+    "confidence": "置信度",
+    "details": "详情",
+    "notEnough": "数据不足",
+    "notEnoughTitle": "其中一周的场次少于 {threshold}",
+    "sort": "排序",
+    "sortLabel": "英雄排序",
+    "showAll": "显示全部 {count} 个英雄",
+    "showFewer": "收起"
+  },
+  "panel": {
+    "button": "原因",
+    "buttonLabel": "原因：显示 {hero} 背后的数字",
+    "title": "{hero}：数字",
+    "daily": "每日胜率",
+    "sparkline": "每日胜率从 {from} 到 {to}；虚线为 50%。",
+    "disclaimer": "这些是比赛数据中观察到的数字，并非原因解释。比赛数据无法说明英雄为何有这样的表现。",
+    "open": "打开英雄页面"
+  },
+  "why": {
+    "labels": {
+      "result": "结果",
+      "certainty": "确定性",
+      "popularity": "热度",
+      "trend": "趋势",
+      "role": "定位",
+      "perMatch": "每场"
+    },
+    "result": "{matches} 场中胜率 {winRate}（{scope}）。",
+    "certainty": {
+      "low": "仅 {matches} 场：太少，无法划入梯队。",
+      "interval": "95% 区间 {low}–{high}。{tier}",
+      "tier": "{tier} 梯队：{rule}。",
+      "rules": {
+        "S": "胜率区间完全高于 52%",
+        "A": "胜率区间完全高于 50%",
+        "B": "胜率区间包含 50%",
+        "C": "胜率区间完全低于 50%"
+      }
+    },
+    "popularity": "在 {pickRate} 的比赛中被选取，在 {count} 个英雄中选取量排{rank, selectordinal, other {第 #}}。",
+    "trend": {
+      "weeks": "最近 7 天 {current}（{currentMatches} 场）对比之前 7 天 {previous}（{previousMatches} 场）：{delta}。{verdict}",
+      "verdict": {
+        "tooFew": "其中一周场次太少，无法判定趋势。",
+        "stable": "两周的区间重叠，因此视为持平。",
+        "rising": "两周的区间不重叠，因此算作上升。",
+        "falling": "两周的区间不重叠，因此算作下降。"
+      },
+      "missing": "此范围内{missing, select, previous {之前 7 天} other {最近 7 天}}没有比赛，因此无法计算趋势。"
+    },
+    "role": "{role} 英雄在此范围内合计胜率 {winRate}；{hero} 与之相差 {delta}。",
+    "perMatch": "平均 K/D/A {kills} / {deaths} / {assists}。平均最终魂 {souls}（相对全英雄平均 {sign, select, plus {+} other {−}}{diff}）。",
+    "pulse": {
+      "mostPicked": "{hero} 出现在 {pickRate} 的比赛中（选取率 = 其场次 ÷ 总场次 ÷ 12 个位置）。",
+      "mover": "最近 7 天对比之前 7 天，两周的区间不重叠。"
+    }
+  }
+}

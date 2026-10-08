@@ -31,7 +31,7 @@ export type Section<T> = { ok: true; data: T; asOf: number; stale: boolean } | {
 function section<T>(key: string, revalidate: number, maxAgeMs: number, load: () => Promise<T>) {
   const cached = unstable_cache(
     stableKey('home-section', async () => ({ data: await load(), asOf: Date.now() })),
-    ['home', key, 'v4'], // bump when a section's cached shape changes (v4: scope as values instead of English labels)
+    ['home', key, 'v5'], // bump when a section's cached shape changes (v5: pulse "Why?" as Meta facts instead of English text)
     { revalidate, tags: ['home'] },
   )
   return cache(async (): Promise<Section<T>> => {
@@ -62,8 +62,6 @@ function trendRow(h: MetaHero): HeroTrend {
   }
 }
 
-const whyText = (h: MetaHero) => h.why.map((f) => f.text).join(' ')
-
 /** Summary, pulse and hero movement: one Meta model (last 7 days, all ranks). */
 export const getHomeMeta = section<HomeMeta>('meta', TTL.analytics / 6, FRESHNESS.analytics, async () => {
   const meta = await getMetaPageData(DEFAULT_QUERY)
@@ -81,12 +79,12 @@ export const getHomeMeta = section<HomeMeta>('meta', TTL.analytics / 6, FRESHNES
       featured: true,
       trend: h.trend ? { direction: h.trend.direction, delta: h.trend.delta } : undefined,
       sparkline: h.history.length > 1 ? { values: h.history, baseline: 0.5 } : undefined,
-      why: whyText(h),
+      why: { facts: h.why },
     })
   }
   if (s.mostPlayed) {
     const h = s.mostPlayed
-    pulse.push({ kind: 'mostPicked', subject: h.name, value: h.pickRate, format: 'percent', why: `${h.name} appeared in ${(h.pickRate * 100).toFixed(1)}% of matches (pick rate = its matches ÷ total matches ÷ 12 slots). ${whyText(h)}` })
+    pulse.push({ kind: 'mostPicked', subject: h.name, value: h.pickRate, format: 'percent', why: { intro: { kind: 'mostPicked', hero: h.name, pickRate: h.pickRate }, facts: h.why } })
   }
   const mover = s.rising[0] ?? s.falling[0] ?? null
   if (mover?.trend) {
@@ -96,7 +94,7 @@ export const getHomeMeta = section<HomeMeta>('meta', TTL.analytics / 6, FRESHNES
       value: mover.winRate,
       format: 'percent',
       trend: { direction: mover.trend.direction, delta: mover.trend.delta },
-      why: `Last 7 days vs the 7 before, and the two weeks’ intervals don’t overlap. ${whyText(mover)}`,
+      why: { intro: { kind: 'mover' }, facts: mover.why },
     })
   }
   const byPick = [...model.heroes].filter((h) => h.sample !== 'low').sort((a, b) => b.pickRate - a.pickRate)

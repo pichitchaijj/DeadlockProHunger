@@ -21,6 +21,7 @@ import { HeroStats, HeroStatsSkeleton, HomeHero } from '@/features/home/componen
 import { HomeSection } from '@/features/home/components/HomeSection'
 import { PatchSnapshotCard } from '@/features/home/components/PatchSnapshotCard'
 import { QuickEntry } from '@/features/home/components/QuickEntry'
+import { getMetaWhyWording } from '@/features/meta/wording'
 
 /** Re-render at most every 5 minutes; each section's data has its own server cache and freshness budget. */
 export const revalidate = 300
@@ -161,7 +162,7 @@ async function PatchBlock() {
 }
 
 async function PulseBlock() {
-  const [s, t] = await Promise.all([getHomeMeta(), getTranslations('home')])
+  const [s, t, why] = await Promise.all([getHomeMeta(), getTranslations('home'), getMetaWhyWording()])
   if (!s.ok) return <DataNotice error={s.error} what="Pulse" />
   const { scope, pulse } = s.data
   if (pulse.length === 0) return <EmptyState title={t('empty.pulseTitle')} description={t('empty.pulseDescription')} />
@@ -185,7 +186,7 @@ async function PulseBlock() {
               showScope={false}
               delta={stat.trend && <TrendBadge {...stat.trend} comparison={t('comparison')} />}
               footer={stat.sparkline && <Sparkline {...stat.sparkline} summary={t('pulse.sparkline', { hero: stat.subject ?? '' })} />}
-              why={stat.why}
+              why={why.paragraph(stat.why.facts, stat.why.intro)}
             />
           </Reveal>
         ))}

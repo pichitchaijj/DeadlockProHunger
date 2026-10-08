@@ -1,9 +1,19 @@
+import { createTranslator } from 'next-intl'
 import { describe, expect, it } from 'vitest'
+import en from '@/i18n/messages/en'
 import { buildMetaModel, slugify, type MetaInputRow } from '@/features/meta/model'
 import { DEFAULT_QUERY } from '@/features/meta/query'
+import { makeMetaFormat, whyFactText } from '@/features/meta/text'
+import type { ScopeRef } from '@/lib/analytics/scope'
+import { englishScope } from './helpers/scopeEnglish'
 
 const DAY = 86_400
 const today = 20_000 * DAY
+const SCOPE: ScopeRef = { window: { kind: 'days', days: 7 }, rank: { kind: 'all' } }
+
+/** English "Why?" wording, as the page renders it. */
+const whyT = createTranslator({ locale: 'en', messages: en, namespace: 'meta.why' })
+const enFact = (fact: Parameters<typeof whyFactText>[0]) => whyFactText(fact, (key, values) => whyT(key as 'result', values), makeMetaFormat('en', englishScope.scope))
 
 /** Synthetic test input (not real statistics): `days` daily rows with a fixed win rate. */
 function rowsFor(heroId: number, matchesPerDay: number, winRate: number, days: number, endDay = today): MetaInputRow[] {
@@ -40,7 +50,7 @@ const model = buildMetaModel({
   query: DEFAULT_QUERY,
   windowStart: today - 6 * DAY,
   today,
-  scopeText: 'test scope',
+  scope: SCOPE,
 })
 
 describe('buildMetaModel', () => {
@@ -70,15 +80,56 @@ describe('buildMetaModel', () => {
   })
 
   it('filters by role without changing pick rates', () => {
-    const mystic = buildMetaModel({ heroes, rows, query: { ...DEFAULT_QUERY, role: 'mystic' }, windowStart: today - 6 * DAY, today, scopeText: 't' })
+    const mystic = buildMetaModel({ heroes, rows, query: { ...DEFAULT_QUERY, role: 'mystic' }, windowStart: today - 6 * DAY, today, scope: SCOPE })
     expect(mystic.rows.map((h) => h.name)).toEqual(['Average Two'])
     expect(mystic.heroes.find((h) => h.id === 1)?.pickRate).toBeCloseTo(model.heroes.find((h) => h.id === 1)!.pickRate)
   })
 
   it('states only numeric facts in "Why?"', () => {
-    const facts = model.heroes.find((h) => h.name === 'Strong One')!.why
+    const facts = model.heroes.find((h) => h.name === 'Strong One')!.why.map(enFact)
     expect(facts.map((f) => f.label)).toEqual(['Result', 'Certainty', 'Popularity', 'Trend', 'Role', 'Per match'])
-    expect(facts[0].text).toBe('Won 56.0% of 14,000 matches (test scope).')
+    expect(facts[0].text).toBe('Won 56.0% of 14,000 matches (Last 7 days, All ranks).')
+  })
+})
+
+describe('"Why?" facts (structured, locale-neutral)', () => {
+  const strong = model.heroes.find((h) => h.name === 'Strong One')!
+
+  it('keep the count, order, kinds and every number of the analysis', () => {
+    expect(strong.why).toEqual([
+      { kind: 'result', winRate: strong.winRate, matches: 14_000, scope: SCOPE },
+      { kind: 'certainty', lowSample: false, matches: 14_000, interval: strong.interval, tier: 'S' },
+      { kind: 'popularity', pickRate: strong.pickRate, pickRank: strong.pickRank, heroCount: 4 },
+      { kind: 'trend', current: { winRate: 0.56, matches: 14_000 }, previous: { winRate: 0.56, matches: 14_000 }, delta: 0, direction: 'stable' },
+      { kind: 'role', role: 'brawler', roleWinRate: 0.56, hero: 'Strong One', delta: 0 },
+      { kind: 'perMatch', kills: 5, deaths: 4, assists: 7, netWorth: 30_000, netWorthDiff: 0 },
+    ])
+    // The facts restate the hero's own analytics, never a second calculation.
+    expect(strong.winRate).toBe(0.56)
+    expect(strong.tier).toBe('S')
+    expect(strong.trend?.direction).toBe('stable')
+  })
+
+  it('mirror each hero: low sample, tier, rank, trend direction and role', () => {
+    for (const hero of model.heroes) {
+      const byKind = Object.fromEntries(hero.why.map((f) => [f.kind, f]))
+      expect(byKind.result).toMatchObject({ winRate: hero.winRate, matches: hero.matches })
+      expect(byKind.certainty).toMatchObject({ lowSample: hero.sample === 'low', interval: hero.interval, tier: hero.tier })
+      expect(byKind.popularity).toMatchObject({ pickRate: hero.pickRate, pickRank: hero.pickRank, heroCount: model.heroes.length })
+      if (byKind.trend) expect(byKind.trend).toMatchObject({ direction: hero.trend?.direction ?? null })
+      if (byKind.role) expect(byKind.role).toMatchObject({ role: hero.role, hero: hero.name })
+    }
+    const riser = model.heroes.find((h) => h.name === 'Riser Four')!
+    expect(riser.why.find((f) => f.kind === 'trend')).toMatchObject({ direction: 'rising', current: { winRate: 0.56, matches: 14_000 }, previous: { winRate: 0.48, matches: 14_000 } })
+    const rare = model.heroes.find((h) => h.name === 'Rare Three')!
+    expect(rare.why.find((f) => f.kind === 'certainty')).toMatchObject({ lowSample: true, matches: 70, tier: null })
+  })
+
+  it('are unchanged by wording them (and wording needs no locale in the data)', () => {
+    const before = structuredClone(model.heroes.map((h) => h.why))
+    model.heroes.forEach((h) => h.why.forEach(enFact))
+    expect(model.heroes.map((h) => h.why)).toEqual(before)
+    expect(JSON.parse(JSON.stringify(before))).toEqual(before)
   })
 })
 
@@ -90,10 +141,11 @@ describe('whyFacts without a previous week', () => {
       query: DEFAULT_QUERY,
       windowStart: today - 6 * DAY,
       today,
-      scopeText: 't',
+      scope: SCOPE,
     })
-    const trend = fresh.heroes.find((h) => h.id === 9)!.why.find((f) => f.label === 'Trend')
-    expect(trend?.text).toBe('No matches in the 7 days before for this scope, so no trend can be computed.')
+    const trend = fresh.heroes.find((h) => h.id === 9)!.why.find((f) => f.kind === 'noTrend')
+    expect(trend).toEqual({ kind: 'noTrend', missing: 'previous' })
+    expect(enFact(trend!)).toEqual({ id: 'noTrend', label: 'Trend', text: 'No matches in the 7 days before for this scope, so no trend can be computed.' })
   })
 })
 

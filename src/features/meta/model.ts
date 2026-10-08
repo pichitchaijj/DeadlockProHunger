@@ -1,14 +1,16 @@
 import { pickRates, estimatedMatchCount } from '@/lib/analytics/pickRate'
 import { sampleTier, type SampleTier } from '@/lib/analytics/sampleTier'
-import { TIER_ORDER, TIER_RULES, tierFor, type Tier } from '@/lib/analytics/tiers'
+import type { ScopeRef } from '@/lib/analytics/scope'
+import { TIER_ORDER, tierFor, type Tier } from '@/lib/analytics/tiers'
 import { trendBetween, type Trend } from '@/lib/analytics/trend'
 import { wilsonInterval, type Interval } from '@/lib/analytics/wilson'
-import { formatInteger, formatPercent, formatPointDelta } from '@/lib/format'
 import type { HeroRole, MetaQuery } from './query'
 
 /*
  * Pure Meta view model: raw API rows in, display-ready data out.
- * Everything shown on the page — including "Why?" — is derived here from metrics alone.
+ * Everything shown on the page — including "Why?" — is derived here from metrics alone. "Why?" facts are
+ * data, not sentences: features/meta/text.ts words them in the reader's language, so the same facts serve
+ * every locale (and Home can cache them).
  */
 
 const DAY = 86_400
@@ -33,12 +35,32 @@ export type MetaInput = {
   windowStart: number
   /** Unix seconds of today's UTC day start. */
   today: number
-  scopeText: string
+  /** The selected scope, carried by the Result fact. */
+  scope: ScopeRef
 }
 
 type Totals = { wins: number; matches: number; kills: number; deaths: number; assists: number; netWorth: number }
 
-export type WhyFact = { label: string; text: string }
+/** One week's result behind a trend. */
+export type WeekResult = { winRate: number; matches: number }
+
+/**
+ * A "Why?" fact: observed numbers only, one per kind, in display order (`kind` doubles as its id).
+ * `noTrend` takes the Trend slot when a week has no matches.
+ */
+export type WhyFact =
+  | { kind: 'result'; winRate: number; matches: number; scope: ScopeRef }
+  /** `lowSample`: too few matches to place in a tier (the interval and tier aren't stated). */
+  | { kind: 'certainty'; lowSample: boolean; matches: number; interval: Interval; tier: Tier | null }
+  | { kind: 'popularity'; pickRate: number; pickRank: number; heroCount: number }
+  /** `direction` null: one of the weeks has too few matches to call a trend. */
+  | { kind: 'trend'; current: WeekResult; previous: WeekResult; delta: number; direction: Trend['direction'] | null }
+  | { kind: 'noTrend'; missing: 'current' | 'previous' }
+  | { kind: 'role'; role: string; roleWinRate: number; hero: string; delta: number }
+  /** Per-match averages; `netWorthDiff` is the ratio vs the all-hero average (0 when that is unknown). */
+  | { kind: 'perMatch'; kills: number; deaths: number; assists: number; netWorth: number; netWorthDiff: number }
+
+export type WhyFactKind = WhyFact['kind']
 
 export type MetaHero = {
   id: number
@@ -109,7 +131,7 @@ function add(totals: Totals, row: MetaInputRow) {
   totals.netWorth += row.netWorth
 }
 
-export function buildMetaModel({ heroes, rows, query, windowStart, today, scopeText }: MetaInput): MetaModel {
+export function buildMetaModel({ heroes, rows, query, windowStart, today, scope }: MetaInput): MetaModel {
   const currentWeekStart = today - 6 * DAY
   const previousWeekStart = today - 13 * DAY
 
@@ -183,7 +205,7 @@ export function buildMetaModel({ heroes, rows, query, windowStart, today, scopeT
         totals: t,
         cur,
         prev,
-        scopeText,
+        scope,
         heroCount: known.length,
         role: hero.role ? roles.find((r) => r.role === hero.role) ?? null : null,
         avgNetWorth,
@@ -240,76 +262,51 @@ type WhyContext = {
   totals: Totals
   cur: Totals | undefined
   prev: Totals | undefined
-  scopeText: string
+  scope: ScopeRef
   heroCount: number
   role: RoleStat | null
   avgNetWorth: number
 }
 
-/** Plain statements of observed numbers. No causes, no speculation. */
+/** Plain statements of observed numbers. No causes, no speculation. Worded by features/meta/text.ts. */
 export function whyFacts(hero: Omit<MetaHero, 'why'>, ctx: WhyContext): WhyFact[] {
   const facts: WhyFact[] = [
-    {
-      label: 'Result',
-      text: `Won ${formatPercent(hero.winRate)} of ${formatInteger(hero.matches)} matches (${ctx.scopeText}).`,
-    },
-    {
-      label: 'Certainty',
-      text:
-        hero.sample === 'low'
-          ? `Only ${formatInteger(hero.matches)} matches: too few to place in a tier.`
-          : `95% interval ${formatPercent(hero.interval.low)}–${formatPercent(hero.interval.high)}. ${
-              hero.tier ? `Tier ${hero.tier}: ${TIER_RULES[hero.tier].toLowerCase()}.` : ''
-            }`,
-    },
-    {
-      label: 'Popularity',
-      text: `Picked in ${formatPercent(hero.pickRate)} of matches, ${ordinal(hero.pickRank)} most picked of ${ctx.heroCount} heroes.`,
-    },
+    { kind: 'result', winRate: hero.winRate, matches: hero.matches, scope: ctx.scope },
+    { kind: 'certainty', lowSample: hero.sample === 'low', matches: hero.matches, interval: hero.interval, tier: hero.tier },
+    { kind: 'popularity', pickRate: hero.pickRate, pickRank: hero.pickRank, heroCount: ctx.heroCount },
   ]
 
   if (ctx.cur && ctx.prev && ctx.cur.matches > 0 && ctx.prev.matches > 0) {
     const curRate = ctx.cur.wins / ctx.cur.matches
     const prevRate = ctx.prev.wins / ctx.prev.matches
-    const verdict = !hero.trend
-      ? 'One of the weeks has too few matches to call a trend.'
-      : hero.trend.direction === 'stable'
-        ? 'The two weeks’ intervals overlap, so this is treated as stable.'
-        : `The two weeks’ intervals do not overlap, so this counts as ${hero.trend.direction}.`
     facts.push({
-      label: 'Trend',
-      text: `Last 7 days ${formatPercent(curRate)} (${formatInteger(ctx.cur.matches)} matches) vs the 7 days before ${formatPercent(prevRate)} (${formatInteger(ctx.prev.matches)}): ${formatPointDelta(curRate - prevRate)}. ${verdict}`,
+      kind: 'trend',
+      current: { winRate: curRate, matches: ctx.cur.matches },
+      previous: { winRate: prevRate, matches: ctx.prev.matches },
+      delta: curRate - prevRate,
+      direction: hero.trend ? hero.trend.direction : null,
     })
   } else {
-    facts.push({
-      label: 'Trend',
-      text: `No matches in ${ctx.cur?.matches ? 'the 7 days before' : 'the last 7 days'} for this scope, so no trend can be computed.`,
-    })
+    facts.push({ kind: 'noTrend', missing: ctx.cur?.matches ? 'previous' : 'current' })
   }
 
   if (ctx.role && hero.role) {
-    facts.push({
-      label: 'Role',
-      text: `${capitalize(hero.role)} heroes together won ${formatPercent(ctx.role.winRate)} in this scope; ${hero.name} is ${formatPointDelta(hero.winRate - ctx.role.winRate)} from that.`,
-    })
+    facts.push({ kind: 'role', role: hero.role, roleWinRate: ctx.role.winRate, hero: hero.name, delta: hero.winRate - ctx.role.winRate })
   }
 
   const t = ctx.totals
   if (t.matches > 0) {
-    const perMatch = (n: number) => (n / t.matches).toFixed(1)
     const netWorth = t.netWorth / t.matches
-    const nwDiff = ctx.avgNetWorth > 0 ? (netWorth - ctx.avgNetWorth) / ctx.avgNetWorth : 0
     facts.push({
-      label: 'Per match',
-      text: `Average K/D/A ${perMatch(t.kills)} / ${perMatch(t.deaths)} / ${perMatch(t.assists)}. Average final souls ${formatInteger(Math.round(netWorth))} (${nwDiff >= 0 ? '+' : '−'}${Math.abs(nwDiff * 100).toFixed(0)}% vs the all-hero average).`,
+      kind: 'perMatch',
+      kills: t.kills / t.matches,
+      deaths: t.deaths / t.matches,
+      assists: t.assists / t.matches,
+      netWorth,
+      netWorthDiff: ctx.avgNetWorth > 0 ? (netWorth - ctx.avgNetWorth) / ctx.avgNetWorth : 0,
     })
   }
   return facts
-}
-
-function ordinal(n: number): string {
-  const suffix = n % 100 >= 11 && n % 100 <= 13 ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[n % 10] ?? 'th'
-  return `${n}${suffix}`
 }
 
 export function capitalize(text: string): string {

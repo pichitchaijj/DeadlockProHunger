@@ -1,0 +1,169 @@
+{
+  "meta": {
+    "title": "Meta",
+    "description": "Which Deadlock heroes are strong right now, by rank and patch, with sample sizes and confidence."
+  },
+  "header": {
+    "eyebrow": "Meta",
+    "title": "Meta right now",
+    "description": "What’s strong right now, how sure we are, and what’s changing. Start at the top; go deeper only if you need to."
+  },
+  "counters": {
+    "matches": "Matches analyzed",
+    "heroes": "Heroes with enough data",
+    "patchAge": "Patch age",
+    "days": "{count, plural, one {day} other {days}}",
+    "unknown": "Unknown"
+  },
+  "patchNotice": {
+    "badge": "New patch",
+    "text": "The current patch is only {count, plural, one {# day} other {# days}} old. Expect small samples and treat tiers as early signals."
+  },
+  "layers": {
+    "glance": {
+      "eyebrow": "Layer 1",
+      "title": "At a glance",
+      "description": "The six answers most people need. Low-sample heroes are never used here."
+    },
+    "tiers": {
+      "eyebrow": "Layer 2",
+      "title": "Tiers",
+      "description": "Tiers come only from the win rate and how certain it is. Pick rate doesn’t change a tier."
+    },
+    "table": {
+      "eyebrow": "Layer 3",
+      "title": "All heroes",
+      "description": "Sort any column. Open “Why?” for the numbers behind a hero."
+    }
+  },
+  "empty": {
+    "title": "No heroes to show",
+    "description": "No hero in this role has enough matches in this scope. Try a longer window or a wider rank band.",
+    "action": "Use last 30 days"
+  },
+  "hiddenLow": {
+    "text": "{count, plural, one {# hero is} other {# heroes are}} hidden with fewer than {threshold} matches.",
+    "show": "Show them, muted"
+  },
+  "howTiers": {
+    "summary": "How tiers, trends and confidence work",
+    "tiers": "Tiers",
+    "rule": "<b>{tier}</b>: {rule}.",
+    "interval": "The interval is a 95% Wilson interval: the range the true win rate very likely falls in, given how many matches were played.",
+    "trends": "Trends",
+    "trendsText": "We compare the last 7 days with the 7 days before. A hero is “rising” or “falling” only when the two weeks’ intervals don’t overlap. Otherwise it’s “stable”, even if the number moved a little.",
+    "confidence": "Confidence",
+    "confidenceText": "Low: under {moderate} matches (no tier, never in summaries). Moderate: up to {high}. High: above that. Pick rate is the share of matches a hero appears in."
+  },
+  "filters": {
+    "share": "About {share} of ranked players are in this band (latest ranked match, last 30 days).",
+    "advanced": "Advanced filters",
+    "active": "(active)",
+    "matchType": "Match type",
+    "rankedAndUnranked": "Ranked + unranked",
+    "rankedOnly": "Ranked only",
+    "lowSample": "Low-sample heroes",
+    "hide": "Hide (< {threshold} matches)",
+    "show": "Show, muted",
+    "region": "Region",
+    "regionNote": "Not available: the hero statistics source has no region filter.",
+    "gameMode": "Game mode",
+    "gameModeNote": "Normal (6v6). Street Brawl comes later.",
+    "showing": "Showing <b>{window}</b>",
+    "reset": "Reset filters"
+  },
+  "summary": {
+    "strongest": {
+      "title": "Strongest picks",
+      "note": "Tier S/A: win-rate interval above 50%",
+      "empty": "No hero is clearly above 50% in this scope."
+    },
+    "rising": "Rising",
+    "falling": "Falling",
+    "weeklyNote": "Last 7 days vs the 7 before, intervals don’t overlap",
+    "noChange": "No hero changed beyond normal variation.",
+    "mostPlayed": {
+      "title": "Most played",
+      "note": "Share of matches the hero appears in"
+    },
+    "highestWinRate": {
+      "title": "Highest win rate",
+      "note": "Among heroes with {threshold}+ matches"
+    },
+    "bestRole": {
+      "title": "Best-performing role",
+      "clear": "Clear leader: interval above every other role",
+      "unclear": "Differences are within normal variation"
+    },
+    "notEnough": "Not enough data in this scope.",
+    "noRoles": "Role data unavailable."
+  },
+  "tiers": {
+    "count": "{count, plural, one {# hero} other {# heroes}}",
+    "empty": "No heroes in this tier for this scope.",
+    "list": "Tier {tier} heroes",
+    "winRate": "win rate"
+  },
+  "table": {
+    "caption": "Heroes by tier, win rate, pick rate and trend",
+    "tier": "Tier",
+    "winRate": "Win rate",
+    "trend": "Trend",
+    "confidence": "Confidence",
+    "details": "Details",
+    "notEnough": "Not enough data",
+    "notEnoughTitle": "One of the weeks has fewer than {threshold} matches",
+    "sort": "Sort",
+    "sortLabel": "Sort heroes",
+    "showAll": "Show all {count} heroes",
+    "showFewer": "Show fewer"
+  },
+  "panel": {
+    "button": "Why?",
+    "buttonLabel": "Why? Show the numbers behind {hero}",
+    "title": "{hero}: the numbers",
+    "daily": "Daily win rate",
+    "sparkline": "Daily win rate from {from} to {to}; dashed line is 50%.",
+    "disclaimer": "These are observed numbers from match data, not explanations of cause. Match data can’t tell us why a hero performs this way.",
+    "open": "Open hero page"
+  },
+  "why": {
+    "labels": {
+      "result": "Result",
+      "certainty": "Certainty",
+      "popularity": "Popularity",
+      "trend": "Trend",
+      "role": "Role",
+      "perMatch": "Per match"
+    },
+    "result": "Won {winRate} of {matches} matches ({scope}).",
+    "certainty": {
+      "low": "Only {matches} matches: too few to place in a tier.",
+      "interval": "95% interval {low}–{high}. {tier}",
+      "tier": "Tier {tier}: {rule}.",
+      "rules": {
+        "S": "win-rate interval entirely above 52%",
+        "A": "win-rate interval entirely above 50%",
+        "B": "win-rate interval includes 50%",
+        "C": "win-rate interval entirely below 50%"
+      }
+    },
+    "popularity": "Picked in {pickRate} of matches, {rank, selectordinal, one {#st} two {#nd} few {#rd} other {#th}} most picked of {count} heroes.",
+    "trend": {
+      "weeks": "Last 7 days {current} ({currentMatches} matches) vs the 7 days before {previous} ({previousMatches}): {delta}. {verdict}",
+      "verdict": {
+        "tooFew": "One of the weeks has too few matches to call a trend.",
+        "stable": "The two weeks’ intervals overlap, so this is treated as stable.",
+        "rising": "The two weeks’ intervals do not overlap, so this counts as rising.",
+        "falling": "The two weeks’ intervals do not overlap, so this counts as falling."
+      },
+      "missing": "No matches in {missing, select, previous {the 7 days before} other {the last 7 days}} for this scope, so no trend can be computed."
+    },
+    "role": "{role} heroes together won {winRate} in this scope; {hero} is {delta} from that.",
+    "perMatch": "Average K/D/A {kills} / {deaths} / {assists}. Average final souls {souls} ({sign, select, plus {+} other {−}}{diff} vs the all-hero average).",
+    "pulse": {
+      "mostPicked": "{hero} appeared in {pickRate} of matches (pick rate = its matches ÷ total matches ÷ 12 slots).",
+      "mover": "Last 7 days vs the 7 before, and the two weeks’ intervals don’t overlap."
+    }
+  }
+}

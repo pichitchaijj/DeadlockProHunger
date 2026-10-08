@@ -1,8 +1,9 @@
+import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { TierBadge } from '@/components/data/TierBadge'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
 import { Reveal } from '@/components/motion/Reveal'
-import { TIER_ORDER, TIER_RULES } from '@/lib/analytics/tiers'
+import { TIER_ORDER } from '@/lib/analytics/tiers'
 import { formatPercent } from '@/lib/format'
 import type { MetaModel } from '../model'
 
@@ -12,6 +13,8 @@ import type { MetaModel } from '../model'
  * Heroes inside a row are ordered by interval lower bound.
  */
 export function TierBoard({ tiers }: { tiers: MetaModel['tiers'] }) {
+  const t = useTranslations('meta.tiers')
+  const rules = useTranslations('data.tierRules')
   return (
     <ol className="flex flex-col overflow-hidden rounded-md border border-border bg-border [&>*+*]:mt-px">
       {TIER_ORDER.map((tier, i) => (
@@ -20,15 +23,15 @@ export function TierBoard({ tiers }: { tiers: MetaModel['tiers'] }) {
             <TierBadge tier={tier} size="lg" />
             <div>
               <p className="font-ui text-sm font-semibold text-text">
-                {tiers[tier].length} {tiers[tier].length === 1 ? 'hero' : 'heroes'}
+                {t('count', { count: tiers[tier].length })}
               </p>
-              <p className="text-caption text-text-muted">{TIER_RULES[tier]}</p>
+              <p className="text-caption text-text-muted">{rules(tier)}</p>
             </div>
           </div>
           {tiers[tier].length === 0 ? (
-            <p className="self-center px-4 py-4 text-sm text-text-muted">No heroes in this tier for this scope.</p>
+            <p className="self-center px-4 py-4 text-sm text-text-muted">{t('empty')}</p>
           ) : (
-            <ul aria-label={`Tier ${tier} heroes`} className="flex flex-wrap content-start gap-2 p-3">
+            <ul aria-label={t('list', { tier })} className="flex flex-wrap content-start gap-2 p-3">
               {tiers[tier].map((hero) => (
                 <li key={hero.id}>
                   <Link
@@ -38,7 +41,7 @@ export function TierBoard({ tiers }: { tiers: MetaModel['tiers'] }) {
                     <HeroPortrait name={hero.name} src={hero.iconUrl ?? undefined} size="sm" />
                     <span className="font-ui text-xs font-semibold text-text">{hero.name}</span>
                     <span className="font-ui text-xs text-text-muted tabular">
-                      <span className="sr-only">win rate </span>
+                      <span className="sr-only">{t('winRate')} </span>
                       {formatPercent(hero.winRate)}
                     </span>
                   </Link>

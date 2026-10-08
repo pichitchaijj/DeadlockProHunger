@@ -2,7 +2,6 @@ import 'server-only'
 import type { RankCatalog } from '@/lib/deadlock/rankAssets'
 import { cache } from 'react'
 import type { ScopeRank, ScopeWindow, StatScope } from '@/lib/analytics/scope'
-import { englishScopeWording } from '@/components/data/scopeWording'
 import { badgeRange, RANK_BANDS, type RankBandId } from '@/lib/analytics/rankBands'
 import { DeadlockApiError } from '@/lib/deadlock/client'
 import { classifyError, type DataErrorKind } from '@/lib/deadlock/errors'
@@ -89,8 +88,7 @@ const loadMetaPageData = cache(async (key: string): Promise<MetaPageData> => {
       query: { ...query, window },
       windowStart,
       today,
-      // The Meta page isn't localized yet: its "Why?" facts stay English, scope included.
-      scopeText: englishScopeWording().scope(scopeInfo.selected),
+      scope: scopeInfo.selected,
     })
 
     return {

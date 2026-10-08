@@ -1,5 +1,7 @@
 import type { ScopeRef, StatScope } from '@/lib/analytics/scope'
 import type { TrendDirection } from '@/components/data/TrendBadge'
+import type { WhyFact } from '@/features/meta/model'
+import type { WhyIntro } from '@/features/meta/text'
 import type { BuildCardProps } from '@/components/cards/BuildCard'
 import type { MatchCardProps } from '@/components/cards/MatchCard'
 
@@ -46,7 +48,8 @@ export type PulseStat = {
   value: number
   format: 'percent' | 'compact' | 'integer' | 'duration'
   subject?: string
-  why: string
+  /** The hero's Meta "Why?" facts (data; worded at render in the reader's language) and the card's intro. */
+  why: { intro?: WhyIntro; facts: WhyFact[] }
   featured?: boolean
   trend?: { direction: TrendDirection; delta?: number }
   sparkline?: { values: number[]; baseline?: number }

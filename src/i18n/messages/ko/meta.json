@@ -1,0 +1,169 @@
+{
+  "meta": {
+    "title": "메타",
+    "description": "지금 강한 Deadlock 영웅을 랭크와 패치별로, 표본 크기와 신뢰도와 함께 보여 줍니다."
+  },
+  "header": {
+    "eyebrow": "메타",
+    "title": "현재 메타",
+    "description": "지금 무엇이 강한지, 얼마나 확실한지, 무엇이 바뀌고 있는지. 위에서부터 읽고, 필요할 때만 더 깊이 살펴보세요."
+  },
+  "counters": {
+    "matches": "분석한 매치",
+    "heroes": "데이터가 충분한 영웅",
+    "patchAge": "패치 경과",
+    "days": "{count, plural, other {일}}",
+    "unknown": "알 수 없음"
+  },
+  "patchNotice": {
+    "badge": "새 패치",
+    "text": "현재 패치는 나온 지 {count, plural, other {#일}}밖에 되지 않았습니다. 표본이 작으니 티어는 초기 신호로만 보세요."
+  },
+  "layers": {
+    "glance": {
+      "eyebrow": "1단계",
+      "title": "한눈에 보기",
+      "description": "대부분이 궁금해하는 여섯 가지 답. 표본이 적은 영웅은 여기에 쓰지 않습니다."
+    },
+    "tiers": {
+      "eyebrow": "2단계",
+      "title": "티어",
+      "description": "티어는 승률과 그 확실성만으로 정해집니다. 픽률은 티어를 바꾸지 않습니다."
+    },
+    "table": {
+      "eyebrow": "3단계",
+      "title": "전체 영웅",
+      "description": "어느 열이든 정렬할 수 있습니다. “이유”를 열면 영웅의 수치를 볼 수 있습니다."
+    }
+  },
+  "empty": {
+    "title": "표시할 영웅이 없습니다",
+    "description": "이 범위에서 이 역할의 영웅 중 매치가 충분한 영웅이 없습니다. 더 긴 기간이나 더 넓은 랭크 구간을 시도해 보세요.",
+    "action": "최근 30일 사용"
+  },
+  "hiddenLow": {
+    "text": "매치가 {threshold}회 미만인 영웅 {count, plural, other {#명}}을(를) 숨겼습니다.",
+    "show": "흐리게 표시"
+  },
+  "howTiers": {
+    "summary": "티어, 추세, 신뢰도의 원리",
+    "tiers": "티어",
+    "rule": "<b>{tier}</b>: {rule}",
+    "interval": "구간은 95% Wilson 구간입니다. 플레이된 매치 수를 감안할 때 실제 승률이 들어 있을 가능성이 매우 높은 범위입니다.",
+    "trends": "추세",
+    "trendsText": "최근 7일과 그 이전 7일을 비교합니다. 두 주의 구간이 겹치지 않을 때만 “상승” 또는 “하락”으로 보고, 그 밖에는 수치가 조금 움직여도 “보합”으로 봅니다.",
+    "confidence": "신뢰도",
+    "confidenceText": "낮음: {moderate}매치 미만(티어 없음, 요약에 쓰지 않음). 보통: {high}매치까지. 높음: 그 이상. 픽률은 영웅이 등장한 매치의 비율입니다."
+  },
+  "filters": {
+    "share": "랭크 플레이어의 약 {share}가 이 구간에 있습니다(최근 30일 마지막 랭크 매치 기준).",
+    "advanced": "고급 필터",
+    "active": "(사용 중)",
+    "matchType": "매치 유형",
+    "rankedAndUnranked": "랭크 + 일반",
+    "rankedOnly": "랭크만",
+    "lowSample": "표본이 적은 영웅",
+    "hide": "숨기기(< {threshold}매치)",
+    "show": "흐리게 표시",
+    "region": "지역",
+    "regionNote": "사용할 수 없음: 영웅 통계 출처에 지역 필터가 없습니다.",
+    "gameMode": "게임 모드",
+    "gameModeNote": "일반(6v6). Street Brawl은 나중에 지원합니다.",
+    "showing": "표시 중: <b>{window}</b>",
+    "reset": "필터 초기화"
+  },
+  "summary": {
+    "strongest": {
+      "title": "가장 강한 픽",
+      "note": "S/A 티어: 승률 구간이 50% 초과",
+      "empty": "이 범위에서 50%를 확실히 넘는 영웅이 없습니다."
+    },
+    "rising": "상승",
+    "falling": "하락",
+    "weeklyNote": "최근 7일과 그 이전 7일, 구간이 겹치지 않음",
+    "noChange": "정상 변동을 넘어 변한 영웅이 없습니다.",
+    "mostPlayed": {
+      "title": "가장 많이 플레이됨",
+      "note": "영웅이 등장한 매치의 비율"
+    },
+    "highestWinRate": {
+      "title": "최고 승률",
+      "note": "{threshold}매치 이상인 영웅 중"
+    },
+    "bestRole": {
+      "title": "성적이 가장 좋은 역할",
+      "clear": "확실한 선두: 구간이 다른 모든 역할보다 높음",
+      "unclear": "차이가 정상 변동 범위 안에 있음"
+    },
+    "notEnough": "이 범위에서는 데이터가 부족합니다.",
+    "noRoles": "역할 데이터가 없습니다."
+  },
+  "tiers": {
+    "count": "{count, plural, other {영웅 #명}}",
+    "empty": "이 범위에서 이 티어에 속한 영웅이 없습니다.",
+    "list": "{tier} 티어 영웅",
+    "winRate": "승률"
+  },
+  "table": {
+    "caption": "티어, 승률, 픽률, 추세별 영웅",
+    "tier": "티어",
+    "winRate": "승률",
+    "trend": "추세",
+    "confidence": "신뢰도",
+    "details": "세부 정보",
+    "notEnough": "데이터 부족",
+    "notEnoughTitle": "두 주 중 한 주의 매치가 {threshold}회 미만입니다",
+    "sort": "정렬",
+    "sortLabel": "영웅 정렬",
+    "showAll": "영웅 {count}명 모두 보기",
+    "showFewer": "간단히 보기"
+  },
+  "panel": {
+    "button": "이유",
+    "buttonLabel": "이유: {hero}의 수치 보기",
+    "title": "{hero}: 수치",
+    "daily": "일별 승률",
+    "sparkline": "일별 승률 {from}에서 {to}까지. 점선은 50%.",
+    "disclaimer": "매치 데이터에서 관찰한 수치이며 원인에 대한 설명이 아닙니다. 매치 데이터로는 영웅이 왜 이런 성적을 내는지 알 수 없습니다.",
+    "open": "영웅 페이지 열기"
+  },
+  "why": {
+    "labels": {
+      "result": "결과",
+      "certainty": "확실성",
+      "popularity": "인기",
+      "trend": "추세",
+      "role": "역할",
+      "perMatch": "매치당"
+    },
+    "result": "{matches}매치에서 {winRate} 승리({scope}).",
+    "certainty": {
+      "low": "매치가 {matches}회뿐: 티어를 정하기에는 너무 적습니다.",
+      "interval": "95% 구간 {low}–{high}. {tier}",
+      "tier": "{tier} 티어: {rule}.",
+      "rules": {
+        "S": "승률 구간 전체가 52% 초과",
+        "A": "승률 구간 전체가 50% 초과",
+        "B": "승률 구간에 50% 포함",
+        "C": "승률 구간 전체가 50% 미만"
+      }
+    },
+    "popularity": "{pickRate}의 매치에서 선택됨, 영웅 {count}명 중 {rank, selectordinal, other {#번째}}로 많이 선택됨.",
+    "trend": {
+      "weeks": "최근 7일 {current}({currentMatches}매치), 그 이전 7일 {previous}({previousMatches}매치): {delta}. {verdict}",
+      "verdict": {
+        "tooFew": "두 주 중 한 주의 매치가 너무 적어 추세로 판단할 수 없습니다.",
+        "stable": "두 주의 구간이 겹치므로 보합으로 봅니다.",
+        "rising": "두 주의 구간이 겹치지 않으므로 상승으로 봅니다.",
+        "falling": "두 주의 구간이 겹치지 않으므로 하락으로 봅니다."
+      },
+      "missing": "이 범위에서는 {missing, select, previous {그 이전 7일} other {최근 7일}}에 매치가 없어 추세를 계산할 수 없습니다."
+    },
+    "role": "{role} 영웅 전체는 이 범위에서 {winRate} 승리했고, {hero}은(는) 그보다 {delta}.",
+    "perMatch": "평균 K/D/A {kills} / {deaths} / {assists}. 평균 최종 소울 {souls}(전체 영웅 평균 대비 {sign, select, plus {+} other {−}}{diff}).",
+    "pulse": {
+      "mostPicked": "{hero}은(는) 매치의 {pickRate}에 등장했습니다(픽률 = 영웅의 매치 ÷ 전체 매치 ÷ 12슬롯).",
+      "mover": "최근 7일과 그 이전 7일을 비교했으며, 두 주의 구간이 겹치지 않습니다."
+    }
+  }
+}

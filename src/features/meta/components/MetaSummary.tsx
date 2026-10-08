@@ -1,3 +1,4 @@
+import { useLocale, useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import type { ReactNode } from 'react'
 import { TierBadge } from '@/components/data/TierBadge'
@@ -5,52 +6,57 @@ import { TrendBadge } from '@/components/data/TrendBadge'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
 import { CountUp } from '@/components/motion/CountUp'
 import { Reveal } from '@/components/motion/Reveal'
+import { SAMPLE_TIER_THRESHOLDS } from '@/lib/analytics/sampleTier'
 import { cx } from '@/lib/cx'
-import { formatPercent } from '@/lib/format'
+import { formatInteger, formatPercent } from '@/lib/format'
+import type { Locale } from '@/i18n/config'
 import { toPercent, winRateDomain } from '@/lib/scale'
 import { capitalize, type MetaHero, type MetaModel } from '../model'
 
 /** Six answers in one glance: strongest, rising, falling, most played, highest win rate, best role. */
 export function MetaSummary({ summary }: { summary: MetaModel['summary'] }) {
+  const t = useTranslations('meta.summary')
+  const home = useTranslations('home')
+  const locale = useLocale() as Locale
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       <Reveal index={0}>
-        <Tile title="Strongest picks" note="Tier S/A: win-rate interval above 50%" featured>
-          <HeroList heroes={summary.strongest} empty="No hero is clearly above 50% in this scope." render={(h) => <TierBadge tier={h.tier} size="sm" />} />
+        <Tile title={t('strongest.title')} note={t('strongest.note')} featured>
+          <HeroList heroes={summary.strongest} empty={t('strongest.empty')} render={(h) => <TierBadge tier={h.tier} size="sm" />} />
         </Tile>
       </Reveal>
       <Reveal index={1}>
-        <Tile title="Rising" note="Last 7 days vs the 7 before, intervals don’t overlap">
+        <Tile title={t('rising')} note={t('weeklyNote')}>
           <HeroList
             heroes={summary.rising}
-            empty="No hero changed beyond normal variation."
-            render={(h) => <TrendBadge direction="rising" delta={h.trend!.delta} comparison="vs previous 7 days" pulse />}
+            empty={t('noChange')}
+            render={(h) => <TrendBadge direction="rising" delta={h.trend!.delta} comparison={home('comparison')} pulse />}
           />
         </Tile>
       </Reveal>
       <Reveal index={2}>
-        <Tile title="Falling" note="Last 7 days vs the 7 before, intervals don’t overlap">
+        <Tile title={t('falling')} note={t('weeklyNote')}>
           <HeroList
             heroes={summary.falling}
-            empty="No hero changed beyond normal variation."
-            render={(h) => <TrendBadge direction="falling" delta={h.trend!.delta} comparison="vs previous 7 days" pulse />}
+            empty={t('noChange')}
+            render={(h) => <TrendBadge direction="falling" delta={h.trend!.delta} comparison={home('comparison')} pulse />}
           />
         </Tile>
       </Reveal>
       <Reveal index={3}>
-        <Tile title="Most played" note="Share of matches the hero appears in">
+        <Tile title={t('mostPlayed.title')} note={t('mostPlayed.note')}>
           <SingleHero hero={summary.mostPlayed} value={summary.mostPlayed?.pickRate} />
         </Tile>
       </Reveal>
       <Reveal index={4}>
-        <Tile title="Highest win rate" note="Among heroes with 1,000+ matches">
+        <Tile title={t('highestWinRate.title')} note={t('highestWinRate.note', { threshold: formatInteger(SAMPLE_TIER_THRESHOLDS.high, locale) })}>
           <SingleHero hero={summary.highestWinRate} value={summary.highestWinRate?.winRate} />
         </Tile>
       </Reveal>
       <Reveal index={5}>
         <Tile
-          title="Best-performing role"
-          note={summary.roleLeaderIsClear ? 'Clear leader: interval above every other role' : 'Differences are within normal variation'}
+          title={t('bestRole.title')}
+          note={summary.roleLeaderIsClear ? t('bestRole.clear') : t('bestRole.unclear')}
         >
           <RoleBars roles={summary.roles} clear={summary.roleLeaderIsClear} />
         </Tile>
@@ -94,7 +100,8 @@ function HeroList({ heroes, empty, render }: { heroes: MetaHero[]; empty: string
 }
 
 function SingleHero({ hero, value }: { hero: MetaHero | null; value: number | undefined }) {
-  if (!hero || value === undefined) return <p className="text-sm text-text-muted">Not enough data in this scope.</p>
+  const t = useTranslations('meta.summary')
+  if (!hero || value === undefined) return <p className="text-sm text-text-muted">{t('notEnough')}</p>
   return (
     <Link href={`/heroes/${hero.slug}`} className="group flex items-center gap-4">
       <HeroPortrait name={hero.name} src={hero.iconUrl ?? undefined} size="md" />
@@ -108,7 +115,8 @@ function SingleHero({ hero, value }: { hero: MetaHero | null; value: number | un
 
 /** Horizontal bars per role on a 50%-centered scale (lib/scale). Bars draw in on reveal. */
 function RoleBars({ roles, clear }: { roles: MetaModel['summary']['roles']; clear: boolean }) {
-  if (roles.length === 0) return <p className="text-sm text-text-muted">Role data unavailable.</p>
+  const t = useTranslations('meta.summary')
+  if (roles.length === 0) return <p className="text-sm text-text-muted">{t('noRoles')}</p>
   const domain = winRateDomain(roles.map((r) => r.winRate))
   const toPct = (v: number) => toPercent(v, domain)
   return (
