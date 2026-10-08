@@ -1,10 +1,25 @@
+import { createTranslator } from 'next-intl'
 import { describe, expect, it } from 'vitest'
-import { clearlyHigher, groupDifferences, ratioDifference, rateDifference, type Rate } from '@/features/compare/model'
+import en from '@/i18n/messages/en'
+import { clearlyHigher, differenceText, groupDifferences, ratioDifference, rateDifference, type Difference, type Rate } from '@/features/compare/model'
 import { wilsonInterval } from '@/lib/analytics/wilson'
 import { sampleTier } from '@/lib/analytics/sampleTier'
+import { formatCompact, formatInteger, formatPercent } from '@/lib/format'
 
 /* Synthetic inputs only. */
 const rate = (wins: number, matches: number): Rate => ({ winRate: wins / matches, interval: wilsonInterval(wins, matches), matches, sample: sampleTier(matches) })
+
+const t = createTranslator({ locale: 'en', messages: en, namespace: 'compare.differences' })
+const lengths = createTranslator({ locale: 'en', messages: en, namespace: 'heroes.parts.lengths' })
+/** English wording, as the Compare page renders it. */
+const words = (d: Difference) =>
+  differenceText(d, (key, values) => t(key as 'winRate', values), {
+    percent: (v) => formatPercent(v),
+    integer: (v) => formatInteger(v),
+    compact: (v) => formatCompact(v),
+    groupLabel: (group, key, label) => (group === 'length' ? lengths(key as 'short') : label),
+  })
+const short = { kind: 'length', key: 'short', label: 'Under 25 min' } as const
 
 describe('clearlyHigher', () => {
   it('needs non-overlapping intervals', () => {
@@ -20,39 +35,37 @@ describe('clearlyHigher', () => {
 
 describe('statements', () => {
   it('describes what was measured, with numbers', () => {
-    const d = rateDifference('in matches under 25 min', rate(5_600, 10_000), rate(5_000, 10_000))
-    expect(d).toEqual({ side: 'a', text: 'Higher win rate in matches under 25 min', detail: '56.0% vs 50.0% (intervals don’t overlap; n = 10,000 vs 10,000)' })
+    const d = rateDifference(short, rate(5_600, 10_000), rate(5_000, 10_000))!
+    expect(d.side).toBe('a')
+    expect(words(d)).toEqual({ text: 'Higher win rate in matches under 25 min', detail: '56.0% vs 50.0% (intervals don’t overlap; n = 10,000 vs 10,000)' })
   })
 
   it('states ratio differences only past the threshold', () => {
-    const pct = (v: number) => `${v}`
-    expect(ratioDifference('Picked more often', 30, 10, pct)?.side).toBe('a')
-    expect(ratioDifference('Picked more often', 12, 10, pct)).toBeNull()
+    expect(ratioDifference('pickRate', 30, 10)?.side).toBe('a')
+    expect(ratioDifference('pickRate', 12, 10)).toBeNull()
   })
 
   it('merges several separated groups into one statement per side', () => {
     const diffs = groupDifferences(
       [
-        { key: 's', label: 'Under 25 min', a: rate(5_600, 10_000), b: rate(5_000, 10_000) },
-        { key: 'l', label: 'Over 35 min', a: rate(5_700, 10_000), b: rate(5_000, 10_000) },
+        { key: 'short', label: 'Under 25 min', a: rate(5_600, 10_000), b: rate(5_000, 10_000) },
+        { key: 'long', label: 'Over 35 min', a: rate(5_700, 10_000), b: rate(5_000, 10_000) },
       ],
-      (l) => `in matches ${l.toLowerCase()}`,
-      'match lengths',
+      'length',
     )
     expect(diffs).toHaveLength(1)
-    expect(diffs[0].text).toBe('Higher win rate in all 2 match lengths')
+    expect(words(diffs[0]).text).toBe('Higher win rate in all 2 match lengths')
   })
 
   it('keeps only separated groups', () => {
     const diffs = groupDifferences(
       [
-        { key: 's', label: 'Under 25 min', a: rate(5_600, 10_000), b: rate(5_000, 10_000) },
-        { key: 'l', label: 'Over 35 min', a: rate(5_000, 10_000), b: rate(5_010, 10_000) },
-        { key: 'x', label: 'Top', a: null, b: rate(5_000, 10_000) },
+        { key: 'short', label: 'Under 25 min', a: rate(5_600, 10_000), b: rate(5_000, 10_000) },
+        { key: 'long', label: 'Over 35 min', a: rate(5_000, 10_000), b: rate(5_010, 10_000) },
+        { key: 'standard', label: '25–35 min', a: null, b: rate(5_000, 10_000) },
       ],
-      (l) => `in matches ${l.toLowerCase()}`,
-      'match lengths',
+      'length',
     )
-    expect(diffs.map((d) => d.text)).toEqual(['Higher win rate in matches under 25 min'])
+    expect(diffs.map((d) => words(d).text)).toEqual(['Higher win rate in matches under 25 min'])
   })
 })

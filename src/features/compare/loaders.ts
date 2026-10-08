@@ -1,7 +1,6 @@
 import 'server-only'
 import { wilsonInterval } from '@/lib/analytics/wilson'
 import { sampleTier } from '@/lib/analytics/sampleTier'
-import { formatCompact, formatPercent } from '@/lib/format'
 import { getActiveHeroes } from '@/lib/deadlock/endpoints'
 import { searchBuilds } from '@/lib/deadlock/buildEndpoints'
 import { getHeroCounters, getHeroSynergies } from '@/lib/deadlock/heroEndpoints'
@@ -53,19 +52,23 @@ export async function getHeroCompare(q: CompareQuery) {
     ovA[key].groups.map((g) => ({ key: g.key, label: g.label, a: g as Rate, b: (ovB[key].groups.find((x) => x.key === g.key) ?? null) as Rate | null }))
 
   const differences: Difference[] = byLabel([
-    rateDifference('', sA, sB),
-    sA && sB ? ratioDifference('Picked more often', sA.pickRate, sB.pickRate, (v) => formatPercent(v)) : null,
-    sA?.trend?.direction === 'rising' && sB?.trend?.direction !== 'rising' ? { side: 'a', text: 'Rising this week', detail: 'Last 7 days vs the 7 before: intervals don’t overlap' } : null,
-    sB?.trend?.direction === 'rising' && sA?.trend?.direction !== 'rising' ? { side: 'b', text: 'Rising this week', detail: 'Last 7 days vs the 7 before: intervals don’t overlap' } : null,
+    rateDifference({ kind: 'all' }, sA, sB),
+    sA && sB ? ratioDifference('pickRate', sA.pickRate, sB.pickRate) : null,
+    sA?.trend?.direction === 'rising' && sB?.trend?.direction !== 'rising' ? { side: 'a', kind: 'rising' } : null,
+    sB?.trend?.direction === 'rising' && sA?.trend?.direction !== 'rising' ? { side: 'b', kind: 'rising' } : null,
   ])
-  differences.push(...groupDifferences(groups('length'), (l) => `in matches ${l.toLowerCase()}`, 'match lengths'))
-  differences.push(...groupDifferences(groups('rank'), (l) => `at ${l}`, 'rank bands'))
+  differences.push(...groupDifferences(groups('length'), 'length'))
+  differences.push(...groupDifferences(groups('rank'), 'rank'))
   if (lane && lane.sample !== 'low' && (lane.interval.low > 0.5 || lane.interval.high < 0.5)) {
     const aWins = lane.interval.low > 0.5
     differences.push({
       side: aWins ? 'a' : 'b',
-      text: `Wins the lane matchup against ${aWins ? ctxB.hero.name : ctxA.hero.name}`,
-      detail: `${ctxA.hero.name} wins ${formatPercent(lane.winRate)} of ${lane.matches.toLocaleString('en-US')} lane matchups vs ${ctxB.hero.name}`,
+      kind: 'lane',
+      heroA: ctxA.hero.name,
+      heroB: ctxB.hero.name,
+      opponent: aWins ? ctxB.hero.name : ctxA.hero.name,
+      winRate: lane.winRate,
+      matches: lane.matches,
     })
   }
 
@@ -113,13 +116,13 @@ export async function getBuildCompare(q: CompareQuery) {
 
   const differences: Difference[] = byLabel([
     // Win rates of builds for different heroes also reflect the heroes, so only same-hero builds are compared directly.
-    sameHero ? rateDifference('', da.stats, db.stats) : null,
-    ratioDifference('More favorites this week', da.build.weeklyFavorites ?? 0, db.build.weeklyFavorites ?? 0, (v) => formatCompact(v), 2),
+    sameHero ? rateDifference({ kind: 'all' }, da.stats, db.stats) : null,
+    ratioDifference('favorites', da.build.weeklyFavorites ?? 0, db.build.weeklyFavorites ?? 0, 2),
   ])
   if (!sameHero) {
     for (const [side, d] of [['a', da], ['b', db]] as const) {
       if (d.stats && d.stats.sample !== 'low' && d.heroWinRate !== null && d.stats.interval.low > d.heroWinRate) {
-        differences.push({ side, text: `Above its hero’s overall win rate`, detail: `${formatPercent(d.stats.winRate)} vs ${d.hero.name} ${formatPercent(d.heroWinRate)} (interval entirely above)` })
+        differences.push({ side, kind: 'aboveHero', hero: d.hero.name, winRate: d.stats.winRate, heroWinRate: d.heroWinRate })
       }
     }
   }
@@ -131,8 +134,6 @@ export async function getBuildCompare(q: CompareQuery) {
 export async function getPlayerCompare(q: CompareQuery) {
   const [pa, pb] = await Promise.all([getPlayerProfile(Number(q.a)), getPlayerProfile(Number(q.b))])
   if (!pa || !pb) return null
-  const nameA = pa.name ?? `Player ${pa.accountId}`
-  const nameB = pb.name ?? `Player ${pb.accountId}`
 
   const sharedHeroes = pa.pool
     .filter((h) => pb.pool.some((x) => x.id === h.id))
@@ -141,17 +142,18 @@ export async function getPlayerCompare(q: CompareQuery) {
     .slice(0, 6)
 
   const differences: Difference[] = byLabel([
-    rateDifference('overall', pa.history.overall, pb.history.overall),
-    rateDifference('in ranked matches', pa.history.ranked, pb.history.ranked),
+    rateDifference({ kind: 'overall' }, pa.history.overall, pb.history.overall),
+    rateDifference({ kind: 'ranked' }, pa.history.ranked, pb.history.ranked),
     pa.rank && pb.rank && pa.rank.badge !== pb.rank.badge
-      ? { side: pa.rank.badge > pb.rank.badge ? 'a' : 'b', text: 'Higher current rank', detail: `${pa.rank.badge > pb.rank.badge ? pa.rank.label : pb.rank.label} vs ${pa.rank.badge > pb.rank.badge ? pb.rank.label : pa.rank.label}` }
+      ? { side: pa.rank.badge > pb.rank.badge ? 'a' : 'b', kind: 'rank', higher: pa.rank.badge > pb.rank.badge ? pa.rank.label : pb.rank.label, lower: pa.rank.badge > pb.rank.badge ? pb.rank.label : pa.rank.label }
       : null,
   ])
-  differences.push(...groupDifferences(sharedHeroes.map((s) => ({ key: String(s.hero.id), label: s.hero.name, a: s.a, b: s.b })), (l) => `on ${l}`, 'shared heroes'))
+  differences.push(...groupDifferences(sharedHeroes.map((s) => ({ key: String(s.hero.id), label: s.hero.name, a: s.a, b: s.b })), 'hero'))
 
   const asMates = pa.mates.find((m) => m.accountId === pb.accountId) ?? null
   const asOpponents = pa.enemies.find((m) => m.accountId === pb.accountId) ?? null
-  return { sides: [pa, pb] as const, names: [nameA, nameB] as const, sharedHeroes, asMates, asOpponents, differences }
+  // Names stay null when the profile has none; the page shows its "Player <id>" fallback.
+  return { sides: [pa, pb] as const, names: [pa.name, pb.name] as const, sharedHeroes, asMates, asOpponents, differences }
 }
 
 /** Build picker: the hero's most-favorited builds this week. */
@@ -160,5 +162,5 @@ export async function buildOptions(heroSlug: string) {
   const hero = heroes.find((h) => slugify(h.name) === heroSlug)
   if (!hero) return []
   const builds = await searchBuilds({ heroId: hero.id, limit: 12 })
-  return builds.map((b) => ({ value: `${heroSlug}:${b.hero_build.hero_build_id}`, name: b.hero_build.name.trim() || 'Untitled build', favorites: b.num_weekly_favorites ?? null }))
+  return builds.map((b) => ({ value: `${heroSlug}:${b.hero_build.hero_build_id}`, name: b.hero_build.name.trim() || null, favorites: b.num_weekly_favorites ?? null }))
 }
