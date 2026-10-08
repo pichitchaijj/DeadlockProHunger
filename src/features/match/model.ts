@@ -50,6 +50,16 @@ export type PlayerView = {
 
 export type EventKind = 'kill' | 'objective' | 'midboss' | 'purchase'
 
+/**
+ * The event as data, so a page can word it in its own locale (`text` is the English wording).
+ * Names are game/API data; objectives are the enum id (objectiveName gives the English name).
+ */
+export type EventDetail =
+  | { type: 'kill'; killer: string | null; victim: string }
+  | { type: 'objective'; team: Side; owner: Side; objective: number }
+  | { type: 'midboss'; killed: Side; claimed: Side }
+  | { type: 'purchase'; hero: string; item: string | null }
+
 export type MatchEvent = {
   id: string
   t: number
@@ -57,6 +67,7 @@ export type MatchEvent = {
   /** Side credited with the event (the killer's team, the team that destroyed the objective…). */
   side: Side | null
   text: string
+  detail: EventDetail
   slots: number[]
   itemIcon?: ItemLite
 }
@@ -71,6 +82,13 @@ export type StoryPhase = {
   midBoss: string | null
   leadStart: number
   leadEnd: number
+  /** Sample times the lead was read at (the latest sample at or before the phase start / end). */
+  leadStartT: number
+  leadEndT: number
+  /** Objective enum ids destroyed by each side in the phase (same order as `objectives`). */
+  objectiveIds: [number[], number[]]
+  boss: { t: number; killed: Side; claimed: Side } | null
+  /** English sentences; pages that localize build their own from the fields above. */
   facts: string[]
 }
 
@@ -179,6 +197,7 @@ export function buildMatchView(raw: MatchDetailRaw, ctx: Ctx): MatchView {
         kind: 'kill',
         side: killer ? toSide(killer.team) : toSide(1 - p.team),
         text: killer ? `${heroOf(killer.hero_id).name} killed ${victim}` : `${victim} died`,
+        detail: { type: 'kill', killer: killer ? heroOf(killer.hero_id).name : null, victim },
         slots: killer ? [killer.player_slot, p.player_slot] : [p.player_slot],
       })
     }
@@ -192,6 +211,7 @@ export function buildMatchView(raw: MatchDetailRaw, ctx: Ctx): MatchView {
       kind: 'objective',
       side: owner === 0 ? 1 : 0,
       text: `${SIDE_LABEL[owner === 0 ? 1 : 0]} destroyed ${SIDE_LABEL[owner]}’s ${objectiveName(o.team_objective_id)}`,
+      detail: { type: 'objective', team: owner === 0 ? 1 : 0, owner, objective: o.team_objective_id },
       slots: [],
     })
   }
@@ -204,13 +224,23 @@ export function buildMatchView(raw: MatchDetailRaw, ctx: Ctx): MatchView {
       kind: 'midboss',
       side: claimed,
       text: killed === claimed ? `${SIDE_LABEL[killed]} killed and claimed the Mid-Boss` : `${SIDE_LABEL[killed]} killed the Mid-Boss; ${SIDE_LABEL[claimed]} claimed it`,
+      detail: { type: 'midboss', killed, claimed },
       slots: [],
     })
   }
   for (const p of players) {
     for (const [n, buy] of p.purchases.entries()) {
       if ((buy.item.tier ?? 0) < 3) continue // tier 3+ only in the shared event list; the timeline shows all for a selected player
-      events.push({ id: `p-${p.slot}-${n}`, t: buy.t, kind: 'purchase', side: p.side, text: `${p.hero.name} bought ${buy.item.name ?? 'an item'}`, slots: [p.slot], itemIcon: buy.item })
+      events.push({
+        id: `p-${p.slot}-${n}`,
+        t: buy.t,
+        kind: 'purchase',
+        side: p.side,
+        text: `${p.hero.name} bought ${buy.item.name ?? 'an item'}`,
+        detail: { type: 'purchase', hero: p.hero.name, item: buy.item.name },
+        slots: [p.slot],
+        itemIcon: buy.item,
+      })
     }
   }
   events.sort((a, b) => a.t - b.t)
@@ -311,7 +341,11 @@ export function matchStory(events: MatchEvent[], times: number[], lead: number[]
     const objectives: [string[], string[]] = [0, 1].map((s) =>
       inPhase.filter((e) => e.kind === 'objective' && e.side === s).map((e) => e.text.replace(/^Team \d destroyed Team \d’s /, '')),
     ) as [string[], string[]]
+    const objectiveIds: [number[], number[]] = [0, 1].map((s) =>
+      inPhase.flatMap((e) => (e.detail.type === 'objective' && e.side === s ? [e.detail.objective] : [])),
+    ) as [number[], number[]]
     const boss = inPhase.find((e) => e.kind === 'midboss')
+    const bossDetail = boss?.detail.type === 'midboss' ? { t: boss.t, killed: boss.detail.killed, claimed: boss.detail.claimed } : null
     const start = leadAt(times, lead, phase.from)
     const end = leadAt(times, lead, to)
     const change = end.value - start.value
@@ -325,6 +359,21 @@ export function matchStory(events: MatchEvent[], times: number[], lead: number[]
       `Souls lead: ${leadText(start.value)} at ${formatDuration(start.t)} → ${leadText(end.value)} at ${formatDuration(end.t)}` +
         (change === 0 ? '.' : ` (${SIDE_LABEL[change > 0 ? 0 : 1]} gained ${formatCompact(Math.abs(change))}).`),
     )
-    return { key: phase.key, label: phase.label, from: phase.from, to, kills, objectives, midBoss: boss?.text ?? null, leadStart: start.value, leadEnd: end.value, facts }
+    return {
+      key: phase.key,
+      label: phase.label,
+      from: phase.from,
+      to,
+      kills,
+      objectives,
+      midBoss: boss?.text ?? null,
+      leadStart: start.value,
+      leadEnd: end.value,
+      leadStartT: start.t,
+      leadEndT: end.t,
+      objectiveIds,
+      boss: bossDetail,
+      facts,
+    }
   })
 }

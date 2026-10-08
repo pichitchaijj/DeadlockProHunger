@@ -1,0 +1,289 @@
+{
+  "meta": {
+    "listTitle": "比赛",
+    "listDescription": "按英雄、玩家、结果、时长、日期和段位筛选的最近 Deadlock 比赛，以及观战标签页中的直播比赛。",
+    "detailTitle": "比赛 {id}",
+    "detailDescription": "Deadlock 比赛 {id}：结果、队伍、玩家、时间线、出装和事件，来自比赛数据。"
+  },
+  "common": {
+    "team": "队伍 {n}",
+    "ranked": "排位",
+    "unranked": "非排位",
+    "won": "获胜",
+    "lost": "失败",
+    "win": "胜",
+    "loss": "负",
+    "souls": "{value} 魂",
+    "player": "玩家 {id}",
+    "patch": "{date} 补丁",
+    "patchUnknown": "补丁未知",
+    "even": "持平",
+    "lead": "{team} +{value}"
+  },
+  "list": {
+    "eyebrow": "比赛",
+    "title": "比赛",
+    "description": "数据源已处理的最近普通模式比赛。按英雄或玩家筛选可查看其一方的结果。",
+    "filters": "比赛筛选",
+    "player": "玩家（名称或 SteamID3）",
+    "playerPlaceholder": "例如 338104565",
+    "apply": "应用",
+    "date": "日期",
+    "dates": {
+      "24h": "最近 24 小时",
+      "7d": "最近 7 天",
+      "patch": "当前补丁"
+    },
+    "length": "时长",
+    "any": "全部",
+    "durations": {
+      "short": "25 分钟以内",
+      "standard": "25–35 分钟",
+      "long": "超过 35 分钟"
+    },
+    "result": "结果（所选英雄或玩家）",
+    "resultShort": "结果",
+    "wins": "胜场",
+    "losses": "负场",
+    "resultHint": "请先选择英雄或玩家：结果需要确定一方。",
+    "clearFilters": "清除筛选",
+    "results": "结果",
+    "noPlayers": "未找到与“{query}”匹配的玩家。",
+    "choosePlayer": "与“{query}”匹配的玩家。选择一位以筛选列表：",
+    "matches30d": "{count} 场/30 天",
+    "count": "{count, plural, =0 {没有比赛} other {# 场比赛}}",
+    "resultFilter": "（最近 {fetched} 场中的{result, select, win {胜场} other {负场}}）",
+    "since": "自{time} · {rank} · 最多最新 {limit} 场",
+    "emptyTitle": "未找到比赛",
+    "emptyDescription": "这些筛选条件下还没有已处理的比赛。请放宽日期范围、段位区间或时长，或清除结果筛选。",
+    "widen": "放宽到 7 天",
+    "loading": "正在加载比赛"
+  },
+  "live": {
+    "title": "正在进行",
+    "summary": "游戏内观战标签页中有 <num>{total}</num> 场普通模式比赛（排位 {ranked} 场）",
+    "region": "直播比赛，滑动或使用方向键",
+    "list": "直播比赛",
+    "minutesIn": "已进行 {minutes} 分钟",
+    "inProgress": "进行中",
+    "watching": "{count} 人观看",
+    "teamHeroes": "队伍 {n} 的英雄",
+    "soulsShare": "魂：队伍 1 {a}% · 队伍 2 {b}%",
+    "note": "观战标签页只列出前 200 场直播比赛，而不是所有正在进行的比赛。大约每分钟刷新一次。"
+  },
+  "explorer": {
+    "caption": "最近的比赛。选择一行进行预览；使用上下方向键移动。",
+    "when": "时间",
+    "result": "结果",
+    "teams": "队伍",
+    "length": "时长",
+    "avgRank": "平均段位",
+    "patch": "补丁",
+    "previewMatch": "预览比赛 {id}，{time}",
+    "previewing": "正在预览比赛 {id}：{summary}，{duration}",
+    "preview": "比赛预览",
+    "match": "比赛 {id}",
+    "averageRank": "平均段位",
+    "noAverageRank": "无平均段位",
+    "openFull": "打开完整比赛 →",
+    "openMatch": "打开比赛 {id} →",
+    "players": "玩家",
+    "teamWon": "{team} 获胜",
+    "noResult": "无结果",
+    "focusSummary": "{label} {result, select, win {胜} other {负}}，{kda}",
+    "teamState": "{team}，{result, select, won {获胜} other {失败}}",
+    "winShort": "胜",
+    "lossShort": "负"
+  },
+  "detail": {
+    "heading": "比赛 {id}：{result}",
+    "kills": "击杀",
+    "avg": "平均",
+    "winner": "胜者",
+    "vs": "VS",
+    "result": "结果",
+    "duration": "时长",
+    "mode": "模式",
+    "patch": "补丁",
+    "date": "日期",
+    "unknown": "未知",
+    "draw": "平局",
+    "noResult": "未记录结果",
+    "conditions": "比赛条件",
+    "flags": {
+      "highSkill": "高水平组队区间",
+      "lowPriority": "低优先级匹配池",
+      "newPlayer": "新玩家匹配池",
+      "notScored": "不计分"
+    },
+    "sectionsNav": "比赛分区",
+    "sections": {
+      "story": "进程",
+      "teams": "队伍",
+      "players": "玩家",
+      "lineup": "阵容",
+      "timeline": "时间线",
+      "builds": "出装",
+      "performance": "表现",
+      "graphs": "图表",
+      "events": "事件",
+      "advanced": "高级"
+    },
+    "notAvailableTitle": "暂无此比赛",
+    "notAvailableDescription": "此比赛不在数据源中。刚结束的比赛可能需要一段时间处理；较早的比赛可能从未被收集。",
+    "browse": "浏览最近的比赛",
+    "timelineTitle": "时间线",
+    "timelineDescription": "目标、Mid-Boss、击杀以及所关注玩家的购买显示在同一时间轴上。选择标记或拖动滑块，读数会显示该时刻的状态。",
+    "graphsTitle": "图表",
+    "graphsDescription": "每个记录采样点的队伍总计。",
+    "soulsOverTime": "魂随时间变化",
+    "killsOverTime": "击杀随时间变化",
+    "eventsTitle": "事件",
+    "eventsDescription": "按顺序列出所有记录的事件。选择一个事件也会在时间线上聚焦它。"
+  },
+  "story": {
+    "title": "比赛进程",
+    "description": "各阶段的实测事实。阶段边界对齐游戏的统计采样点（9:00 和 20:00）；魂差也在这些采样点读取。",
+    "phases": {
+      "early": "前期",
+      "mid": "中期",
+      "late": "后期"
+    },
+    "kills": "击杀：{team1} {a}，{team2} {b}。",
+    "objectives": "摧毁的目标：{list}。",
+    "objectiveSide": "{team} {count}（{names}）",
+    "noObjectives": "没有目标被摧毁。",
+    "boss": "{time} {event}。",
+    "lead": "魂差：{startTime} 时 {start} → {endTime} 时 {end}。",
+    "leadGain": "魂差：{startTime} 时 {start} → {endTime} 时 {end}（{team} 扩大 {value}）。",
+    "neverChanged": "在各采样点之间，魂的领先方从未改变。",
+    "changed": "魂的领先方改变了 {count, plural, other {# 次}}（{list}）。",
+    "changeAt": "{time} {team}",
+    "swing": "最大波动：{team} 在 {from} 到 {to} 之间将魂差扩大了 {value}。"
+  },
+  "events": {
+    "kill": "{killer} 击杀了 {victim}",
+    "died": "{victim} 死亡",
+    "objective": "{team} 摧毁了 {owner} 的{objective}",
+    "bossClaimed": "{team} 击杀并获得了 Mid-Boss",
+    "bossSplit": "{killed} 击杀了 Mid-Boss；{claimed} 获得了它",
+    "bought": "{hero} 购买了 {item}",
+    "anItem": "一件物品",
+    "objectives": {
+      "core": "核心",
+      "tier1": "一级目标 · {lane} 路",
+      "tier2": "二级目标 · {lane} 路",
+      "titan": "Titan",
+      "shield": "Titan 护盾发生器 {n}",
+      "barracks": "兵营目标 · {lane} 路",
+      "other": "目标"
+    }
+  },
+  "teams": {
+    "title": "队伍对比",
+    "description": "比赛结束时的总计。",
+    "metric": "指标",
+    "metrics": {
+      "kills": "击杀",
+      "deaths": "死亡",
+      "assists": "助攻",
+      "netWorth": "魂",
+      "lastHits": "补刀",
+      "denies": "反补",
+      "damage": "英雄伤害",
+      "healing": "治疗",
+      "objectives": "摧毁的目标",
+      "midBoss": "获得的 Mid-Boss"
+    }
+  },
+  "players": {
+    "title": "玩家",
+    "description": "最终数值。名称为公开的 Steam 名称（如有）。",
+    "teamPlayers": "{team} 玩家",
+    "teamResult": "{team} · {result, select, won {获胜} lost {失败} other {}}",
+    "player": "玩家",
+    "kda": "K/D/A",
+    "souls": "魂",
+    "lhdn": "补刀/反补",
+    "damage": "伤害",
+    "level": "等级",
+    "line": "补刀/反补 {lh}/{dn} · 伤害 {damage} · 等级 {level}"
+  },
+  "lineup": {
+    "title": "英雄阵容",
+    "description": "按队伍和分配路线排列的英雄。",
+    "teamHeroes": "{team} 英雄",
+    "lane": "{n} 路",
+    "noLane": "无路线",
+    "swapped": "由 {hero} 更换",
+    "banned": "禁用："
+  },
+  "builds": {
+    "title": "出装",
+    "description": "每位玩家按顺序购买的所有商店物品。变淡 = 比赛结束前已出售。",
+    "selected": "开局选择的出装 →",
+    "purchases": "{hero} 的购买",
+    "boughtAt": "{time} {item}",
+    "boughtSold": "{time} {item}，{sold} 出售",
+    "sold": "（已出售）"
+  },
+  "performance": {
+    "title": "表现",
+    "description": "每位玩家在该指标上占比赛最高值的比例。",
+    "metrics": {
+      "damage": "英雄伤害",
+      "netWorth": "魂",
+      "objectiveDamage": "目标伤害",
+      "healing": "治疗",
+      "damageTaken": "承受伤害"
+    }
+  },
+  "advanced": {
+    "title": "高级数据",
+    "description": "本页背后的实测数值，以表格形式呈现。",
+    "soulsPerSample": "各采样点的玩家魂",
+    "caption": "各采样时间的玩家魂",
+    "player": "玩家",
+    "source": "来源：<link>deadlock-api.com 比赛元数据（JSON）</link>。统计在 15:00 之前每 3 分钟采样一次，之后每 5 分钟一次，另加最终时刻。"
+  },
+  "graph": {
+    "summary": "{title}：队伍 1 最终为 {a} {unit}，队伍 2 为 {b}。",
+    "units": {
+      "souls": "魂",
+      "kills": "击杀"
+    },
+    "showValues": "显示数值",
+    "caption": "{title}：各队伍按时间的数值",
+    "time": "时间"
+  },
+  "timeline": {
+    "playerFocus": "关注玩家（购买和魂曲线）",
+    "legend": "图例",
+    "focusedSouls": "所关注玩家的魂",
+    "chart": "比赛时间线。方向键在事件之间移动；按 Enter 选择。",
+    "leadAxis": "魂差：队伍 1 在上，队伍 2 在下",
+    "rows": {
+      "objectives": "目标",
+      "midboss": "Mid-Boss",
+      "kills": "击杀（队伍 1 在上，队伍 2 在下）",
+      "purchases": "购买 · {player}"
+    },
+    "soulsLead": "魂差 {value}",
+    "scrub": "拖动浏览比赛",
+    "kills": "击杀",
+    "objectives": "目标",
+    "leadAt": "{time} 时的魂差：",
+    "selected": "已选择：",
+    "bought": "{player} 购买了 {item}",
+    "boughtSold": "{player} 购买了 {item}（{time} 出售）",
+    "eventTypes": "事件类型",
+    "kinds": {
+      "kill": "击杀",
+      "objective": "目标",
+      "midboss": "Mid-Boss",
+      "purchase": "三级及以上购买"
+    },
+    "events": "比赛事件",
+    "noEvents": "没有所选类型的事件。"
+  }
+}

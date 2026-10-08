@@ -28,6 +28,8 @@ export type MatchRow = {
   /** Average badge of the match, resolved through lib/deadlock/rankAssets. */
   rank: RankDisplay | null
   patch: string | null
+  /** The same patch's day (unix ms), for pages that format the date in their own locale. */
+  patchAt: number | null
   teams: [MatchTeam, MatchTeam]
   /** The filtered hero's or player's side, when a filter gives the match a perspective. */
   focus: { label: string; won: boolean; kda: string } | null
@@ -50,8 +52,14 @@ const PATCH_DATE = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'nume
 
 /** Readable label ("Sep 29") of the latest patch dated on or before the match (patches newest first, days in unix seconds). */
 export function patchFor(startedAtMs: number, patches: Array<{ title: string; day: number }>): string | null {
+  const at = patchDayFor(startedAtMs, patches)
+  return at === null ? null : PATCH_DATE.format(at)
+}
+
+/** Day (unix ms, UTC) of the latest patch dated on or before the match; null if none. */
+export function patchDayFor(startedAtMs: number, patches: Array<{ title: string; day: number }>): number | null {
   const patch = patches.find((p) => p.day * 1000 <= startedAtMs)
-  return patch ? PATCH_DATE.format(patch.day * 1000) : null
+  return patch ? patch.day * 1000 : null
 }
 
 /** "2026-10-06 10:47:00" (UTC) → unix ms. */
@@ -96,6 +104,7 @@ export function toMatchRow(
     mode: raw.match_mode === 'Ranked' ? 'Ranked' : 'Unranked',
     rank: rankFromBadge(ctx.ranks, raw.average_badge),
     patch: patchFor(startedAt, ctx.patches),
+    patchAt: patchDayFor(startedAt, ctx.patches),
     teams,
     focus: focused ? { label: ctx.focusLabel ?? focused.p.hero.name, won: focused.won, kda: `${focused.p.kills} / ${focused.p.deaths} / ${focused.p.assists}` } : null,
   }

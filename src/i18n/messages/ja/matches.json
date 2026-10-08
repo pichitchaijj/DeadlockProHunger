@@ -1,0 +1,289 @@
+{
+  "meta": {
+    "listTitle": "試合",
+    "listDescription": "ヒーロー、プレイヤー、結果、試合時間、日付、ランク別の最近の Deadlock の試合と、観戦タブでライブ中の試合。",
+    "detailTitle": "試合 {id}",
+    "detailDescription": "Deadlock の試合 {id}：結果、チーム、プレイヤー、タイムライン、ビルド、イベント（試合データより）。"
+  },
+  "common": {
+    "team": "チーム {n}",
+    "ranked": "ランク戦",
+    "unranked": "非ランク戦",
+    "won": "勝利",
+    "lost": "敗北",
+    "win": "勝利",
+    "loss": "敗北",
+    "souls": "{value} ソウル",
+    "player": "プレイヤー {id}",
+    "patch": "{date} パッチ",
+    "patchUnknown": "パッチ不明",
+    "even": "互角",
+    "lead": "{team} +{value}"
+  },
+  "list": {
+    "eyebrow": "試合",
+    "title": "試合",
+    "description": "データソースで処理済みの最近の通常モードの試合。ヒーローやプレイヤーで絞り込むと、その側から見た結果を表示します。",
+    "filters": "試合のフィルター",
+    "player": "プレイヤー（名前または SteamID3）",
+    "playerPlaceholder": "例：338104565",
+    "apply": "適用",
+    "date": "日付",
+    "dates": {
+      "24h": "直近 24 時間",
+      "7d": "直近 7 日間",
+      "patch": "現在のパッチ"
+    },
+    "length": "試合時間",
+    "any": "すべて",
+    "durations": {
+      "short": "25 分未満",
+      "standard": "25–35 分",
+      "long": "35 分超"
+    },
+    "result": "結果（選択したヒーローまたはプレイヤー）",
+    "resultShort": "結果",
+    "wins": "勝利",
+    "losses": "敗北",
+    "resultHint": "先にヒーローかプレイヤーを選んでください：結果には側が必要です。",
+    "clearFilters": "フィルターをクリア",
+    "results": "結果",
+    "noPlayers": "「{query}」に一致するプレイヤーは見つかりません。",
+    "choosePlayer": "「{query}」に一致するプレイヤー。1 人選んでリストを絞り込みます：",
+    "matches30d": "{count} 試合/30 日",
+    "count": "{count, plural, =0 {試合なし} other {# 試合}}",
+    "resultFilter": "（直近 {fetched} 試合のうちの{result, select, win {勝利} other {敗北}}）",
+    "since": "{time}以降 · {rank} · 最新 {limit} 試合まで",
+    "emptyTitle": "試合が見つかりません",
+    "emptyDescription": "このフィルターでは処理済みの試合がまだありません。日付範囲、ランク帯、試合時間を広げるか、結果のフィルターを解除してください。",
+    "widen": "7 日間に広げる",
+    "loading": "試合を読み込み中"
+  },
+  "live": {
+    "title": "ライブ中",
+    "summary": "ゲーム内の観戦タブに通常モードの試合が <num>{total}</num> 件（ランク戦 {ranked} 件）",
+    "region": "ライブ中の試合。スワイプまたは矢印キーで移動",
+    "list": "ライブ中の試合",
+    "minutesIn": "{minutes} 分経過",
+    "inProgress": "進行中",
+    "watching": "{count} 人が観戦中",
+    "teamHeroes": "チーム {n} のヒーロー",
+    "soulsShare": "ソウル：チーム 1 {a}% · チーム 2 {b}%",
+    "note": "観戦タブにはプレイ中のすべての試合ではなく、上位 200 件のライブ試合が表示されます。約 1 分ごとに更新されます。"
+  },
+  "explorer": {
+    "caption": "最近の試合。行を選択するとプレビューします。上下の矢印キーで移動できます。",
+    "when": "日時",
+    "result": "結果",
+    "teams": "チーム",
+    "length": "試合時間",
+    "avgRank": "平均ランク",
+    "patch": "パッチ",
+    "previewMatch": "試合 {id} をプレビュー、{time}",
+    "previewing": "試合 {id} をプレビュー中：{summary}、{duration}",
+    "preview": "試合のプレビュー",
+    "match": "試合 {id}",
+    "averageRank": "平均ランク",
+    "noAverageRank": "平均ランクなし",
+    "openFull": "試合の詳細を開く →",
+    "openMatch": "試合 {id} を開く →",
+    "players": "プレイヤー",
+    "teamWon": "{team}の勝利",
+    "noResult": "結果なし",
+    "focusSummary": "{label}の{result, select, win {勝利} other {敗北}}、{kda}",
+    "teamState": "{team}、{result, select, won {勝利} other {敗北}}",
+    "winShort": "勝",
+    "lossShort": "敗"
+  },
+  "detail": {
+    "heading": "試合 {id}：{result}",
+    "kills": "キル",
+    "avg": "平均",
+    "winner": "勝者",
+    "vs": "VS",
+    "result": "結果",
+    "duration": "試合時間",
+    "mode": "モード",
+    "patch": "パッチ",
+    "date": "日付",
+    "unknown": "不明",
+    "draw": "引き分け",
+    "noResult": "結果の記録なし",
+    "conditions": "試合の条件",
+    "flags": {
+      "highSkill": "高スキルのパーティ帯",
+      "lowPriority": "低優先度プール",
+      "newPlayer": "新規プレイヤープール",
+      "notScored": "スコア対象外"
+    },
+    "sectionsNav": "試合のセクション",
+    "sections": {
+      "story": "ストーリー",
+      "teams": "チーム",
+      "players": "プレイヤー",
+      "lineup": "ラインナップ",
+      "timeline": "タイムライン",
+      "builds": "ビルド",
+      "performance": "成績",
+      "graphs": "グラフ",
+      "events": "イベント",
+      "advanced": "詳細"
+    },
+    "notAvailableTitle": "この試合はまだ利用できません",
+    "notAvailableDescription": "この試合はデータソースにありません。終わったばかりの試合は処理に時間がかかることがあり、古い試合は収集されていない場合があります。",
+    "browse": "最近の試合を見る",
+    "timelineTitle": "タイムライン",
+    "timelineDescription": "オブジェクト、Mid-Boss、キル、フォーカス中のプレイヤーの購入を 1 本の時間軸に表示。マーカーを選ぶかスクラバーをドラッグすると、その時点の状況を表示します。",
+    "graphsTitle": "グラフ",
+    "graphsDescription": "記録された各サンプル時点のチーム合計。",
+    "soulsOverTime": "ソウルの推移",
+    "killsOverTime": "キルの推移",
+    "eventsTitle": "イベント",
+    "eventsDescription": "記録されたすべてのイベントを順番に表示。選択するとタイムライン上でもフォーカスされます。"
+  },
+  "story": {
+    "title": "試合のストーリー",
+    "description": "フェーズごとの測定結果。フェーズの区切りはゲームの統計サンプル（9:00 と 20:00）に合わせ、ソウル差もそのサンプルで読み取っています。",
+    "phases": {
+      "early": "序盤",
+      "mid": "中盤",
+      "late": "終盤"
+    },
+    "kills": "キル：{team1} {a}、{team2} {b}。",
+    "objectives": "破壊されたオブジェクト：{list}。",
+    "objectiveSide": "{team} {count}（{names}）",
+    "noObjectives": "破壊されたオブジェクトはありません。",
+    "boss": "{time} に{event}。",
+    "lead": "ソウル差：{startTime} に {start} → {endTime} に {end}。",
+    "leadGain": "ソウル差：{startTime} に {start} → {endTime} に {end}（{team}が {value} 拡大）。",
+    "neverChanged": "サンプル間でソウルのリードは一度も入れ替わりませんでした。",
+    "changed": "ソウルのリードは {count, plural, other {# 回}}入れ替わりました（{list}）。",
+    "changeAt": "{time} に{team}",
+    "swing": "最大の変動：{from} から {to} の間に{team}がソウル差を {value} 拡大。"
+  },
+  "events": {
+    "kill": "{killer}が{victim}をキル",
+    "died": "{victim}が死亡",
+    "objective": "{team}が{owner}の{objective}を破壊",
+    "bossClaimed": "{team}が Mid-Boss を倒して獲得",
+    "bossSplit": "{killed}が Mid-Boss を倒し、{claimed}が獲得",
+    "bought": "{hero}が{item}を購入",
+    "anItem": "アイテム",
+    "objectives": {
+      "core": "コア",
+      "tier1": "ティア 1 オブジェクト · レーン {lane}",
+      "tier2": "ティア 2 オブジェクト · レーン {lane}",
+      "titan": "Titan",
+      "shield": "Titan シールドジェネレーター {n}",
+      "barracks": "バラック · レーン {lane}",
+      "other": "オブジェクト"
+    }
+  },
+  "teams": {
+    "title": "チーム比較",
+    "description": "試合終了時の合計。",
+    "metric": "指標",
+    "metrics": {
+      "kills": "キル",
+      "deaths": "デス",
+      "assists": "アシスト",
+      "netWorth": "ソウル",
+      "lastHits": "ラストヒット",
+      "denies": "デナイ",
+      "damage": "ヒーローダメージ",
+      "healing": "回復",
+      "objectives": "破壊したオブジェクト",
+      "midBoss": "獲得した Mid-Boss"
+    }
+  },
+  "players": {
+    "title": "プレイヤー",
+    "description": "最終値。名前は公開されている Steam の名前です（ある場合）。",
+    "teamPlayers": "{team}のプレイヤー",
+    "teamResult": "{team} · {result, select, won {勝利} lost {敗北} other {}}",
+    "player": "プレイヤー",
+    "kda": "K/D/A",
+    "souls": "ソウル",
+    "lhdn": "LH/DN",
+    "damage": "ダメージ",
+    "level": "Lv",
+    "line": "LH/DN {lh}/{dn} · ダメージ {damage} · レベル {level}"
+  },
+  "lineup": {
+    "title": "ヒーロー構成",
+    "description": "チームと割り当てられたレーン別のヒーロー。",
+    "teamHeroes": "{team}のヒーロー",
+    "lane": "レーン {n}",
+    "noLane": "レーンなし",
+    "swapped": "{hero}から変更",
+    "banned": "BAN："
+  },
+  "builds": {
+    "title": "ビルド",
+    "description": "各プレイヤーが購入したすべてのショップアイテム（順番通り）。薄い表示 = 試合終了前に売却。",
+    "selected": "開始時に選択したビルド →",
+    "purchases": "{hero}の購入",
+    "boughtAt": "{time} に{item}",
+    "boughtSold": "{time} に{item}、{sold} に売却",
+    "sold": "（売却）"
+  },
+  "performance": {
+    "title": "成績",
+    "description": "各指標で、試合内の最大値に対する各プレイヤーの割合。",
+    "metrics": {
+      "damage": "ヒーローダメージ",
+      "netWorth": "ソウル",
+      "objectiveDamage": "オブジェクトダメージ",
+      "healing": "回復",
+      "damageTaken": "被ダメージ"
+    }
+  },
+  "advanced": {
+    "title": "詳細データ",
+    "description": "このページの元になった測定値（表形式）。",
+    "soulsPerSample": "各サンプル時点のプレイヤー別ソウル",
+    "caption": "各サンプル時刻のプレイヤー別ソウル",
+    "player": "プレイヤー",
+    "source": "出典：<link>deadlock-api.com の試合メタデータ（JSON）</link>。統計は 15:00 までは 3 分ごと、その後は 5 分ごと、さらに最終時点で記録されます。"
+  },
+  "graph": {
+    "summary": "{title}：チーム 1 は最終 {a} {unit}、チーム 2 は {b}。",
+    "units": {
+      "souls": "ソウル",
+      "kills": "キル"
+    },
+    "showValues": "値を表示",
+    "caption": "{title}：チームごとの時間別の値",
+    "time": "時間"
+  },
+  "timeline": {
+    "playerFocus": "フォーカスするプレイヤー（購入とソウルの推移）",
+    "legend": "凡例",
+    "focusedSouls": "フォーカス中のプレイヤーのソウル",
+    "chart": "試合のタイムライン。矢印キーでイベント間を移動、Enter で選択します。",
+    "leadAxis": "ソウル差：上がチーム 1、下がチーム 2",
+    "rows": {
+      "objectives": "オブジェクト",
+      "midboss": "Mid-Boss",
+      "kills": "キル（上がチーム 1、下がチーム 2）",
+      "purchases": "購入 · {player}"
+    },
+    "soulsLead": "ソウル差 {value}",
+    "scrub": "試合をスクラブ",
+    "kills": "キル",
+    "objectives": "オブジェクト",
+    "leadAt": "{time} 時点のソウル差：",
+    "selected": "選択中：",
+    "bought": "{player}が{item}を購入",
+    "boughtSold": "{player}が{item}を購入（{time} に売却）",
+    "eventTypes": "イベントの種類",
+    "kinds": {
+      "kill": "キル",
+      "objective": "オブジェクト",
+      "midboss": "Mid-Boss",
+      "purchase": "ティア 3 以上の購入"
+    },
+    "events": "試合のイベント",
+    "noEvents": "選択した種類のイベントはありません。"
+  }
+}

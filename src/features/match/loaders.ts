@@ -4,7 +4,7 @@ import { getActiveHeroes } from '@/lib/deadlock/endpoints'
 import { getMatchDetail, parseStoredMatchDetail } from '@/lib/deadlock/matchDetail'
 import { readStoredMatch, storeMatch } from '@/lib/db/store'
 import { shopMap } from '@/features/hero/loaders'
-import { patchFor } from '@/features/matches/model'
+import { patchDayFor, patchFor } from '@/features/matches/model'
 import { rankFromBadge, type RankDisplay } from '@/lib/deadlock/rankAssets'
 import { slugify } from '@/features/meta/model'
 import { resolveScope } from '@/features/meta/scope'
@@ -14,6 +14,8 @@ import { heroIconUrl } from '@/lib/deadlock/heroImages'
 export type MatchPage = {
   view: MatchView
   patch: string | null
+  /** The patch's day (unix ms), for locale formatting. */
+  patchAt: number | null
   rank: [RankDisplay | null, RankDisplay | null]
 }
 
@@ -38,6 +40,7 @@ export async function getMatchPage(matchId: number): Promise<MatchPage | null> {
   return {
     view,
     patch: scope ? patchFor(view.startedAt, scope.patches) : null,
+    patchAt: scope ? patchDayFor(view.startedAt, scope.patches) : null,
     rank: [rankFromBadge(ranks, view.averageBadge[0]), rankFromBadge(ranks, view.averageBadge[1])],
   }
 }

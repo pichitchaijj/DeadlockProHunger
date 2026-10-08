@@ -1,0 +1,289 @@
+{
+  "meta": {
+    "listTitle": "매치",
+    "listDescription": "영웅, 플레이어, 결과, 길이, 날짜, 랭크별 최근 Deadlock 매치와 관전 탭에서 진행 중인 매치.",
+    "detailTitle": "매치 {id}",
+    "detailDescription": "Deadlock 매치 {id}: 결과, 팀, 플레이어, 타임라인, 빌드, 이벤트 (매치 데이터 기준)."
+  },
+  "common": {
+    "team": "팀 {n}",
+    "ranked": "랭크",
+    "unranked": "일반",
+    "won": "승리",
+    "lost": "패배",
+    "win": "승리",
+    "loss": "패배",
+    "souls": "{value} 소울",
+    "player": "플레이어 {id}",
+    "patch": "{date} 패치",
+    "patchUnknown": "패치 알 수 없음",
+    "even": "동률",
+    "lead": "{team} +{value}"
+  },
+  "list": {
+    "eyebrow": "매치",
+    "title": "매치",
+    "description": "데이터 출처에서 처리한 최근 일반 모드 매치. 영웅이나 플레이어로 필터링하면 그쪽에서 본 결과를 볼 수 있습니다.",
+    "filters": "매치 필터",
+    "player": "플레이어 (이름 또는 SteamID3)",
+    "playerPlaceholder": "예: 338104565",
+    "apply": "적용",
+    "date": "날짜",
+    "dates": {
+      "24h": "최근 24시간",
+      "7d": "최근 7일",
+      "patch": "현재 패치"
+    },
+    "length": "길이",
+    "any": "전체",
+    "durations": {
+      "short": "25분 미만",
+      "standard": "25–35분",
+      "long": "35분 초과"
+    },
+    "result": "결과 (선택한 영웅 또는 플레이어 기준)",
+    "resultShort": "결과",
+    "wins": "승리",
+    "losses": "패배",
+    "resultHint": "먼저 영웅이나 플레이어를 선택하세요: 결과에는 기준이 되는 쪽이 필요합니다.",
+    "clearFilters": "필터 지우기",
+    "results": "결과",
+    "noPlayers": "“{query}”에 해당하는 플레이어가 없습니다.",
+    "choosePlayer": "“{query}”와 일치하는 플레이어. 한 명을 선택해 목록을 필터링하세요:",
+    "matches30d": "{count} 매치/30일",
+    "count": "{count, plural, =0 {매치 없음} other {매치 #개}}",
+    "resultFilter": "(최근 {fetched}개 매치 중 {result, select, win {승리} other {패배}})",
+    "since": "{time}부터 · {rank} · 최신 {limit}개까지",
+    "emptyTitle": "매치를 찾을 수 없습니다",
+    "emptyDescription": "이 필터로 처리된 매치가 아직 없습니다. 날짜 범위, 랭크 구간, 길이를 넓히거나 결과 필터를 지우세요.",
+    "widen": "7일로 넓히기",
+    "loading": "매치 불러오는 중"
+  },
+  "live": {
+    "title": "진행 중",
+    "summary": "게임 내 관전 탭의 일반 모드 매치 <num>{total}</num>개 (랭크 {ranked}개)",
+    "region": "진행 중인 매치, 스와이프하거나 화살표 키를 사용하세요",
+    "list": "진행 중인 매치",
+    "minutesIn": "{minutes}분 경과",
+    "inProgress": "진행 중",
+    "watching": "{count}명 관전 중",
+    "teamHeroes": "팀 {n} 영웅",
+    "soulsShare": "소울: 팀 1 {a}% · 팀 2 {b}%",
+    "note": "관전 탭에는 진행 중인 모든 매치가 아니라 상위 200개의 라이브 매치만 표시됩니다. 약 1분마다 갱신됩니다."
+  },
+  "explorer": {
+    "caption": "최근 매치. 행을 선택하면 미리 볼 수 있고, 위아래 화살표 키로 이동합니다.",
+    "when": "시간",
+    "result": "결과",
+    "teams": "팀",
+    "length": "길이",
+    "avgRank": "평균 랭크",
+    "patch": "패치",
+    "previewMatch": "매치 {id} 미리 보기, {time}",
+    "previewing": "매치 {id} 미리 보는 중: {summary}, {duration}",
+    "preview": "매치 미리 보기",
+    "match": "매치 {id}",
+    "averageRank": "평균 랭크",
+    "noAverageRank": "평균 랭크 없음",
+    "openFull": "전체 매치 열기 →",
+    "openMatch": "매치 {id} 열기 →",
+    "players": "플레이어",
+    "teamWon": "{team} 승리",
+    "noResult": "결과 없음",
+    "focusSummary": "{label} {result, select, win {승리} other {패배}}, {kda}",
+    "teamState": "{team}, {result, select, won {승리} other {패배}}",
+    "winShort": "승",
+    "lossShort": "패"
+  },
+  "detail": {
+    "heading": "매치 {id}: {result}",
+    "kills": "킬",
+    "avg": "평균",
+    "winner": "승자",
+    "vs": "VS",
+    "result": "결과",
+    "duration": "경기 시간",
+    "mode": "모드",
+    "patch": "패치",
+    "date": "날짜",
+    "unknown": "알 수 없음",
+    "draw": "무승부",
+    "noResult": "기록된 결과 없음",
+    "conditions": "매치 조건",
+    "flags": {
+      "highSkill": "고숙련 파티 범위",
+      "lowPriority": "낮은 우선순위 풀",
+      "newPlayer": "신규 플레이어 풀",
+      "notScored": "점수 미반영"
+    },
+    "sectionsNav": "매치 섹션",
+    "sections": {
+      "story": "흐름",
+      "teams": "팀",
+      "players": "플레이어",
+      "lineup": "라인업",
+      "timeline": "타임라인",
+      "builds": "빌드",
+      "performance": "성적",
+      "graphs": "그래프",
+      "events": "이벤트",
+      "advanced": "고급"
+    },
+    "notAvailableTitle": "아직 이 매치를 볼 수 없습니다",
+    "notAvailableDescription": "이 매치는 데이터 출처에 없습니다. 방금 끝난 매치는 처리에 시간이 걸릴 수 있고, 오래된 매치는 수집되지 않았을 수 있습니다.",
+    "browse": "최근 매치 보기",
+    "timelineTitle": "타임라인",
+    "timelineDescription": "목표, Mid-Boss, 킬, 집중한 플레이어의 구매를 하나의 시간 축에 표시합니다. 마커를 선택하거나 스크러버를 끌면 그 시점의 상태가 표시됩니다.",
+    "graphsTitle": "그래프",
+    "graphsDescription": "기록된 각 샘플 시점의 팀 합계.",
+    "soulsOverTime": "시간에 따른 소울",
+    "killsOverTime": "시간에 따른 킬",
+    "eventsTitle": "이벤트",
+    "eventsDescription": "기록된 모든 이벤트를 순서대로 보여 줍니다. 선택하면 타임라인에서도 해당 이벤트에 초점이 맞춰집니다."
+  },
+  "story": {
+    "title": "매치 흐름",
+    "description": "단계별 측정 결과. 단계 경계는 게임의 통계 샘플(9:00과 20:00)에 맞추었고, 소울 격차도 그 샘플에서 읽었습니다.",
+    "phases": {
+      "early": "초반",
+      "mid": "중반",
+      "late": "후반"
+    },
+    "kills": "킬: {team1} {a}, {team2} {b}.",
+    "objectives": "파괴된 목표: {list}.",
+    "objectiveSide": "{team} {count} ({names})",
+    "noObjectives": "파괴된 목표 없음.",
+    "boss": "{time}에 {event}.",
+    "lead": "소울 격차: {startTime}에 {start} → {endTime}에 {end}.",
+    "leadGain": "소울 격차: {startTime}에 {start} → {endTime}에 {end} ({team} {value} 확대).",
+    "neverChanged": "샘플 사이에서 소울 우위가 한 번도 바뀌지 않았습니다.",
+    "changed": "소울 우위가 {count, plural, other {#번}} 바뀌었습니다 ({list}).",
+    "changeAt": "{time}에 {team}",
+    "swing": "가장 큰 변동: {from}–{to} 사이에 {team}이(가) 소울 격차를 {value} 벌렸습니다."
+  },
+  "events": {
+    "kill": "{killer}이(가) {victim} 처치",
+    "died": "{victim} 사망",
+    "objective": "{team}이(가) {owner}의 {objective} 파괴",
+    "bossClaimed": "{team}이(가) Mid-Boss를 처치하고 획득",
+    "bossSplit": "{killed}이(가) Mid-Boss 처치, {claimed}이(가) 획득",
+    "bought": "{hero}이(가) {item} 구매",
+    "anItem": "아이템",
+    "objectives": {
+      "core": "코어",
+      "tier1": "1단계 목표 · {lane}번 라인",
+      "tier2": "2단계 목표 · {lane}번 라인",
+      "titan": "Titan",
+      "shield": "Titan 보호막 생성기 {n}",
+      "barracks": "병영 목표 · {lane}번 라인",
+      "other": "목표"
+    }
+  },
+  "teams": {
+    "title": "팀 비교",
+    "description": "매치 종료 시점의 합계.",
+    "metric": "지표",
+    "metrics": {
+      "kills": "킬",
+      "deaths": "데스",
+      "assists": "어시스트",
+      "netWorth": "소울",
+      "lastHits": "막타",
+      "denies": "디나이",
+      "damage": "영웅 피해",
+      "healing": "치유",
+      "objectives": "파괴한 목표",
+      "midBoss": "획득한 Mid-Boss"
+    }
+  },
+  "players": {
+    "title": "플레이어",
+    "description": "최종 값. 이름은 공개된 Steam 이름입니다 (있는 경우).",
+    "teamPlayers": "{team} 플레이어",
+    "teamResult": "{team} · {result, select, won {승리} lost {패배} other {}}",
+    "player": "플레이어",
+    "kda": "K/D/A",
+    "souls": "소울",
+    "lhdn": "LH/DN",
+    "damage": "피해",
+    "level": "레벨",
+    "line": "LH/DN {lh}/{dn} · 피해 {damage} · 레벨 {level}"
+  },
+  "lineup": {
+    "title": "영웅 라인업",
+    "description": "팀과 배정된 라인별 영웅.",
+    "teamHeroes": "{team} 영웅",
+    "lane": "{n}번 라인",
+    "noLane": "라인 없음",
+    "swapped": "{hero}에서 변경",
+    "banned": "금지:"
+  },
+  "builds": {
+    "title": "빌드",
+    "description": "각 플레이어가 구매한 모든 상점 아이템 (순서대로). 흐리게 = 매치 종료 전에 판매.",
+    "selected": "시작 시 선택한 빌드 →",
+    "purchases": "{hero} 구매 내역",
+    "boughtAt": "{time}에 {item}",
+    "boughtSold": "{time}에 {item}, {sold}에 판매",
+    "sold": "(판매됨)"
+  },
+  "performance": {
+    "title": "성적",
+    "description": "각 지표에서 매치 최대값 대비 각 플레이어의 비율.",
+    "metrics": {
+      "damage": "영웅 피해",
+      "netWorth": "소울",
+      "objectiveDamage": "목표 피해",
+      "healing": "치유",
+      "damageTaken": "받은 피해"
+    }
+  },
+  "advanced": {
+    "title": "고급 데이터",
+    "description": "이 페이지의 바탕이 된 측정값 (표 형식).",
+    "soulsPerSample": "샘플 시점별 플레이어 소울",
+    "caption": "샘플 시각별 플레이어 소울",
+    "player": "플레이어",
+    "source": "출처: <link>deadlock-api.com 매치 메타데이터 (JSON)</link>. 통계는 15:00까지 3분마다, 그 이후 5분마다, 그리고 마지막 순간에 기록됩니다."
+  },
+  "graph": {
+    "summary": "{title}: 팀 1은 {a} {unit}, 팀 2는 {b}로 종료.",
+    "units": {
+      "souls": "소울",
+      "kills": "킬"
+    },
+    "showValues": "값 보기",
+    "caption": "{title}: 팀별 시간대 값",
+    "time": "시간"
+  },
+  "timeline": {
+    "playerFocus": "플레이어 집중 (구매 및 소울 곡선)",
+    "legend": "범례",
+    "focusedSouls": "집중한 플레이어의 소울",
+    "chart": "매치 타임라인. 화살표 키로 이벤트 사이를 이동하고 Enter로 선택합니다.",
+    "leadAxis": "소울 격차: 위쪽 팀 1, 아래쪽 팀 2",
+    "rows": {
+      "objectives": "목표",
+      "midboss": "Mid-Boss",
+      "kills": "킬 (위쪽 팀 1, 아래쪽 팀 2)",
+      "purchases": "구매 · {player}"
+    },
+    "soulsLead": "소울 격차 {value}",
+    "scrub": "매치 탐색",
+    "kills": "킬",
+    "objectives": "목표",
+    "leadAt": "{time} 시점 소울 격차:",
+    "selected": "선택됨:",
+    "bought": "{player}이(가) {item} 구매",
+    "boughtSold": "{player}이(가) {item} 구매 ({time}에 판매)",
+    "eventTypes": "이벤트 유형",
+    "kinds": {
+      "kill": "킬",
+      "objective": "목표",
+      "midboss": "Mid-Boss",
+      "purchase": "3단계 이상 구매"
+    },
+    "events": "매치 이벤트",
+    "noEvents": "선택한 유형의 이벤트가 없습니다."
+  }
+}

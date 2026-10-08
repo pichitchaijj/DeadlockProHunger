@@ -1,0 +1,289 @@
+{
+  "meta": {
+    "listTitle": "แมตช์",
+    "listDescription": "แมตช์ Deadlock ล่าสุด แยกตามฮีโร่ ผู้เล่น ผลการแข่ง ความยาว วันที่ และแรงก์ พร้อมแมตช์ที่กำลังถ่ายทอดในแท็บรับชม",
+    "detailTitle": "แมตช์ {id}",
+    "detailDescription": "แมตช์ Deadlock {id}: ผลการแข่ง ทีม ผู้เล่น ไทม์ไลน์ บิลด์ และเหตุการณ์ จากข้อมูลแมตช์"
+  },
+  "common": {
+    "team": "ทีม {n}",
+    "ranked": "จัดอันดับ",
+    "unranked": "ไม่จัดอันดับ",
+    "won": "ชนะ",
+    "lost": "แพ้",
+    "win": "ชนะ",
+    "loss": "แพ้",
+    "souls": "{value} โซล",
+    "player": "ผู้เล่น {id}",
+    "patch": "แพตช์ {date}",
+    "patchUnknown": "ไม่ทราบแพตช์",
+    "even": "เท่ากัน",
+    "lead": "{team} +{value}"
+  },
+  "list": {
+    "eyebrow": "แมตช์",
+    "title": "แมตช์",
+    "description": "แมตช์โหมดปกติล่าสุดที่แหล่งข้อมูลประมวลผลแล้ว กรองตามฮีโร่หรือผู้เล่นเพื่อดูผลจากฝั่งของพวกเขา",
+    "filters": "ตัวกรองแมตช์",
+    "player": "ผู้เล่น (ชื่อหรือ SteamID3)",
+    "playerPlaceholder": "เช่น 338104565",
+    "apply": "ใช้",
+    "date": "วันที่",
+    "dates": {
+      "24h": "24 ชั่วโมงล่าสุด",
+      "7d": "7 วันล่าสุด",
+      "patch": "แพตช์ปัจจุบัน"
+    },
+    "length": "ความยาว",
+    "any": "ทั้งหมด",
+    "durations": {
+      "short": "ต่ำกว่า 25 นาที",
+      "standard": "25–35 นาที",
+      "long": "เกิน 35 นาที"
+    },
+    "result": "ผลการแข่ง (ของฮีโร่หรือผู้เล่นที่เลือก)",
+    "resultShort": "ผลการแข่ง",
+    "wins": "ชนะ",
+    "losses": "แพ้",
+    "resultHint": "เลือกฮีโร่หรือผู้เล่นก่อน: ผลการแข่งต้องมีฝั่ง",
+    "clearFilters": "ล้างตัวกรอง",
+    "results": "ผลลัพธ์",
+    "noPlayers": "ไม่พบผู้เล่นสำหรับ “{query}”",
+    "choosePlayer": "ผู้เล่นที่ตรงกับ “{query}” เลือกหนึ่งคนเพื่อกรองรายการ:",
+    "matches30d": "{count} แมตช์/30 วัน",
+    "count": "{count, plural, =0 {ไม่มีแมตช์} other {# แมตช์}}",
+    "resultFilter": "({result, select, win {ชนะ} other {แพ้}} จาก {fetched} แมตช์ล่าสุด)",
+    "since": "ตั้งแต่ {time} · {rank} · ล่าสุดไม่เกิน {limit} แมตช์",
+    "emptyTitle": "ไม่พบแมตช์",
+    "emptyDescription": "ยังไม่มีแมตช์ที่ประมวลผลสำหรับตัวกรองเหล่านี้ ลองขยายช่วงวันที่ ช่วงแรงก์ หรือความยาว หรือล้างตัวกรองผลการแข่ง",
+    "widen": "ขยายเป็น 7 วัน",
+    "loading": "กำลังโหลดแมตช์"
+  },
+  "live": {
+    "title": "กำลังแข่งขัน",
+    "summary": "<num>{total}</num> แมตช์โหมดปกติในแท็บรับชมในเกม (จัดอันดับ {ranked} แมตช์)",
+    "region": "แมตช์สด ปัดหรือใช้ปุ่มลูกศร",
+    "list": "แมตช์สด",
+    "minutesIn": "นาทีที่ {minutes}",
+    "inProgress": "กำลังแข่ง",
+    "watching": "ผู้ชม {count} คน",
+    "teamHeroes": "ฮีโร่ของทีม {n}",
+    "soulsShare": "โซล: ทีม 1 {a}% · ทีม 2 {b}%",
+    "note": "แท็บรับชมแสดง 200 แมตช์สดอันดับต้น ไม่ใช่ทุกแมตช์ที่กำลังเล่น อัปเดตประมาณนาทีละครั้ง"
+  },
+  "explorer": {
+    "caption": "แมตช์ล่าสุด เลือกแถวเพื่อดูตัวอย่าง ใช้ปุ่มลูกศรขึ้นและลงเพื่อเลื่อน",
+    "when": "เมื่อ",
+    "result": "ผล",
+    "teams": "ทีม",
+    "length": "ความยาว",
+    "avgRank": "แรงก์เฉลี่ย",
+    "patch": "แพตช์",
+    "previewMatch": "ดูตัวอย่างแมตช์ {id}, {time}",
+    "previewing": "กำลังดูตัวอย่างแมตช์ {id}: {summary}, {duration}",
+    "preview": "ตัวอย่างแมตช์",
+    "match": "แมตช์ {id}",
+    "averageRank": "แรงก์เฉลี่ย",
+    "noAverageRank": "ไม่มีแรงก์เฉลี่ย",
+    "openFull": "เปิดแมตช์ฉบับเต็ม →",
+    "openMatch": "เปิดแมตช์ {id} →",
+    "players": "ผู้เล่น",
+    "teamWon": "{team} ชนะ",
+    "noResult": "ไม่มีผล",
+    "focusSummary": "{result, select, win {ชนะ} other {แพ้}} สำหรับ {label}, {kda}",
+    "teamState": "{team}, {result, select, won {ชนะ} other {แพ้}}",
+    "winShort": "ช",
+    "lossShort": "พ"
+  },
+  "detail": {
+    "heading": "แมตช์ {id}: {result}",
+    "kills": "คิล",
+    "avg": "เฉลี่ย",
+    "winner": "ผู้ชนะ",
+    "vs": "VS",
+    "result": "ผลการแข่ง",
+    "duration": "ระยะเวลา",
+    "mode": "โหมด",
+    "patch": "แพตช์",
+    "date": "วันที่",
+    "unknown": "ไม่ทราบ",
+    "draw": "เสมอ",
+    "noResult": "ไม่มีการบันทึกผล",
+    "conditions": "เงื่อนไขของแมตช์",
+    "flags": {
+      "highSkill": "ช่วงปาร์ตี้ฝีมือสูง",
+      "lowPriority": "คิวลำดับความสำคัญต่ำ",
+      "newPlayer": "คิวผู้เล่นใหม่",
+      "notScored": "ไม่นับคะแนน"
+    },
+    "sectionsNav": "ส่วนต่างๆ ของแมตช์",
+    "sections": {
+      "story": "เรื่องราว",
+      "teams": "ทีม",
+      "players": "ผู้เล่น",
+      "lineup": "รายชื่อฮีโร่",
+      "timeline": "ไทม์ไลน์",
+      "builds": "บิลด์",
+      "performance": "ผลงาน",
+      "graphs": "กราฟ",
+      "events": "เหตุการณ์",
+      "advanced": "ขั้นสูง"
+    },
+    "notAvailableTitle": "ยังไม่มีข้อมูลแมตช์นี้",
+    "notAvailableDescription": "แมตช์นี้ไม่อยู่ในแหล่งข้อมูล แมตช์ที่เพิ่งจบอาจใช้เวลาสักพักในการประมวลผล ส่วนแมตช์เก่าอาจไม่เคยถูกเก็บไว้",
+    "browse": "ดูแมตช์ล่าสุด",
+    "timelineTitle": "ไทม์ไลน์",
+    "timelineDescription": "เป้าหมาย Mid-Boss การฆ่า และการซื้อของผู้เล่นที่โฟกัสบนแกนเวลาเดียว เลือกเครื่องหมายหรือลากตัวเลื่อน ข้อความด้านล่างจะแสดงสถานะ ณ เวลานั้น",
+    "graphsTitle": "กราฟ",
+    "graphsDescription": "ยอดรวมของทีมในแต่ละจุดที่บันทึก",
+    "soulsOverTime": "โซลตามเวลา",
+    "killsOverTime": "คิลตามเวลา",
+    "eventsTitle": "เหตุการณ์",
+    "eventsDescription": "ทุกเหตุการณ์ที่บันทึกตามลำดับ การเลือกเหตุการณ์จะโฟกัสบนไทม์ไลน์ด้วย"
+  },
+  "story": {
+    "title": "เรื่องราวของแมตช์",
+    "description": "ข้อเท็จจริงที่วัดได้ในแต่ละช่วง ขอบของช่วงอยู่ที่จุดบันทึกสถิติของเกม (9:00 และ 20:00) และอ่านความนำด้านโซลที่จุดเหล่านั้น",
+    "phases": {
+      "early": "ช่วงต้นเกม",
+      "mid": "ช่วงกลางเกม",
+      "late": "ช่วงท้ายเกม"
+    },
+    "kills": "คิล: {team1} {a}, {team2} {b}",
+    "objectives": "เป้าหมายที่ถูกทำลาย: {list}",
+    "objectiveSide": "{team} {count} ({names})",
+    "noObjectives": "ไม่มีเป้าหมายถูกทำลาย",
+    "boss": "{event} ที่ {time}",
+    "lead": "ความนำด้านโซล: {start} ที่ {startTime} → {end} ที่ {endTime}",
+    "leadGain": "ความนำด้านโซล: {start} ที่ {startTime} → {end} ที่ {endTime} ({team} ได้เพิ่ม {value})",
+    "neverChanged": "ความนำด้านโซลไม่เคยเปลี่ยนฝั่งระหว่างจุดบันทึก",
+    "changed": "ความนำด้านโซลเปลี่ยนฝั่ง {count, plural, other {# ครั้ง}} ({list})",
+    "changeAt": "{team} ที่ {time}",
+    "swing": "การพลิกมากที่สุด: {team} ได้ความนำด้านโซลเพิ่ม {value} ระหว่าง {from} ถึง {to}"
+  },
+  "events": {
+    "kill": "{killer} ฆ่า {victim}",
+    "died": "{victim} ตาย",
+    "objective": "{team} ทำลาย {objective} ของ{owner}",
+    "bossClaimed": "{team} ฆ่าและครอบครอง Mid-Boss",
+    "bossSplit": "{killed} ฆ่า Mid-Boss; {claimed} เป็นฝ่ายครอบครอง",
+    "bought": "{hero} ซื้อ {item}",
+    "anItem": "ไอเท็ม",
+    "objectives": {
+      "core": "แกนกลาง",
+      "tier1": "เป้าหมายระดับ 1 · เลน {lane}",
+      "tier2": "เป้าหมายระดับ 2 · เลน {lane}",
+      "titan": "Titan",
+      "shield": "เครื่องกำเนิดโล่ Titan {n}",
+      "barracks": "เป้าหมายค่ายทหาร · เลน {lane}",
+      "other": "เป้าหมาย"
+    }
+  },
+  "teams": {
+    "title": "เปรียบเทียบทีม",
+    "description": "ยอดรวมเมื่อจบแมตช์",
+    "metric": "ค่าสถิติ",
+    "metrics": {
+      "kills": "คิล",
+      "deaths": "ตาย",
+      "assists": "แอสซิสต์",
+      "netWorth": "โซล",
+      "lastHits": "ลาสต์ฮิต",
+      "denies": "ดีไน",
+      "damage": "ดาเมจใส่ฮีโร่",
+      "healing": "การฮีล",
+      "objectives": "เป้าหมายที่ทำลาย",
+      "midBoss": "Mid-Boss ที่ครอบครอง"
+    }
+  },
+  "players": {
+    "title": "ผู้เล่น",
+    "description": "ค่าสุดท้าย ชื่อเป็นชื่อ Steam สาธารณะเมื่อมี",
+    "teamPlayers": "ผู้เล่นของ{team}",
+    "teamResult": "{team} · {result, select, won {ชนะ} lost {แพ้} other {}}",
+    "player": "ผู้เล่น",
+    "kda": "K/D/A",
+    "souls": "โซล",
+    "lhdn": "LH/DN",
+    "damage": "ดาเมจ",
+    "level": "เลเวล",
+    "line": "LH/DN {lh}/{dn} · ดาเมจ {damage} · เลเวล {level}"
+  },
+  "lineup": {
+    "title": "รายชื่อฮีโร่",
+    "description": "ฮีโร่ตามทีมและเลนที่ได้รับ",
+    "teamHeroes": "ฮีโร่ของ{team}",
+    "lane": "เลน {n}",
+    "noLane": "ไม่มีเลน",
+    "swapped": "เปลี่ยนจาก {hero}",
+    "banned": "แบน:"
+  },
+  "builds": {
+    "title": "บิลด์",
+    "description": "ไอเท็มทุกชิ้นที่ผู้เล่นแต่ละคนซื้อตามลำดับ สีจาง = ขายก่อนจบแมตช์",
+    "selected": "บิลด์ที่เลือกตอนเริ่ม →",
+    "purchases": "การซื้อของ {hero}",
+    "boughtAt": "{item} ที่ {time}",
+    "boughtSold": "{item} ที่ {time}, ขายที่ {sold}",
+    "sold": "(ขายแล้ว)"
+  },
+  "performance": {
+    "title": "ผลงาน",
+    "description": "สัดส่วนของผู้เล่นแต่ละคนเทียบกับค่าสูงสุดในแมตช์สำหรับค่าสถิตินั้น",
+    "metrics": {
+      "damage": "ดาเมจใส่ฮีโร่",
+      "netWorth": "โซล",
+      "objectiveDamage": "ดาเมจใส่เป้าหมาย",
+      "healing": "การฮีล",
+      "damageTaken": "ดาเมจที่ได้รับ"
+    }
+  },
+  "advanced": {
+    "title": "ข้อมูลขั้นสูง",
+    "description": "ค่าที่วัดได้เบื้องหลังหน้านี้ ในรูปแบบตาราง",
+    "soulsPerSample": "โซลของผู้เล่นแต่ละคนในแต่ละจุดบันทึก",
+    "caption": "โซลของผู้เล่นแต่ละคนในแต่ละเวลาที่บันทึก",
+    "player": "ผู้เล่น",
+    "source": "แหล่งที่มา: <link>ข้อมูลเมทาดาทาแมตช์ของ deadlock-api.com (JSON)</link> สถิติบันทึกทุก 3 นาทีจนถึง 15:00 จากนั้นทุก 5 นาที รวมถึงช่วงสุดท้าย"
+  },
+  "graph": {
+    "summary": "{title}: ทีม 1 จบที่ {a} {unit}, ทีม 2 ที่ {b}",
+    "units": {
+      "souls": "โซล",
+      "kills": "คิล"
+    },
+    "showValues": "แสดงค่า",
+    "caption": "{title}: ค่าตามเวลาของแต่ละทีม",
+    "time": "เวลา"
+  },
+  "timeline": {
+    "playerFocus": "ผู้เล่นที่โฟกัส (การซื้อและเส้นโซล)",
+    "legend": "คำอธิบายสัญลักษณ์",
+    "focusedSouls": "โซลของผู้เล่นที่โฟกัส",
+    "chart": "ไทม์ไลน์ของแมตช์ ใช้ปุ่มลูกศรเลื่อนระหว่างเหตุการณ์ กด Enter เพื่อเลือก",
+    "leadAxis": "ความนำด้านโซล: ทีม 1 ด้านบน ทีม 2 ด้านล่าง",
+    "rows": {
+      "objectives": "เป้าหมาย",
+      "midboss": "Mid-Boss",
+      "kills": "คิล (ทีม 1 ด้านบน ทีม 2 ด้านล่าง)",
+      "purchases": "การซื้อ · {player}"
+    },
+    "soulsLead": "ความนำด้านโซล {value}",
+    "scrub": "เลื่อนดูตลอดแมตช์",
+    "kills": "คิล",
+    "objectives": "เป้าหมาย",
+    "leadAt": "ความนำด้านโซลที่ {time}:",
+    "selected": "ที่เลือก:",
+    "bought": "{player} ซื้อ {item}",
+    "boughtSold": "{player} ซื้อ {item} (ขายที่ {time})",
+    "eventTypes": "ประเภทเหตุการณ์",
+    "kinds": {
+      "kill": "คิล",
+      "objective": "เป้าหมาย",
+      "midboss": "Mid-Boss",
+      "purchase": "การซื้อระดับ 3+"
+    },
+    "events": "เหตุการณ์ในแมตช์",
+    "noEvents": "ไม่มีเหตุการณ์ประเภทที่เลือก"
+  }
+}

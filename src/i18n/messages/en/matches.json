@@ -1,0 +1,289 @@
+{
+  "meta": {
+    "listTitle": "Matches",
+    "listDescription": "Recent Deadlock matches by hero, player, result, length, date and rank, plus what’s live in the watch tab.",
+    "detailTitle": "Match {id}",
+    "detailDescription": "Deadlock match {id}: result, teams, players, timeline, builds and events, from the match data."
+  },
+  "common": {
+    "team": "Team {n}",
+    "ranked": "Ranked",
+    "unranked": "Unranked",
+    "won": "Won",
+    "lost": "Lost",
+    "win": "Win",
+    "loss": "Loss",
+    "souls": "{value} souls",
+    "player": "Player {id}",
+    "patch": "{date} patch",
+    "patchUnknown": "Patch unknown",
+    "even": "even",
+    "lead": "{team} +{value}"
+  },
+  "list": {
+    "eyebrow": "Matches",
+    "title": "Matches",
+    "description": "Recent normal-mode matches processed by the data source. Filter to a hero or player to see results from their side.",
+    "filters": "Match filters",
+    "player": "Player (name or SteamID3)",
+    "playerPlaceholder": "e.g. 338104565",
+    "apply": "Apply",
+    "date": "Date",
+    "dates": {
+      "24h": "Last 24 hours",
+      "7d": "Last 7 days",
+      "patch": "Current patch"
+    },
+    "length": "Length",
+    "any": "Any",
+    "durations": {
+      "short": "Under 25 min",
+      "standard": "25–35 min",
+      "long": "Over 35 min"
+    },
+    "result": "Result (for the selected hero or player)",
+    "resultShort": "Result",
+    "wins": "Wins",
+    "losses": "Losses",
+    "resultHint": "Pick a hero or player first: a result needs a side.",
+    "clearFilters": "Clear filters",
+    "results": "Results",
+    "noPlayers": "No players found for “{query}”.",
+    "choosePlayer": "Players matching “{query}”. Choose one to filter the list:",
+    "matches30d": "{count} matches/30d",
+    "count": "{count, plural, =0 {No matches} one {# match} other {# matches}}",
+    "resultFilter": "({result, select, win {wins} other {losses}} among the {fetched} most recent)",
+    "since": "since {time} · {rank} · newest {limit} at most",
+    "emptyTitle": "No matches found",
+    "emptyDescription": "Nothing processed yet for these filters. Widen the date range, rank band or length, or clear the result filter.",
+    "widen": "Widen to 7 days",
+    "loading": "Loading matches"
+  },
+  "live": {
+    "title": "Live now",
+    "summary": "<num>{total}</num> normal-mode matches in the in-game watch tab ({ranked} ranked)",
+    "region": "Live matches, swipe or use arrow keys",
+    "list": "Live matches",
+    "minutesIn": "{minutes} min in",
+    "inProgress": "In progress",
+    "watching": "{count} watching",
+    "teamHeroes": "Team {n} heroes",
+    "soulsShare": "Souls: Team 1 {a}% · Team 2 {b}%",
+    "note": "The watch tab lists the top 200 live matches, not every match being played. Refreshes about once a minute."
+  },
+  "explorer": {
+    "caption": "Recent matches. Select a row to preview it; use the up and down arrow keys to move.",
+    "when": "When",
+    "result": "Result",
+    "teams": "Teams",
+    "length": "Length",
+    "avgRank": "Avg. rank",
+    "patch": "Patch",
+    "previewMatch": "Preview match {id}, {time}",
+    "previewing": "Previewing match {id}: {summary}, {duration}",
+    "preview": "Match preview",
+    "match": "Match {id}",
+    "averageRank": "Average rank",
+    "noAverageRank": "No average rank",
+    "openFull": "Open full match →",
+    "openMatch": "Open match {id} →",
+    "players": "Players",
+    "teamWon": "{team} won",
+    "noResult": "No result",
+    "focusSummary": "{result, select, win {win} other {loss}} for {label}, {kda}",
+    "teamState": "{team}, {result, select, won {won} other {lost}}",
+    "winShort": "W",
+    "lossShort": "L"
+  },
+  "detail": {
+    "heading": "Match {id}: {result}",
+    "kills": "kills",
+    "avg": "avg.",
+    "winner": "Winner",
+    "vs": "VS",
+    "result": "Result",
+    "duration": "Duration",
+    "mode": "Mode",
+    "patch": "Patch",
+    "date": "Date",
+    "unknown": "Unknown",
+    "draw": "Draw",
+    "noResult": "No result recorded",
+    "conditions": "Match conditions",
+    "flags": {
+      "highSkill": "High-skill party range",
+      "lowPriority": "Low-priority pool",
+      "newPlayer": "New-player pool",
+      "notScored": "Not scored"
+    },
+    "sectionsNav": "Match sections",
+    "sections": {
+      "story": "Story",
+      "teams": "Teams",
+      "players": "Players",
+      "lineup": "Lineup",
+      "timeline": "Timeline",
+      "builds": "Builds",
+      "performance": "Performance",
+      "graphs": "Graphs",
+      "events": "Events",
+      "advanced": "Advanced"
+    },
+    "notAvailableTitle": "Match not available yet",
+    "notAvailableDescription": "This match isn’t in the data source. Very recent matches can take a while to be processed; older ones may never have been collected.",
+    "browse": "Browse recent matches",
+    "timelineTitle": "Timeline",
+    "timelineDescription": "Objectives, the Mid-Boss, kills and the focused player’s purchases on one time axis. Select a marker or drag the scrubber; the readout shows the state at that moment.",
+    "graphsTitle": "Graphs",
+    "graphsDescription": "Team totals at each recorded sample.",
+    "soulsOverTime": "Souls over time",
+    "killsOverTime": "Kills over time",
+    "eventsTitle": "Events",
+    "eventsDescription": "Every recorded event in order. Selecting one also focuses it on the timeline."
+  },
+  "story": {
+    "title": "Match story",
+    "description": "Measured facts per phase. Phase edges sit on the game’s stat samples (9:00 and 20:00); souls leads are read at those samples.",
+    "phases": {
+      "early": "Early game",
+      "mid": "Mid game",
+      "late": "Late game"
+    },
+    "kills": "Kills: {team1} {a}, {team2} {b}.",
+    "objectives": "Objectives destroyed: {list}.",
+    "objectiveSide": "{team} {count} ({names})",
+    "noObjectives": "No objectives destroyed.",
+    "boss": "{event} at {time}.",
+    "lead": "Souls lead: {start} at {startTime} → {end} at {endTime}.",
+    "leadGain": "Souls lead: {start} at {startTime} → {end} at {endTime} ({team} gained {value}).",
+    "neverChanged": "The souls lead never changed hands between samples.",
+    "changed": "The souls lead changed hands {count, plural, one {# time} other {# times}} ({list}).",
+    "changeAt": "{team} at {time}",
+    "swing": "Largest swing: {team} gained {value} souls of lead between {from} and {to}."
+  },
+  "events": {
+    "kill": "{killer} killed {victim}",
+    "died": "{victim} died",
+    "objective": "{team} destroyed {owner}’s {objective}",
+    "bossClaimed": "{team} killed and claimed the Mid-Boss",
+    "bossSplit": "{killed} killed the Mid-Boss; {claimed} claimed it",
+    "bought": "{hero} bought {item}",
+    "anItem": "an item",
+    "objectives": {
+      "core": "Core",
+      "tier1": "Tier 1 objective · Lane {lane}",
+      "tier2": "Tier 2 objective · Lane {lane}",
+      "titan": "Titan",
+      "shield": "Titan shield generator {n}",
+      "barracks": "Barracks objective · Lane {lane}",
+      "other": "Objective"
+    }
+  },
+  "teams": {
+    "title": "Team comparison",
+    "description": "Totals at the end of the match.",
+    "metric": "Metric",
+    "metrics": {
+      "kills": "Kills",
+      "deaths": "Deaths",
+      "assists": "Assists",
+      "netWorth": "Souls",
+      "lastHits": "Last hits",
+      "denies": "Denies",
+      "damage": "Hero damage",
+      "healing": "Healing",
+      "objectives": "Objectives destroyed",
+      "midBoss": "Mid-Boss claimed"
+    }
+  },
+  "players": {
+    "title": "Players",
+    "description": "Final values. Names are public Steam names where available.",
+    "teamPlayers": "{team} players",
+    "teamResult": "{team} · {result, select, won {won} lost {lost} other {}}",
+    "player": "Player",
+    "kda": "K/D/A",
+    "souls": "Souls",
+    "lhdn": "LH/DN",
+    "damage": "Damage",
+    "level": "Lvl",
+    "line": "LH/DN {lh}/{dn} · Damage {damage} · Level {level}"
+  },
+  "lineup": {
+    "title": "Hero lineup",
+    "description": "Heroes by team and assigned lane.",
+    "teamHeroes": "{team} heroes",
+    "lane": "Lane {n}",
+    "noLane": "No lane",
+    "swapped": "Swapped from {hero}",
+    "banned": "Banned:"
+  },
+  "builds": {
+    "title": "Builds",
+    "description": "Every shop item each player bought, in order. Faded = sold before the match ended.",
+    "selected": "Build selected at start →",
+    "purchases": "{hero} purchases",
+    "boughtAt": "{item} at {time}",
+    "boughtSold": "{item} at {time}, sold at {sold}",
+    "sold": "(sold)"
+  },
+  "performance": {
+    "title": "Performance",
+    "description": "Each player’s share of the match maximum for that metric.",
+    "metrics": {
+      "damage": "Hero damage",
+      "netWorth": "Souls",
+      "objectiveDamage": "Objective damage",
+      "healing": "Healing",
+      "damageTaken": "Damage taken"
+    }
+  },
+  "advanced": {
+    "title": "Advanced data",
+    "description": "The measured values behind this page, as tables.",
+    "soulsPerSample": "Souls per player at each sample",
+    "caption": "Souls per player at each sample time",
+    "player": "Player",
+    "source": "Source: <link>deadlock-api.com match metadata (JSON)</link>. Stats are sampled every 3 minutes until 15:00, then every 5 minutes, plus the final moment."
+  },
+  "graph": {
+    "summary": "{title}: Team 1 ended at {a} {unit}, Team 2 at {b}.",
+    "units": {
+      "souls": "souls",
+      "kills": "kills"
+    },
+    "showValues": "Show values",
+    "caption": "{title}: values by time for each team",
+    "time": "Time"
+  },
+  "timeline": {
+    "playerFocus": "Player focus (purchases and souls curve)",
+    "legend": "Legend",
+    "focusedSouls": "Focused player’s souls",
+    "chart": "Match timeline. Arrow keys move between events; Enter selects one.",
+    "leadAxis": "Souls lead: Team 1 above, Team 2 below",
+    "rows": {
+      "objectives": "Objectives",
+      "midboss": "Mid-Boss",
+      "kills": "Kills (Team 1 above, Team 2 below)",
+      "purchases": "Purchases · {player}"
+    },
+    "soulsLead": "souls lead {value}",
+    "scrub": "Scrub through the match",
+    "kills": "Kills",
+    "objectives": "Objectives",
+    "leadAt": "Souls lead at {time}:",
+    "selected": "Selected:",
+    "bought": "{player} bought {item}",
+    "boughtSold": "{player} bought {item} (sold {time})",
+    "eventTypes": "Event types",
+    "kinds": {
+      "kill": "Kills",
+      "objective": "Objectives",
+      "midboss": "Mid-Boss",
+      "purchase": "Tier 3+ purchases"
+    },
+    "events": "Match events",
+    "noEvents": "No events of the selected types."
+  }
+}

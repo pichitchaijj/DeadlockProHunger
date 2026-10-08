@@ -1,5 +1,8 @@
+import { createTranslator } from 'next-intl'
 import { describe, expect, it } from 'vitest'
 import { buildMatchView, objectiveName } from '@/features/match/model'
+import { eventText, storyFacts, type MatchesT } from '@/features/match/text'
+import en from '@/i18n/messages/en'
 import type { MatchDetailRaw } from '@/lib/deadlock/matchDetail'
 
 /* Synthetic match (two players a side is enough for the rules under test). Not real data. */
@@ -124,5 +127,20 @@ describe('objectiveName', () => {
     expect(objectiveName(0)).toBe('Core')
     expect(objectiveName(6)).toBe('Tier 2 objective · Lane 2')
     expect(objectiveName(13)).toBe('Barracks objective · Lane 2')
+  })
+})
+
+describe('localized wording (features/match/text)', () => {
+  const t = createTranslator({ locale: 'en', messages: en, namespace: 'matches' }) as unknown as MatchesT
+
+  it('words every event and story fact from the structured fields exactly as the model’s English', () => {
+    for (const e of view.events) expect(eventText(t, e.detail)).toBe(e.text)
+    for (const phase of view.story) expect(storyFacts(t, phase)).toEqual(phase.facts)
+  })
+
+  it('keeps names as data and objectives as enum ids', () => {
+    expect(view.events.find((e) => e.kind === 'kill')?.detail).toEqual({ type: 'kill', killer: 'H1', victim: 'H4' })
+    expect(view.story[0].objectiveIds).toEqual([[], [1]])
+    expect(view.story[2].boss).toEqual({ t: 1_300, killed: 1, claimed: 1 })
   })
 })

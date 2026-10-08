@@ -1,5 +1,6 @@
 'use client'
 
+import { useLocale, useTranslations } from 'next-intl'
 import { createContext, useContext, useId, useMemo, useRef, useState, type ReactNode } from 'react'
 import { ItemIcon } from '@/components/game-assets/ItemIcon'
 import { InView } from '@/components/motion/InView'
@@ -68,7 +69,15 @@ const AXIS_Y = 290
 const H = 304
 const TEAM_FILL: Record<Side, string> = { 0: 'fill-primary', 1: 'fill-text-muted' }
 
+/**
+ * Match Detail only. Event `text` arrives worded in the page's locale (server); the timeline's own words
+ * come from matches.timeline / matches.common, which the page sends to the client (WithClientMessages).
+ */
 export function MatchTimeline({ durationS, times, lead, events, players }: TimelineProps) {
+  const t = useTranslations('matches')
+  const locale = useLocale()
+  const team = (side: Side) => t('common.team', { n: side + 1 })
+  const leadValue = (v: number) => (v === 0 ? t('common.even') : t('common.lead', { team: team(v > 0 ? 0 : 1), value: formatCompact(Math.abs(v), locale) }))
   const { selectedId, scrubT, select, setScrubT } = useTimeline()
   const [hover, setHover] = useState<{ x: number; text: string } | null>(null)
   const [playerSlot, setPlayerSlot] = useState(players[0]?.slot ?? null)
@@ -101,10 +110,14 @@ export function MatchTimeline({ durationS, times, lead, events, players }: Timel
   const rowY = (kind: EventKind, side: Side | null) =>
     kind === 'kill' ? ROWS.kills + (side === 0 ? -7 : 7) : kind === 'objective' ? ROWS.objective : kind === 'midboss' ? ROWS.midboss : ROWS.purchases
 
-  const buys = (player?.purchases ?? []).map((b, i) => ({
-    b,
-    e: { id: `buy-${player!.slot}-${i}`, t: b.t, kind: 'purchase', side: player!.side, text: `${player!.label} bought ${b.name ?? 'an item'}${b.soldAt ? ` (sold ${formatDuration(b.soldAt)})` : ''}`, slots: [player!.slot] } as MatchEvent,
-  }))
+  const buys = (player?.purchases ?? []).map((b, i) => {
+    const item = b.name ?? t('events.anItem')
+    const text = b.soldAt ? t('timeline.boughtSold', { player: player!.label, item, time: formatDuration(b.soldAt) }) : t('timeline.bought', { player: player!.label, item })
+    return {
+      b,
+      e: { id: `buy-${player!.slot}-${i}`, t: b.t, kind: 'purchase', side: player!.side, text, detail: { type: 'purchase', hero: player!.label, item: b.name }, slots: [player!.slot] } as MatchEvent,
+    }
+  })
   const ordered = [...events.filter((e) => e.kind !== 'purchase'), ...buys.map((x) => x.e)].sort((a, b) => a.t - b.t || a.id.localeCompare(b.id))
   const tabStop = [focusId, selectedId].find((id) => id && ordered.some((e) => e.id === id)) ?? ordered[0]?.id ?? null
   const moveFocus = (from: string, key: string) => {
@@ -152,7 +165,7 @@ export function MatchTimeline({ durationS, times, lead, events, players }: Timel
     <InView className="flex flex-col gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <label className="flex flex-col gap-1.5">
-          <span className="text-eyebrow">Player focus (purchases and souls curve)</span>
+          <span className="text-eyebrow">{t('timeline.playerFocus')}</span>
           <select
             value={playerSlot ?? ''}
             onChange={(e) => setPlayerSlot(Number(e.target.value))}
@@ -160,21 +173,21 @@ export function MatchTimeline({ durationS, times, lead, events, players }: Timel
           >
             {players.map((p) => (
               <option key={p.slot} value={p.slot}>
-                {p.side === 0 ? 'Team 1' : 'Team 2'} · {p.label}
+                {team(p.side)} · {p.label}
               </option>
             ))}
           </select>
         </label>
-        <ul className="flex flex-wrap gap-x-4 gap-y-1 text-caption text-text-muted" aria-label="Legend">
-          <li className="flex items-center gap-1.5"><span className="size-2.5 rounded-xs bg-primary" /> Team 1</li>
-          <li className="flex items-center gap-1.5"><span className="size-2.5 rounded-xs bg-text-muted" /> Team 2</li>
-          <li className="flex items-center gap-1.5"><span className="h-0.5 w-4 border-t-2 border-dashed border-highlight" /> Focused player’s souls</li>
+        <ul className="flex flex-wrap gap-x-4 gap-y-1 text-caption text-text-muted" aria-label={t('timeline.legend')}>
+          <li className="flex items-center gap-1.5"><span className="size-2.5 rounded-xs bg-primary" /> {team(0)}</li>
+          <li className="flex items-center gap-1.5"><span className="size-2.5 rounded-xs bg-text-muted" /> {team(1)}</li>
+          <li className="flex items-center gap-1.5"><span className="h-0.5 w-4 border-t-2 border-dashed border-highlight" /> {t('timeline.focusedSouls')}</li>
         </ul>
       </div>
 
       <div className="relative overflow-x-auto rounded-md border border-border bg-surface-sunken">
         <div className="relative min-w-[40rem]">
-          <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full" role="group" aria-label="Match timeline. Arrow keys move between events; Enter selects one.">
+          <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full" role="group" aria-label={t('timeline.chart')}>
             {/* Time grid */}
             {minuteMarks.map((t) => (
               <g key={t}>
@@ -183,19 +196,19 @@ export function MatchTimeline({ durationS, times, lead, events, players }: Timel
               </g>
             ))}
             {/* Souls lead */}
-            <text x={PAD_X} y={LEAD_TOP + 10} className="fill-text-muted text-[11px]">Souls lead: Team 1 above, Team 2 below</text>
+            <text x={PAD_X} y={LEAD_TOP + 10} className="fill-text-muted text-[11px]">{t('timeline.leadAxis')}</text>
             <line x1={PAD_X} x2={W - PAD_X} y1={midY} y2={midY} className="stroke-steel" strokeWidth={1} />
             <path d={leadArea} className="fill-primary/10" />
             {/* Neutral color: the lead is a difference between teams, not one team's line. */}
             <path d={leadPath} data-draw pathLength={1} fill="none" className="stroke-text" strokeWidth={2} strokeLinejoin="round" />
-            {times.slice(1).map((t, i) => (
+            {times.slice(1).map((time, i) => (
               <circle
-                key={t}
-                cx={x(t)}
+                key={time}
+                cx={x(time)}
                 cy={y(lead[i + 1])}
                 r={3}
                 className={lead[i + 1] >= 0 ? 'fill-primary' : 'fill-text-muted'}
-                onMouseEnter={() => show(t, `souls lead ${lead[i + 1] === 0 ? 'even' : `${lead[i + 1] > 0 ? 'Team 1' : 'Team 2'} +${formatCompact(Math.abs(lead[i + 1]))}`}`)}
+                onMouseEnter={() => show(time, t('timeline.soulsLead', { value: leadValue(lead[i + 1]) }))}
                 onMouseLeave={() => setHover(null)}
               />
             ))}
@@ -205,7 +218,7 @@ export function MatchTimeline({ durationS, times, lead, events, players }: Timel
             {/* Event rows */}
             {(['objective', 'midboss', 'kills', 'purchases'] as const).map((row) => (
               <text key={row} x={PAD_X} y={ROWS[row] - 12} className="fill-text-muted text-[10px] uppercase">
-                {row === 'objective' ? 'Objectives' : row === 'midboss' ? 'Mid-Boss' : row === 'kills' ? 'Kills (Team 1 above, Team 2 below)' : `Purchases · ${player?.label ?? ''}`}
+                {row === 'objective' ? t('timeline.rows.objectives') : row === 'midboss' ? t('timeline.rows.midboss') : row === 'kills' ? t('timeline.rows.kills') : t('timeline.rows.purchases', { player: player?.label ?? '' })}
               </text>
             ))}
             {events.filter((e) => e.kind === 'objective').map((e) =>
@@ -233,7 +246,7 @@ export function MatchTimeline({ durationS, times, lead, events, players }: Timel
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor={sliderId} className="text-eyebrow">Scrub through the match</label>
+        <label htmlFor={sliderId} className="text-eyebrow">{t('timeline.scrub')}</label>
         <input
           id={sliderId}
           type="range"
@@ -247,16 +260,16 @@ export function MatchTimeline({ durationS, times, lead, events, players }: Timel
         />
         <p role="status" aria-live="polite" className="text-sm text-text">
           <span className="font-semibold tabular">{formatDuration(scrubT)}</span>
-          <span className="text-text-muted"> · Kills </span>
-          <span className="tabular">Team 1 {killsSoFar[0]} – {killsSoFar[1]} Team 2</span>
-          <span className="text-text-muted"> · Objectives </span>
+          <span className="text-text-muted"> · {t('timeline.kills')} </span>
+          <span className="tabular">{team(0)} {killsSoFar[0]} – {killsSoFar[1]} {team(1)}</span>
+          <span className="text-text-muted"> · {t('timeline.objectives')} </span>
           <span className="tabular">{objectivesSoFar[0]} – {objectivesSoFar[1]}</span>
-          <span className="text-text-muted"> · Souls lead at {formatDuration(times[sample])}: </span>
-          <span className="tabular">{lead[sample] === 0 ? 'even' : `${lead[sample] > 0 ? 'Team 1' : 'Team 2'} +${formatCompact(Math.abs(lead[sample]))}`}</span>
+          <span className="text-text-muted"> · {t('timeline.leadAt', { time: formatDuration(times[sample]) })} </span>
+          <span className="tabular">{leadValue(lead[sample])}</span>
         </p>
         {selected && (
           <p className="animate-awaken rounded-sm border border-highlight/40 bg-highlight/5 px-3 py-2 text-sm text-text">
-            Selected: <span className="font-semibold">{formatDuration(selected.t)}</span> · {selected.text}
+            {t('timeline.selected')} <span className="font-semibold">{formatDuration(selected.t)}</span> · {selected.text}
           </p>
         )}
       </div>
@@ -266,9 +279,10 @@ export function MatchTimeline({ durationS, times, lead, events, players }: Timel
 
 /* ── Events list ───────────────────────────────────────────────────── */
 
-const KIND_LABEL: Record<EventKind, string> = { kill: 'Kills', objective: 'Objectives', midboss: 'Mid-Boss', purchase: 'Tier 3+ purchases' }
+const KINDS: EventKind[] = ['kill', 'objective', 'midboss', 'purchase']
 
 export function EventsList({ events }: { events: MatchEvent[] }) {
+  const t = useTranslations('matches.timeline')
   const { selectedId, select } = useTimeline()
   const [kinds, setKinds] = useState<Set<EventKind>>(new Set(['objective', 'midboss', 'kill']))
   const visible = events.filter((e) => kinds.has(e.kind))
@@ -282,8 +296,8 @@ export function EventsList({ events }: { events: MatchEvent[] }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div role="group" aria-label="Event types" className="flex flex-wrap gap-1.5">
-        {(Object.keys(KIND_LABEL) as EventKind[]).map((kind) => (
+      <div role="group" aria-label={t('eventTypes')} className="flex flex-wrap gap-1.5">
+        {KINDS.map((kind) => (
           <button
             key={kind}
             type="button"
@@ -294,12 +308,12 @@ export function EventsList({ events }: { events: MatchEvent[] }) {
               kinds.has(kind) ? 'border-primary bg-primary font-medium text-on-primary' : 'border-border-control text-text-muted hover:text-text',
             )}
           >
-            {KIND_LABEL[kind]} <span className={cx('ml-1.5 text-caption tabular', kinds.has(kind) ? 'text-on-primary/75' : 'text-text-muted')}>{events.filter((e) => e.kind === kind).length}</span>
+            {t(`kinds.${kind}`)} <span className={cx('ml-1.5 text-caption tabular', kinds.has(kind) ? 'text-on-primary/75' : 'text-text-muted')}>{events.filter((e) => e.kind === kind).length}</span>
           </button>
         ))}
       </div>
-      <ol className="max-h-[28rem] overflow-y-auto rounded-md border border-border bg-surface" aria-label="Match events">
-        {visible.length === 0 && <li className="px-4 py-6 text-sm text-text-muted">No events of the selected types.</li>}
+      <ol className="max-h-[28rem] overflow-y-auto rounded-md border border-border bg-surface" aria-label={t('events')}>
+        {visible.length === 0 && <li className="px-4 py-6 text-sm text-text-muted">{t('noEvents')}</li>}
         {visible.map((e) => (
           <li key={e.id} className="border-b border-border/70 last:border-b-0">
             <button
