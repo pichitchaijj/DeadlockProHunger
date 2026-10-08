@@ -1,4 +1,5 @@
 import type { Messages } from '../en'
+import analyze from './analyze.json'
 import builds from './builds.json'
 import cards from './cards.json'
 import commandPalette from './commandPalette.json'
@@ -20,4 +21,4 @@ import notFound from './notFound.json'
 import players from './players.json'
 
 /** Must match English key for key (`satisfies Messages`; tests also check placeholders). */
-export default { builds, cards, commandPalette, common, compare, data, draft, errors, footer, header, heroes, home, items, languages, leaderboard, matches, nav, notFound, players } satisfies Messages
+export default { analyze, builds, cards, commandPalette, common, compare, data, draft, errors, footer, header, heroes, home, items, languages, leaderboard, matches, nav, notFound, players } satisfies Messages

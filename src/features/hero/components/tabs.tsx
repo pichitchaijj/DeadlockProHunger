@@ -35,7 +35,7 @@ type PartLabels = { buildItems: BuildItemLabels; buildStats: BuildStatsLabels; a
  * because other pages (Analyze, Compare, Build detail) use them before they're localized, so the
  * Heroes pages pass these explicitly.
  */
-function partLabels(t: HeroesT): PartLabels {
+export function partLabels(t: HeroesT): PartLabels {
   return {
     buildItems: { moreItems: (count) => t('parts.moreItems', { count }), moreSections: (count) => t('parts.moreSections', { count }) },
     buildStats: { noMatches: t('parts.buildNoMatches'), winRate: t('parts.buildWinRate') },

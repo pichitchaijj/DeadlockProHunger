@@ -1,5 +1,8 @@
 import type { Metadata } from 'next'
+import { getLocale, getTranslations } from 'next-intl/server'
+import { useLocale, useTranslations } from 'next-intl'
 import { Suspense } from 'react'
+import { OG_LOCALE } from '@/i18n/config'
 import { WinRate } from '@/components/cards/WinRate'
 import { ConfidenceBadge } from '@/components/data/ConfidenceBadge'
 import { DataNotice } from '@/components/data/DataState'
@@ -19,35 +22,34 @@ import { getAnalyzeHero, getAnalyzeMeta, getPickerHeroes } from '@/features/anal
 import { peerComparison } from '@/features/analyze/model'
 import { analyzeHref, parseAnalyzeQuery } from '@/features/analyze/query'
 
-export const metadata: Metadata = {
-  title: 'Analyze',
-  description: 'Analyze one Deadlock hero in depth: win and pick rate trends, standing among its peers, builds and matchups, with sample sizes on every number.',
+export async function generateMetadata(): Promise<Metadata> {
+  const [t, locale] = await Promise.all([getTranslations('analyze.meta'), getLocale()])
+  return {
+    title: t('title'),
+    description: t('description'),
+    openGraph: { title: t('title'), description: t('description'), locale: OG_LOCALE[locale], type: 'website' },
+  }
 }
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>
 
 export default async function AnalyzePage({ searchParams }: { searchParams: SearchParams }) {
   const query = parseAnalyzeQuery(await searchParams)
-  const [meta, heroResult, pickerResult] = await Promise.all([
+  const [meta, heroResult, pickerResult, t, common] = await Promise.all([
     getAnalyzeMeta(query),
     attempt('[analyze] hero context failed', getAnalyzeHero(query)),
     attempt('[analyze] hero list failed', getPickerHeroes()),
+    getTranslations('analyze'),
+    getTranslations('common'),
   ])
 
-  const header = (
-    <SectionHeader
-      as="h1"
-      eyebrow="Workspace"
-      title="Analyze"
-      description="Pick a hero and a scope. Every number below uses the same data and rules as the Meta and hero pages, with its sample size alongside."
-    />
-  )
+  const header = <SectionHeader as="h1" eyebrow={t('eyebrow')} title={t('title')} description={t('description')} />
 
   if (!meta.ok) {
     return (
       <PageContainer className="flex flex-col gap-8">
         {header}
-        <DataNotice error={meta.kind} what="Hero statistics" action={<ButtonLink href={analyzeHref(query)} variant="secondary" size="sm">Try again</ButtonLink>} />
+        <DataNotice error={meta.kind} what="Hero statistics" action={<ButtonLink href={analyzeHref(query)} variant="secondary" size="sm">{common('tryAgain')}</ButtonLink>} />
       </PageContainer>
     )
   }
@@ -64,25 +66,25 @@ export default async function AnalyzePage({ searchParams }: { searchParams: Sear
       </div>
 
       {!heroResult.ok ? (
-        <DataNotice error={heroResult.kind} what="Hero analysis" action={<ButtonLink href={analyzeHref(query)} variant="secondary" size="sm">Try again</ButtonLink>} />
+        <DataNotice error={heroResult.kind} what="Hero analysis" action={<ButtonLink href={analyzeHref(query)} variant="secondary" size="sm">{common('tryAgain')}</ButtonLink>} />
       ) : unknownHero ? (
-        <EmptyState title="Unknown hero" description="That hero isn’t in the current hero list. Pick one above." />
+        <EmptyState title={t('unknownHeroTitle')} description={t('unknownHeroDescription')} />
       ) : !ctx ? (
         <RoleOverview roles={meta.model.summary.roles} clear={meta.model.summary.roleLeaderIsClear} scope={meta.scope} />
       ) : (
         <>
           <HeroSummary ctx={ctx} query={query} />
-          <Suspense fallback={<SectionSkeleton label="Loading insights" cards={4} />}>
+          <Suspense fallback={<SectionSkeleton label={t('loading.insights')} cards={4} />}>
             <InsightsSection ctx={ctx} />
           </Suspense>
-          <Suspense fallback={<SectionSkeleton label="Loading trends" cards={2} />}>
+          <Suspense fallback={<SectionSkeleton label={t('loading.trends')} cards={2} />}>
             <TrendsSection ctx={ctx} query={query} />
           </Suspense>
           {comparison && <ComparisonSection comparison={comparison} query={query} heroName={ctx.hero.name} />}
-          <Suspense fallback={<SectionSkeleton label="Loading builds" cards={3} />}>
+          <Suspense fallback={<SectionSkeleton label={t('loading.builds')} cards={3} />}>
             <BuildsSection ctx={ctx} query={query} />
           </Suspense>
-          <Suspense fallback={<SectionSkeleton label="Loading matchups" cards={2} />}>
+          <Suspense fallback={<SectionSkeleton label={t('loading.matchups')} cards={2} />}>
             <MatchupsSection ctx={ctx} query={query} />
           </Suspense>
           <DataContext />
@@ -94,20 +96,14 @@ export default async function AnalyzePage({ searchParams }: { searchParams: Sear
 
 /** Before a hero is chosen: each role's pooled win rate in the scope, as a starting point. */
 function RoleOverview({ roles, clear, scope }: { roles: RoleStat[]; clear: boolean; scope: StatScope }) {
+  const t = useTranslations('analyze.roles')
   return (
-    <Block
-      id="analyze-roles"
-      title="Choose a hero to analyze"
-      description="Pick a hero above to see its trends, standing among its peers, builds and matchups. Meanwhile, here is how each role performs in this scope."
-    >
+    <Block id="analyze-roles" title={t('title')} description={t('description')}>
       <div className="flex flex-col gap-3 rounded-md border border-border bg-surface p-(--spacing-card) shadow-card">
         <ScopeLine scope={scope} />
         <RoleRows roles={roles} />
         <p className="text-caption text-text-muted">
-          {clear
-            ? 'The top role’s 95% interval sits entirely above every other role’s.'
-            : 'The roles’ 95% intervals overlap, so no role is clearly ahead of the others in this scope.'}{' '}
-          Roles come from the game&rsquo;s hero list.
+          {clear ? t('clear') : t('overlap')} {t('source')}
         </p>
       </div>
     </Block>
@@ -115,18 +111,21 @@ function RoleOverview({ roles, clear, scope }: { roles: RoleStat[]; clear: boole
 }
 
 function RoleRows({ roles }: { roles: RoleStat[] }) {
-  if (roles.length === 0) return <p className="text-sm text-text-muted">No role data in this scope.</p>
+  const t = useTranslations('analyze.roles')
+  const heroes = useTranslations('heroes.trendChart')
+  const locale = useLocale()
+  if (roles.length === 0) return <p className="text-sm text-text-muted">{t('none')}</p>
   return (
     <ul className="flex flex-col divide-y divide-border">
       {roles.map((r) => (
         <li key={r.role} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3">
           <span className="min-w-0 flex-1 font-ui text-sm font-semibold text-text">
-            {capitalize(r.role)} <span className="font-normal text-text-muted">· {r.heroes} heroes</span>
+            {capitalize(r.role)} <span className="font-normal text-text-muted">· {t('heroCount', { count: r.heroes })}</span>
           </span>
           <span className="text-caption text-text-muted tabular">
-            {formatInteger(r.wins)} wins / {formatInteger(r.matches)} hero-matches
+            {t('record', { wins: formatInteger(r.wins, locale), matches: formatInteger(r.matches, locale) })}
           </span>
-          <span className="sr-only">Win rate</span>
+          <span className="sr-only">{heroes('winRate')}</span>
           <WinRate value={r.winRate} className="w-28 shrink-0" />
           <ConfidenceBadge sampleSize={r.matches} interval={r.interval} />
         </li>

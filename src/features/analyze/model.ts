@@ -73,6 +73,39 @@ export function peerComparison(heroes: PeerHero[], heroId: number, group: 'role'
   return { group: role ? 'role' : 'all', roleAvailable: Boolean(self.role), role, rows, ranked: enough.length, winRatePosition, pickRatePosition, rest, versusRest }
 }
 
+type Translate = (key: string, values?: Record<string, string | number>) => string
+
+/**
+ * The sentence under the peer list. `t` reads analyze.compare; `group` is the worded group ("Marksman
+ * heroes" / "all heroes"); positions and counts stay numbers (the catalog formats the ordinals).
+ * `separator` joins the two sentences (none after a CJK full stop).
+ */
+export function comparisonText(
+  c: PeerComparison,
+  v: { hero: string; group: string; selfWinRate: number | null },
+  t: Translate,
+  f: { percent: (x: number) => string; delta: (x: number) => string },
+  separator = ' ',
+): string {
+  if (c.winRatePosition === null || v.selfWinRate === null) return t('lowSample', { hero: v.hero })
+  const versus =
+    c.rest && (c.versusRest === 'higher' || c.versusRest === 'lower')
+      ? t(c.versusRest, { group: v.group, rate: f.percent(c.rest.winRate), delta: f.delta(v.selfWinRate - c.rest.winRate) })
+      : c.rest && c.versusRest === 'within'
+        ? t('within', { group: v.group, rate: f.percent(c.rest.winRate) })
+        : ''
+  return `${t('standing', { win: c.winRatePosition, pick: c.pickRatePosition ?? 0, count: c.ranked, group: v.group })}${separator}${versus}`
+}
+
+/**
+ * Which days the trend charts cover. `t` reads analyze.trends; `window` and `rank` are the scope labels,
+ * `dates` the formatted range. Days the source has no row for are stated, never filled in.
+ */
+export function trendRangeText(range: TrendRange, v: { window: string; rank: string; dates: string }, t: Translate, separator = ' '): string {
+  const text = t('range', { window: v.window, dates: v.dates, days: range.requestedDays, rank: v.rank })
+  return range.missingDays > 0 ? `${text}${separator}${t('missing', { missing: range.missingDays, shown: range.points.length })}` : text
+}
+
 /** "1st", "2nd", "3rd", "11th", "22nd". */
 export function ordinal(n: number): string {
   const tens = n % 100

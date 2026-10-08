@@ -1,0 +1,96 @@
+{
+  "meta": {
+    "title": "分析",
+    "description": "深入分析单个 Deadlock 英雄：胜率和选取率趋势、在同类中的位置、出装和对位，每个数字都附有样本量。"
+  },
+  "eyebrow": "工作区",
+  "title": "分析",
+  "description": "选择一个英雄和范围。下方所有数字都使用与 Meta 页面和英雄页面相同的数据和规则，并附有样本量。",
+  "unknownHeroTitle": "未知英雄",
+  "unknownHeroDescription": "该英雄不在当前英雄列表中。请在上方选择。",
+  "loading": {
+    "insights": "正在加载洞察",
+    "trends": "正在加载趋势",
+    "builds": "正在加载出装",
+    "matchups": "正在加载对位"
+  },
+  "roles": {
+    "title": "选择要分析的英雄",
+    "description": "在上方选择一个英雄，查看其趋势、在同类中的位置、出装和对位。在此之前，这里显示各定位在此范围内的表现。",
+    "clear": "排名第一的定位的 95% 区间完全高于其他所有定位。",
+    "overlap": "各定位的 95% 区间有重叠，因此在此范围内没有定位明显领先。",
+    "source": "定位来自游戏的英雄列表。",
+    "none": "此范围内没有定位数据。",
+    "heroCount": "{count} 个英雄",
+    "record": "{wins} 胜 / {matches} 英雄场次"
+  },
+  "controls": {
+    "scope": "分析范围",
+    "changeHero": "更换英雄",
+    "analyzing": "（正在分析 {hero}）",
+    "allRoles": "所有定位"
+  },
+  "summary": {
+    "analyzing": "正在分析",
+    "openHero": "打开英雄页面",
+    "noMatches": "此范围内没有 {hero} 的比赛，因此无可测量。请尝试更长的时间范围或更宽的段位区间。",
+    "lowSample": "<strong>样本少：</strong>{matches} 场比赛（少于 {threshold}）。以下数字仅供参考：不参与排名、比较或生成洞察。请尝试更长的时间范围或更宽的段位区间。",
+    "winWhy": "{matches} 场比赛中胜 {wins} 场。95% 区间为 {low}–{high}。",
+    "winWhyNoTrend": "{matches} 场比赛中胜 {wins} 场。95% 区间为 {low}–{high}。每周趋势需要两周都有非少量样本，因此不显示。",
+    "pickWhy": "此范围内有 {hero} 的比赛占比：英雄场次 ÷（所有英雄场次 ÷ 12）。在 {count} 个英雄中选取量排{rank, selectordinal, other {第 #}}。"
+  },
+  "trends": {
+    "title": "胜率和选取率趋势",
+    "fallback": "{window}，{rank} 的每日数值。",
+    "range": "所选时间范围 {window} 的每日数值：{dates}（{days, plural, other {# 天}}），{rank}。已标出版本更新日。",
+    "missing": "其中 {missing} 天数据源没有每日数据，因此图表显示 {shown} 天。",
+    "seeMore": "版本历史和细分",
+    "winRateDescription": "每日，附 50% 参考线。",
+    "pickRateDescription": "占每日比赛的比例。"
+  },
+  "compare": {
+    "title": "与其他英雄比较",
+    "description": "相同的时间范围和段位区间。只有数据充足的英雄才参与排名；样本少的英雄列在最后，以淡色显示。",
+    "seeMore": "一对一对比",
+    "groupRole": "{role}英雄",
+    "groupAll": "所有英雄",
+    "panelTitle": "{hero} 在{group}中",
+    "with": "比较对象",
+    "sameRole": "相同定位",
+    "allHeroes": "所有英雄",
+    "selected": "已选",
+    "pickRate": "选取率",
+    "pick": "选取",
+    "lowSample": "{hero} 在此范围内样本少，因此不参与排名或比较。",
+    "standing": "在数据充足的 {count} 个{group}中，胜率排{win, selectordinal, other {第 #}}，选取率排{pick, selectordinal, other {第 #}}。",
+    "higher": "高于其他{group}合计（{rate}，{delta}）；95% 区间不重叠。",
+    "lower": "低于其他{group}合计（{rate}，{delta}）；95% 区间不重叠。",
+    "within": "与其他{group}合计（{rate}）没有明显差异：区间重叠或差距不足 1 个百分点。"
+  },
+  "builds": {
+    "title": "出装表现",
+    "description": "本周收藏最多的社区出装，有追踪结果的排在前面（出装在开局时被选择才计入）。",
+    "seeMore": "所有出装和物品",
+    "none": "未找到该英雄的社区出装。",
+    "noTracked": "本周收藏最多的出装在此范围内都没有追踪比赛，因此这里没有出装表现可显示。更长的时间范围通常会有数据；<link>出装页面</link>对相同段位区间使用最近 30 天。"
+  },
+  "matchups": {
+    "title": "对位分析",
+    "description": "100+ 场的对线对手，按 95% 区间的边界排名，避免小样本排到前面。",
+    "seeMore": "所有对位和配合",
+    "best": "最有利的对位",
+    "bestDescription": "{count} 个场次充足的对线对手。",
+    "worst": "最不利的对位"
+  },
+  "method": {
+    "title": "如何解读",
+    "source": "数据来源和范围",
+    "sourceText": "来自 deadlock-api.com 的公开比赛数据，普通模式。所有数字都使用上方选择的时间范围和段位区间（比赛平均段位），与 Meta 页面和英雄页面的数字相同。",
+    "sample": "样本量",
+    "sampleText": "少于 {moderate} 场为样本少：以淡色显示，不参与排名、比较或生成洞察。超过 {high} 场为样本充足。",
+    "intervals": "区间",
+    "intervalsText": "胜率附有 95% Wilson 区间。只有当两个区间不重叠且差距至少 1 个百分点时，才会指出差异。",
+    "limits": "数据不能说明的",
+    "limitsText": "这些是测量结果，而非原因。某个细分中胜率更高并不能说明原因，物品胜率也部分反映了已经领先的一方。"
+  }
+}

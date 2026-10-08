@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
 import { Card } from '@/components/ui/Card'
@@ -32,20 +33,22 @@ type ControlsProps = {
  * is selected the picker folds into "Change hero" so the analysis leads.
  */
 export function Controls({ query, heroes, rankLabels, ranks, windowLabels, selectedName }: ControlsProps) {
+  const t = useTranslations('analyze.controls')
+  const builds = useTranslations('builds')
   const picker = <HeroPicker query={query} heroes={heroes} />
   return (
     <Card as="section" aria-labelledby="analyze-scope" className="flex flex-col gap-5 p-(--spacing-card)">
       <h2 id="analyze-scope" className="sr-only">
-        Analysis scope
+        {t('scope')}
       </h2>
       <div className="grid gap-4 md:grid-cols-2">
         <Filter
-          label="Patch / time"
+          label={builds('detail.window')}
           value={query.window}
           options={WINDOWS.map(([value]) => ({ value, label: windowLabels[value] ?? value, href: analyzeHref(query, { window: value }) }))}
         />
         <Filter
-          label="Rank (match average)"
+          label={builds('list.rank')}
           value={query.rank}
           options={rankBandOptions(rankLabels, ranks, (rank) => analyzeHref(query, { rank }))}
         />
@@ -56,7 +59,7 @@ export function Controls({ query, heroes, rankLabels, ranks, windowLabels, selec
             <span aria-hidden="true" className="transition-transform group-open:rotate-90">
               ›
             </span>
-            Change hero <span className="font-normal text-text-muted">(analyzing {selectedName})</span>
+            {t('changeHero')} <span className="font-normal text-text-muted">{t('analyzing', { hero: selectedName })}</span>
           </summary>
           <div className="mt-4">{picker}</div>
         </details>
@@ -68,18 +71,20 @@ export function Controls({ query, heroes, rankLabels, ranks, windowLabels, selec
 }
 
 function HeroPicker({ query, heroes }: { query: AnalyzeQuery; heroes: PickerHero[] }) {
+  const t = useTranslations('analyze')
+  const heroesT = useTranslations('heroes.list')
   const list = pickerHeroes(heroes, query.role)
   return (
     <div className="flex flex-col gap-4">
       <Filter
-        label="Role"
+        label={heroesT('role')}
         value={query.role}
-        options={[{ value: 'all', label: 'All roles' }, ...ROLES.map((r) => ({ value: r, label: capitalize(r) }))].map((o) => ({
+        options={[{ value: 'all', label: t('controls.allRoles') }, ...ROLES.map((r) => ({ value: r, label: capitalize(r) }))].map((o) => ({
           ...o,
           href: analyzeHref(query, { role: o.value as AnalyzeQuery['role'] }),
         }))}
       />
-      <nav aria-label="Choose a hero to analyze">
+      <nav aria-label={t('roles.title')}>
         <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6">
           {list.map((h) => {
             const selected = h.slug === query.hero

@@ -1,0 +1,96 @@
+{
+  "meta": {
+    "title": "Analyze",
+    "description": "Analyze one Deadlock hero in depth: win and pick rate trends, standing among its peers, builds and matchups, with sample sizes on every number."
+  },
+  "eyebrow": "Workspace",
+  "title": "Analyze",
+  "description": "Pick a hero and a scope. Every number below uses the same data and rules as the Meta and hero pages, with its sample size alongside.",
+  "unknownHeroTitle": "Unknown hero",
+  "unknownHeroDescription": "That hero isn’t in the current hero list. Pick one above.",
+  "loading": {
+    "insights": "Loading insights",
+    "trends": "Loading trends",
+    "builds": "Loading builds",
+    "matchups": "Loading matchups"
+  },
+  "roles": {
+    "title": "Choose a hero to analyze",
+    "description": "Pick a hero above to see its trends, standing among its peers, builds and matchups. Meanwhile, here is how each role performs in this scope.",
+    "clear": "The top role’s 95% interval sits entirely above every other role’s.",
+    "overlap": "The roles’ 95% intervals overlap, so no role is clearly ahead of the others in this scope.",
+    "source": "Roles come from the game’s hero list.",
+    "none": "No role data in this scope.",
+    "heroCount": "{count} heroes",
+    "record": "{wins} wins / {matches} hero-matches"
+  },
+  "controls": {
+    "scope": "Analysis scope",
+    "changeHero": "Change hero",
+    "analyzing": "(analyzing {hero})",
+    "allRoles": "All roles"
+  },
+  "summary": {
+    "analyzing": "Analyzing",
+    "openHero": "Open hero page",
+    "noMatches": "No matches for {hero} in this scope, so there is nothing to measure. Try a longer window or a broader rank band.",
+    "lowSample": "<strong>Low sample:</strong> {matches} matches (under {threshold}). The numbers below are shown for reference only: they aren’t ranked, compared or used for insights. Try a longer window or a broader rank band.",
+    "winWhy": "Won {wins} of {matches} matches. The 95% interval is {low}–{high}.",
+    "winWhyNoTrend": "Won {wins} of {matches} matches. The 95% interval is {low}–{high}. The weekly trend needs a non-Low sample in both weeks, so none is shown.",
+    "pickWhy": "Share of matches with {hero} in this scope: hero matches ÷ (all hero matches ÷ 12). {rank, selectordinal, one {#st} two {#nd} few {#rd} other {#th}} most picked of {count} heroes."
+  },
+  "trends": {
+    "title": "Win rate and pick rate trends",
+    "fallback": "Daily values for {window}, {rank}.",
+    "range": "Daily values for the selected window, {window}: {dates} ({days, plural, one {# day} other {# days}}), {rank}. Patch days are marked.",
+    "missing": "The source has no daily data for {missing} of these days, so the charts show {shown}.",
+    "seeMore": "Patch history and splits",
+    "winRateDescription": "Daily, with the 50% line for reference.",
+    "pickRateDescription": "Share of each day’s matches."
+  },
+  "compare": {
+    "title": "Compared with other heroes",
+    "description": "Same window and rank band. Only heroes with enough data are ranked; Low-sample heroes are listed last, muted.",
+    "seeMore": "Head-to-head compare",
+    "groupRole": "{role} heroes",
+    "groupAll": "all heroes",
+    "panelTitle": "{hero} among {group}",
+    "with": "Compare with",
+    "sameRole": "Same role",
+    "allHeroes": "All heroes",
+    "selected": "Selected",
+    "pickRate": "pick rate",
+    "pick": "pick",
+    "lowSample": "{hero} has a Low sample in this scope, so it isn’t ranked or compared.",
+    "standing": "{win, selectordinal, one {#st} two {#nd} few {#rd} other {#th}} highest win rate and {pick, selectordinal, one {#st} two {#nd} few {#rd} other {#th}} highest pick rate of {count} {group} with enough data.",
+    "higher": "Higher than the other {group} combined ({rate}, {delta}); the 95% intervals don’t overlap.",
+    "lower": "Lower than the other {group} combined ({rate}, {delta}); the 95% intervals don’t overlap.",
+    "within": "Not clearly different from the other {group} combined ({rate}): the intervals overlap or the gap is under 1 point."
+  },
+  "builds": {
+    "title": "Build performance",
+    "description": "This week’s most-favorited community builds, those with tracked results first (a build counts when it was selected at game start).",
+    "seeMore": "All builds and items",
+    "none": "No community builds found for this hero.",
+    "noTracked": "None of this week’s most-favorited builds has tracked matches in this scope, so there is no build performance to show here. A longer window often has some; the <link>Builds page</link> uses the last 30 days for the same rank band."
+  },
+  "matchups": {
+    "title": "Matchup analysis",
+    "description": "Lane opponents with 100+ games, ranked by the edge of the 95% interval so small samples can’t top the list.",
+    "seeMore": "All matchups and synergies",
+    "best": "Best matchups",
+    "bestDescription": "{count} lane opponents with enough games.",
+    "worst": "Worst matchups"
+  },
+  "method": {
+    "title": "How to read this",
+    "source": "Source and scope",
+    "sourceText": "Public match data from deadlock-api.com, normal mode. Every number uses the window and rank band selected above (match average rank), the same numbers as the Meta and hero pages.",
+    "sample": "Sample size",
+    "sampleText": "Under {moderate} matches is a Low sample: shown muted, never ranked, compared or turned into an insight. Over {high} is High.",
+    "intervals": "Intervals",
+    "intervalsText": "Win rates come with a 95% Wilson interval. A difference is called out only when two intervals don’t overlap and the gap is at least 1 percentage point.",
+    "limits": "What it doesn’t say",
+    "limitsText": "These are measured results, not causes. A higher win rate in a split doesn’t say why, and item win rates partly reflect who is already ahead."
+  }
+}
