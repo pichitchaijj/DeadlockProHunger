@@ -1,0 +1,26 @@
+{
+  "window": {
+    "label": {
+      "days": "Last {days} days",
+      "patch": "Current patch",
+      "patchSince": "Current patch (since {date})"
+    },
+    "inSentence": {
+      "days": "last {days} days",
+      "patch": "current patch",
+      "patchSince": "current patch (since {date})"
+    }
+  },
+  "rank": {
+    "all": "All ranks",
+    "band": "{from} – {to}",
+    "tier": "Tier {tier}",
+    "everyBand": "every rank band",
+    "rankedOnly": "{rank} · Ranked only",
+    "heroPlayers": "{rank} · {hero} players"
+  },
+  "joined": "{window}, {rank}",
+  "line": "{window} · {rank}",
+  "lineSample": "{window} · {rank} · n = {count}",
+  "snapshot": "· Data from {time} UTC"
+}

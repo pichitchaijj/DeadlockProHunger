@@ -31,7 +31,7 @@ export type Section<T> = { ok: true; data: T; asOf: number; stale: boolean } | {
 function section<T>(key: string, revalidate: number, maxAgeMs: number, load: () => Promise<T>) {
   const cached = unstable_cache(
     stableKey('home-section', async () => ({ data: await load(), asOf: Date.now() })),
-    ['home', key, 'v3'], // bump when a section's cached shape changes (v3: pulse/trend ids instead of English labels)
+    ['home', key, 'v4'], // bump when a section's cached shape changes (v4: scope as values instead of English labels)
     { revalidate, tags: ['home'] },
   )
   return cache(async (): Promise<Section<T>> => {
@@ -102,7 +102,7 @@ export const getHomeMeta = section<HomeMeta>('meta', TTL.analytics / 6, FRESHNES
   const byPick = [...model.heroes].filter((h) => h.sample !== 'low').sort((a, b) => b.pickRate - a.pickRate)
   return {
     scope,
-    summary: { matchesAnalyzed: s.matchesAnalyzed, heroesTracked: s.heroesWithData, heroesTotal: s.heroesTotal, dataScopeLabel: `${scope.windowLabel} · ${scope.rankLabel}` },
+    summary: { matchesAnalyzed: s.matchesAnalyzed, heroesTracked: s.heroesWithData, heroesTotal: s.heroesTotal, dataScope: { window: scope.window, rank: scope.rank, ranked: scope.ranked } },
     pulse,
     trending: { heroes: byPick.slice(0, 3).map(trendRow) },
     rising: { heroes: s.rising.slice(0, 3).map(trendRow) },

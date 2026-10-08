@@ -26,6 +26,7 @@ import { rankBandOptions } from '@/features/meta/rankFilter'
 import { resolveScope } from '@/features/meta/scope'
 import { DataNotice } from '@/components/data/DataState'
 import { attempt } from '@/lib/deadlock/errors'
+import { getScopeWording } from '@/components/data/scopeWording'
 
 type Params = Promise<{ hero: string; buildId: string }>
 type SearchParams = Promise<Record<string, string | string[] | undefined>>
@@ -92,6 +93,7 @@ export default async function BuildDetailPage({ params, searchParams }: { params
     getTranslations('common'),
     getLocale(),
   ])
+  const scopeWords = await getScopeWording()
   const data = detail.ok ? detail.value : undefined
   const failed = detail.ok ? 'unavailable' : detail.kind
   if (data === null) notFound()
@@ -153,7 +155,7 @@ export default async function BuildDetailPage({ params, searchParams }: { params
         <div className="grid gap-4 md:grid-cols-2">
           <Filter label={t('detail.window')} value={query.window} options={WINDOWS.map((value) => ({ value, label: t(`list.windows.${value}`), href: buildDetailHref(hero.slug, buildId, { ...query, window: value }) }))} />
           {scope && (
-            <Filter label={t('list.rank')} value={query.rank} options={rankBandOptions(scope.rankLabels, scope.ranks, (rank) => buildDetailHref(hero.slug, buildId, { ...query, rank }))} />
+            <Filter label={t('list.rank')} value={query.rank} options={rankBandOptions(scopeWords.rankLabels(scope.rankRefs), scope.ranks, (rank) => buildDetailHref(hero.slug, buildId, { ...query, rank }))} />
           )}
         </div>
         <ScopeLine scope={{ ...data.statScope, sampleSize: stats?.matches }} />
@@ -167,7 +169,7 @@ export default async function BuildDetailPage({ params, searchParams }: { params
         </div>
         <dl className="grid gap-3 md:grid-cols-2">
           {data.why.map((fact) => {
-            const { label, text } = whyFact(fact, why, { hero: hero.name, scope: data.scopeText, locale })
+            const { label, text } = whyFact(fact, why, { hero: hero.name, scope: scopeWords.scope(data.scopeRef), locale })
             return (
               <div key={fact.kind} className="rounded-md border border-border bg-surface p-4">
                 <dt className="text-eyebrow">{label}</dt>
@@ -177,7 +179,7 @@ export default async function BuildDetailPage({ params, searchParams }: { params
           })}
           <div className="rounded-md border border-border bg-surface p-4">
             <dt className="text-eyebrow">{t('detail.rankScope')}</dt>
-            <dd className="mt-1 text-sm text-text">{t('detail.rankScopeText', { scope: data.scopeText })}</dd>
+            <dd className="mt-1 text-sm text-text">{t('detail.rankScopeText', { scope: scopeWords.scope(data.scopeRef) })}</dd>
           </div>
         </dl>
       </section>

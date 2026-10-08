@@ -19,6 +19,8 @@ import {
 import { insightText, type InsightFormat } from '@/lib/analytics/insightText'
 import { purchasePhases, purchaseTimingInsight, standoutPhase } from '@/features/items/model'
 import { formatInteger, formatPercent, formatPointDelta } from '@/lib/format'
+import type { ScopeRef } from '@/lib/analytics/scope'
+import { englishScope } from './helpers/scopeEnglish'
 import * as v1 from './legacy/insightsV1'
 
 /*
@@ -42,6 +44,7 @@ const format: InsightFormat = {
   sample: (tier) => data(`sample.${tier}`),
   length: (key) => lengths(key as 'short'),
   phase: (key) => ({ label: phases(PHASE_KEYS[key]), range: phases(`${PHASE_KEYS[key]}Range`) }),
+  scope: (s) => englishScope.scope(s),
 }
 const words = (i: Insight) => insightText(i, (key, values) => t(key as 'card.why', values), format)
 
@@ -67,6 +70,8 @@ function expectSame(old: v1.Insight | null | undefined, next: Insight | null | u
 }
 
 const scope = 'Last 30 days, All ranks'
+/** The same scope as a value: the new engine words it through the shared scope formatter. */
+const ref: ScopeRef = { window: { kind: 'days', days: 30 }, rank: { kind: 'all' } }
 const weeks = { currentLabel: 'The last 7 days', previousLabel: 'The 7 days before' }
 const seen = new Set<string>()
 const check = (old: v1.Insight | null, next: Insight | null) => {
@@ -84,7 +89,7 @@ describe('Insight Engine English wording matches the original engine', () => {
       [{ wins: 5_020, matches: 10_000 }, { wins: 5_000, matches: 10_000 }], // overlap → null
       [{ wins: 100, matches: 150 }, { wins: 50, matches: 150 }], // Low sample → null
     ] as const) {
-      check(v1.winRateShift({ subject: 'Haze', current, previous, ...weeks, scope }), winRateShift({ subject: 'Haze', current, previous, scope }))
+      check(v1.winRateShift({ subject: 'Haze', current, previous, ...weeks, scope }), winRateShift({ subject: 'Haze', current, previous, scope: ref }))
     }
   })
 
@@ -94,7 +99,7 @@ describe('Insight Engine English wording matches the original engine', () => {
       [{ wins: 5_400, matches: 10_000 }, { wins: 5_000, matches: 10_000 }],
       [{ wins: 5_000, matches: 10_000 }, { wins: 5_010, matches: 10_000 }], // no change → null
     ] as const) {
-      check(v1.patchShift({ subject: 'Lady Geist', patch: 'Oct 3', before, after, scope }), patchShift({ subject: 'Lady Geist', patch: 'Oct 3', before, after, scope }))
+      check(v1.patchShift({ subject: 'Lady Geist', patch: 'Oct 3', before, after, scope }), patchShift({ subject: 'Lady Geist', patch: 'Oct 3', before, after, scope: ref }))
     }
   })
 
@@ -102,11 +107,11 @@ describe('Insight Engine English wording matches the original engine', () => {
     for (const relation of ['lane', 'any', 'ally'] as const) {
       for (const [wins, matches] of [[600, 1_000], [400, 1_000], [56_789, 100_000], [505, 1_000], [130, 199]]) {
         const input = { subject: 'Abrams', other: 'Mo & Krill', wins, matches, relation, scope }
-        check(v1.pairing(input), pairing(input))
+        check(v1.pairing(input), pairing({ ...input, scope: ref }))
       }
     }
     // Ally with a negative result is never reported.
-    expect(pairing({ subject: 'A', other: 'B', wins: 400, matches: 1_000, relation: 'ally', scope })).toBeNull()
+    expect(pairing({ subject: 'A', other: 'B', wins: 400, matches: 1_000, relation: 'ally', scope: ref })).toBeNull()
   })
 
   it('builds: most-selected (one build and several) and high-performing', () => {
@@ -115,9 +120,9 @@ describe('Insight Engine English wording matches the original engine', () => {
       [{ name: 'Spirit', wins: 1_650, matches: 3_000 }, { name: 'Gun', wins: 620, matches: 1_000 }, { name: 'Tiny', wins: 50, matches: 100 }],
       [{ name: 'Few', wins: 60, matches: 120 }], // Low sample → null
     ]) {
-      check(v1.popularBuild({ subject: 'Haze', builds, scope }), popularBuild({ subject: 'Haze', builds, scope }))
+      check(v1.popularBuild({ subject: 'Haze', builds, scope }), popularBuild({ subject: 'Haze', builds, scope: ref }))
       for (const heroWinRate of [0.5, 0.52, 0.6]) {
-        check(v1.highPerformingBuild({ subject: 'Haze', heroWinRate, builds, scope }), highPerformingBuild({ subject: 'Haze', heroWinRate, builds, scope }))
+        check(v1.highPerformingBuild({ subject: 'Haze', heroWinRate, builds, scope }), highPerformingBuild({ subject: 'Haze', heroWinRate, builds, scope: ref }))
       }
     }
   })
@@ -129,7 +134,7 @@ describe('Insight Engine English wording matches the original engine', () => {
       [{ name: 'Huge', current: { buyers: 412_345, heroMatches: 1_000_000 }, previous: { buyers: 300_000, heroMatches: 1_100_000 } }],
       [{ name: 'Flat', current: { buyers: 1_500, heroMatches: 10_000 }, previous: { buyers: 1_480, heroMatches: 10_000 } }],
     ]) {
-      check(v1.itemTrend({ subject: 'Haze', items, ...weeks, scope }), itemTrend({ subject: 'Haze', items, scope }))
+      check(v1.itemTrend({ subject: 'Haze', items, ...weeks, scope }), itemTrend({ subject: 'Haze', items, scope: ref }))
     }
   })
 
@@ -151,7 +156,7 @@ describe('Insight Engine English wording matches the original engine', () => {
       { key: 'long', label: 'Over 35 min', wins: 5_600, matches: 10_000 },
     ])
     for (const [by, comparison] of [['rank', rank], ['length', length], ['length', lengthReversed], ['rank', compareGroups([])]] as const) {
-      check(v1.splitPerformance({ subject: 'Haze', by, comparison, scope }), splitPerformance({ subject: 'Haze', by, comparison, scope }))
+      check(v1.splitPerformance({ subject: 'Haze', by, comparison, scope }), splitPerformance({ subject: 'Haze', by, comparison, scope: ref }))
     }
   })
 
@@ -160,7 +165,7 @@ describe('Insight Engine English wording matches the original engine', () => {
       [{ label: 'A', heroMatches: 1_000, allHeroMatches: 120_000 }, { label: 'Oracle – Phantom', heroMatches: 4_000, allHeroMatches: 120_000 }],
       [{ label: 'A', heroMatches: 1_000, allHeroMatches: 120_000 }, { label: 'B', heroMatches: 1_100, allHeroMatches: 120_000 }],
     ]) {
-      check(v1.rankPopularity({ subject: 'Haze', bands, scope }), rankPopularity({ subject: 'Haze', bands, scope }))
+      check(v1.rankPopularity({ subject: 'Haze', bands, scope }), rankPopularity({ subject: 'Haze', bands, scope: ref }))
     }
   })
 
@@ -179,8 +184,16 @@ describe('Insight Engine English wording matches the original engine', () => {
       const standout = standoutPhase(rows)
       if (!standout) continue
       standouts.push(standout.phase.key)
-      for (const s of ['Last 7 days, All ranks', 'Current patch (since Sep 29), Oracle – Phantom']) {
-        check(v1.purchaseTimingInsight('Rapid Rounds', standout, rows, s), purchaseTimingInsight('Rapid Rounds', standout, rows, s))
+      const scopes: Array<[string, ScopeRef]> = [
+        ['Last 7 days, All ranks', { window: { kind: 'days', days: 7 }, rank: { kind: 'all' } }],
+        [
+          'Current patch (since Sep 29), Oracle – Phantom',
+          { window: { kind: 'patch', since: Date.UTC(2026, 8, 29) / 1000 }, rank: { kind: 'band', from: { tier: 8, name: 'Oracle' }, to: { tier: 9, name: 'Phantom' } } },
+        ],
+        ['Last 7 days, All ranks · Ranked only · Haze players', { window: { kind: 'days', days: 7 }, rank: { kind: 'all' }, ranked: true, hero: 'Haze' }],
+      ]
+      for (const [text, value] of scopes) {
+        check(v1.purchaseTimingInsight('Rapid Rounds', standout, rows, text), purchaseTimingInsight('Rapid Rounds', standout, rows, value))
       }
     }
     expect(standouts).toEqual(['early', 'mid', 'late', 'very-late'])
@@ -201,11 +214,11 @@ describe('Insight Engine English wording matches the original engine', () => {
       null,
     ])
     const news = rankInsights([
-      pairing({ subject: 'H', other: 'X', wins: 600, matches: 1_000, relation: 'ally', scope }),
-      popularBuild({ subject: 'H', builds: build, scope }),
-      winRateShift({ subject: 'H', ...weekly, scope }),
-      pairing({ subject: 'H', other: 'X', wins: 400, matches: 1_000, relation: 'lane', scope }),
-      highPerformingBuild({ subject: 'H', heroWinRate: 0.5, builds: build, scope }),
+      pairing({ subject: 'H', other: 'X', wins: 600, matches: 1_000, relation: 'ally', scope: ref }),
+      popularBuild({ subject: 'H', builds: build, scope: ref }),
+      winRateShift({ subject: 'H', ...weekly, scope: ref }),
+      pairing({ subject: 'H', other: 'X', wins: 400, matches: 1_000, relation: 'lane', scope: ref }),
+      highPerformingBuild({ subject: 'H', heroWinRate: 0.5, builds: build, scope: ref }),
       null,
     ])
     expect(news.map((i) => i.id)).toEqual(olds.map((i) => i.id))
@@ -232,10 +245,10 @@ describe('Insight UI text', () => {
 
   it('English insight wording stays descriptive (no cause, judgment or instruction)', () => {
     const all = rankInsights([
-      winRateShift({ subject: 'H', current: { wins: 5_520, matches: 10_000 }, previous: { wins: 5_280, matches: 10_000 }, scope }),
-      patchShift({ subject: 'H', patch: 'P', before: { wins: 5_000, matches: 10_000 }, after: { wins: 5_400, matches: 10_000 }, scope }),
-      pairing({ subject: 'H', other: 'X', wins: 400, matches: 1_000, relation: 'any', scope }),
-      popularBuild({ subject: 'H', builds: [{ name: 'Best build ever', wins: 600, matches: 1_000 }], scope }),
+      winRateShift({ subject: 'H', current: { wins: 5_520, matches: 10_000 }, previous: { wins: 5_280, matches: 10_000 }, scope: ref }),
+      patchShift({ subject: 'H', patch: 'P', before: { wins: 5_000, matches: 10_000 }, after: { wins: 5_400, matches: 10_000 }, scope: ref }),
+      pairing({ subject: 'H', other: 'X', wins: 400, matches: 1_000, relation: 'any', scope: ref }),
+      popularBuild({ subject: 'H', builds: [{ name: 'Best build ever', wins: 600, matches: 1_000 }], scope: ref }),
     ])
     expect(all).toHaveLength(4)
     for (const i of all) expect(nonDescriptiveTerms(words(i))).toEqual([])

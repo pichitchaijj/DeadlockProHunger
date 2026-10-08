@@ -23,6 +23,7 @@ import { resolveScope } from '@/features/meta/scope'
 import { DataNotice } from '@/components/data/DataState'
 import { OG_LOCALE } from '@/i18n/config'
 import { attempt } from '@/lib/deadlock/errors'
+import { getScopeWording } from '@/components/data/scopeWording'
 
 export async function generateMetadata(): Promise<Metadata> {
   const [t, locale] = await Promise.all([getTranslations('builds.meta'), getLocale()])
@@ -53,6 +54,7 @@ export default async function BuildsPage({ searchParams }: { searchParams: Searc
     resolveScope({ window: query.window, rank: query.rank, mode: 'all' }).catch(() => null),
     getTranslations('builds'),
   ])
+  const scopeWords = await getScopeWording()
   const heroName = heroes.find((h) => h.slug === query.hero)?.name
   const ranks = proRanks(scope?.tierNames)
   const labelText = buildLabelText(t)
@@ -96,7 +98,7 @@ export default async function BuildsPage({ searchParams }: { searchParams: Searc
         <div className="grid gap-5 lg:grid-cols-2">
           <Filter label={t('list.window')} value={query.window} options={WINDOWS.map((value) => ({ value, label: t(`list.windows.${value}`), href: buildsHref(query, { window: value }) }))} />
           {scope && (
-            <Filter label={t('list.rank')} value={query.rank} options={rankBandOptions(scope.rankLabels, scope.ranks, (rank) => buildsHref(query, { rank }))} />
+            <Filter label={t('list.rank')} value={query.rank} options={rankBandOptions(scopeWords.rankLabels(scope.rankRefs), scope.ranks, (rank) => buildsHref(query, { rank }))} />
           )}
         </div>
       </div>

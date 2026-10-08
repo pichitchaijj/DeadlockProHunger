@@ -60,11 +60,7 @@ export const itemContext = cache(async (window: ItemScopeQuery['window'], rank: 
   const [scope, heroes] = await Promise.all([resolveScope({ window, rank, mode }), heroCatalog()])
   const hero = heroSlug === 'all' ? null : ([...heroes.values()].find((h) => h.slug === heroSlug) ?? undefined)
   if (hero === undefined) return 'unknown-hero' as const
-  const statScope: StatScope = {
-    windowLabel: scope.windowLabels[scope.window],
-    rankLabel: `${scope.rankLabels[scope.band.id]}${scope.modeText}${hero ? ` · ${hero.name} players` : ''}`,
-    source: 'live',
-  }
+  const statScope: StatScope = { ...scope.selected, ranked: scope.ranked, hero: hero?.name, source: 'live' }
   return { scope, hero, statScope } satisfies ItemContext
 })
 

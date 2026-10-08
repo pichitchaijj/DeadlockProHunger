@@ -3,6 +3,7 @@ import { HEROES_PER_MATCH } from './pickRate'
 import { sampleTier, type SampleTier } from './sampleTier'
 import { trendBetween, type WinLoss } from './trend'
 import { wilsonInterval, type Interval } from './wilson'
+import type { ScopeRef } from './scope'
 
 /*
  * Insight Engine v1: DATA → INSIGHT (docs/PRODUCT.md § "Why?" explanations).
@@ -65,14 +66,14 @@ export type InsightFacts =
 export type Insight = InsightFacts & {
   id: string
   tone: 'positive' | 'negative' | 'neutral'
-  /** The scope label the numbers come from (shared scope text, e.g. "Last 30 days, All ranks"). */
-  scope: string
+  /** The scope the numbers come from (worded by lib/analytics/scopeText, e.g. "Last 30 days, All ranks"). */
+  scope: ScopeRef
   /** Smallest sample behind the insight. */
   sampleSize: number
   sample: SampleTier
 }
 
-function make(base: { id: string; tone: Insight['tone'] }, facts: InsightFacts, scope: string, sampleSize: number): Insight {
+function make(base: { id: string; tone: Insight['tone'] }, facts: InsightFacts, scope: ScopeRef, sampleSize: number): Insight {
   return { ...base, ...facts, scope, sampleSize, sample: sampleTier(sampleSize) }
 }
 
@@ -82,7 +83,7 @@ const reliable = (...samples: number[]) => samples.every((n) => sampleTier(n) !=
 // ── Win-rate change over time ────────────────────────────────────────
 
 /** `current` is the last 7 days, `previous` the 7 days before (the only windows Hero Detail compares). */
-type ShiftInput = { subject: string; current: WinLoss; previous: WinLoss; scope: string }
+type ShiftInput = { subject: string; current: WinLoss; previous: WinLoss; scope: ScopeRef }
 
 /** Rising / falling: two consecutive windows whose 95% intervals don't overlap, with a gap ≥ MIN_EFFECT. */
 export function winRateShift({ subject, current, previous, scope }: ShiftInput): Insight | null {
@@ -97,7 +98,7 @@ export function winRateShift({ subject, current, previous, scope }: ShiftInput):
   )
 }
 
-type PatchShiftInput = { subject: string; patch: string; before: WinLoss; after: WinLoss; scope: string }
+type PatchShiftInput = { subject: string; patch: string; before: WinLoss; after: WinLoss; scope: ScopeRef }
 
 /** Recent shift: the 7 days after a patch vs the 7 before, same rule as rising/falling. Timing only, never cause. */
 export function patchShift({ subject, patch, before, after, scope }: PatchShiftInput): Insight | null {
@@ -113,7 +114,7 @@ export function patchShift({ subject, patch, before, after, scope }: PatchShiftI
 
 // ── Pairings ─────────────────────────────────────────────────────────
 
-type PairingInput = { subject: string; other: string; wins: number; matches: number; relation: 'lane' | 'any' | 'ally'; scope: string }
+type PairingInput = { subject: string; other: string; wins: number; matches: number; relation: 'lane' | 'any' | 'ally'; scope: ScopeRef }
 
 /** Matchup or synergy: the pair's interval excludes 50%, with a gap ≥ MIN_EFFECT and a non-Low sample. */
 export function pairing({ subject, other, wins, matches, relation, scope }: PairingInput): Insight | null {
@@ -141,7 +142,7 @@ export function pairing({ subject, other, wins, matches, relation, scope }: Pair
 type BuildRef = { name: string; wins: number; matches: number }
 
 /** Popular build: the most-selected tracked build, when its sample isn't Low. */
-export function popularBuild({ subject, builds, scope }: { subject: string; builds: BuildRef[]; scope: string }): Insight | null {
+export function popularBuild({ subject, builds, scope }: { subject: string; builds: BuildRef[]; scope: ScopeRef }): Insight | null {
   const tracked = builds.filter((b) => b.matches > 0)
   const top = [...tracked].sort((a, b) => b.matches - a.matches)[0]
   if (!top || !reliable(top.matches)) return null
@@ -156,7 +157,7 @@ export function popularBuild({ subject, builds, scope }: { subject: string; buil
 }
 
 /** High-performing build: its interval sits entirely above the hero's own win rate, by at least MIN_EFFECT. */
-export function highPerformingBuild({ subject, heroWinRate, builds, scope }: { subject: string; heroWinRate: number; builds: BuildRef[]; scope: string }): Insight | null {
+export function highPerformingBuild({ subject, heroWinRate, builds, scope }: { subject: string; heroWinRate: number; builds: BuildRef[]; scope: ScopeRef }): Insight | null {
   const candidates = builds
     .filter((b) => reliable(b.matches))
     .map((b) => ({ ...b, interval: wilsonInterval(b.wins, b.matches) }))
@@ -175,7 +176,7 @@ export function highPerformingBuild({ subject, heroWinRate, builds, scope }: { s
 // ── Items ────────────────────────────────────────────────────────────
 
 /** `current` is the last 7 days, `previous` the 7 days before (same windows as winRateShift). */
-type ItemTrendInput = { subject: string; items: Array<{ name: string; current: ItemWeek; previous: ItemWeek }>; scope: string }
+type ItemTrendInput = { subject: string; items: Array<{ name: string; current: ItemWeek; previous: ItemWeek }>; scope: ScopeRef }
 
 /** Unusual item trend: the largest buy-rate change whose intervals separate and that moved ≥ ITEM_TREND_MIN_SHIFT. */
 export function itemTrend({ subject, items, scope }: ItemTrendInput): Insight | null {
@@ -208,7 +209,7 @@ const SPLITS = { rank: 'rank-performance', length: 'length-performance' } as con
 const splitGroup = (g: Comparison['groups'][number]): SplitGroup => ({ key: g.key, label: g.label, winRate: g.wins / g.matches, matches: g.matches, sample: g.sample })
 
 /** Rank-specific (or match-length) performance: the highest and lowest groups' intervals don't overlap. */
-export function splitPerformance({ subject, by, comparison, scope }: { subject: string; by: keyof typeof SPLITS; comparison: Comparison; scope: string }): Insight | null {
+export function splitPerformance({ subject, by, comparison, scope }: { subject: string; by: keyof typeof SPLITS; comparison: Comparison; scope: ScopeRef }): Insight | null {
   const { best, worst, clear } = comparison
   if (!clear || !best || !worst || best.winRate - worst.winRate < MIN_EFFECT) return null
   const kind = SPLITS[by]
@@ -223,7 +224,7 @@ export function splitPerformance({ subject, by, comparison, scope }: { subject: 
 type BandPicks = { label: string; heroMatches: number; allHeroMatches: number }
 
 /** "Frequently picked by X players": a band's pick rate ≥ POPULARITY_RATIO × the all-rank rate, intervals separate. */
-export function rankPopularity({ subject, bands, scope }: { subject: string; bands: BandPicks[]; scope: string }): Insight | null {
+export function rankPopularity({ subject, bands, scope }: { subject: string; bands: BandPicks[]; scope: ScopeRef }): Insight | null {
   const heroAll = bands.reduce((n, b) => n + b.heroMatches, 0)
   const matchesAll = bands.reduce((n, b) => n + b.allHeroMatches, 0) / HEROES_PER_MATCH
   if (matchesAll <= 0 || !reliable(heroAll)) return null

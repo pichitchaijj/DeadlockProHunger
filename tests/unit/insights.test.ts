@@ -13,10 +13,11 @@ import {
   winRateShift,
   type Insight,
 } from '@/lib/analytics/insights'
+import type { ScopeRef } from '@/lib/analytics/scope'
 import { english } from './helpers/insightEnglish'
 
 /* Synthetic inputs only. Generators return facts; `english()` words them as the English pages do. */
-const scope = 'Last 30 days, All ranks'
+const scope: ScopeRef = { window: { kind: 'days', days: 30 }, rank: { kind: 'all' } } // "Last 30 days, All ranks"
 
 describe('winRateShift', () => {
   it('reports a rise with its change in percentage points', () => {

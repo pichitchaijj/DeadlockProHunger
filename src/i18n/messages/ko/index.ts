@@ -20,6 +20,7 @@ import matches from './matches.json'
 import nav from './nav.json'
 import notFound from './notFound.json'
 import players from './players.json'
+import scope from './scope.json'
 
 /** Must match English key for key (`satisfies Messages`; tests also check placeholders). */
-export default { analyze, builds, cards, commandPalette, common, compare, data, draft, errors, footer, header, heroes, home, insights, items, languages, leaderboard, matches, nav, notFound, players } satisfies Messages
+export default { analyze, builds, cards, commandPalette, common, compare, data, draft, errors, footer, header, heroes, home, insights, items, languages, leaderboard, matches, nav, notFound, players, scope } satisfies Messages

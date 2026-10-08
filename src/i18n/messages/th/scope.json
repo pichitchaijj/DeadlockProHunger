@@ -1,0 +1,26 @@
+{
+  "window": {
+    "label": {
+      "days": "{days} วันล่าสุด",
+      "patch": "แพตช์ปัจจุบัน",
+      "patchSince": "แพตช์ปัจจุบัน (ตั้งแต่ {date})"
+    },
+    "inSentence": {
+      "days": "{days} วันล่าสุด",
+      "patch": "แพตช์ปัจจุบัน",
+      "patchSince": "แพตช์ปัจจุบัน (ตั้งแต่ {date})"
+    }
+  },
+  "rank": {
+    "all": "ทุกแรงก์",
+    "band": "{from} – {to}",
+    "tier": "ระดับ {tier}",
+    "everyBand": "ทุกช่วงแรงก์",
+    "rankedOnly": "{rank} · เฉพาะแมตช์จัดอันดับ",
+    "heroPlayers": "{rank} · ผู้เล่น {hero}"
+  },
+  "joined": "{window}, {rank}",
+  "line": "{window} · {rank}",
+  "lineSample": "{window} · {rank} · n = {count}",
+  "snapshot": "· ข้อมูลจาก {time} UTC"
+}

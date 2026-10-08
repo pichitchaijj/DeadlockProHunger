@@ -1,5 +1,6 @@
  import 'server-only'
-import { badgeRange, RANK_BANDS, rankBand, rankBandLabel, type RankBand, type RankBandId } from '@/lib/analytics/rankBands'
+import { badgeRange, RANK_BANDS, rankBand, rankBandRef, type RankBand, type RankBandId } from '@/lib/analytics/rankBands'
+import type { ScopeRank, ScopeRef, ScopeWindow } from '@/lib/analytics/scope'
 import { getPatchFeed, getRanks, type HeroStatsQuery } from '@/lib/deadlock/endpoints'
 import { rankCatalog, type RankCatalog } from '@/lib/deadlock/rankAssets'
 import { patchDateFromTitle } from '@/lib/deadlock/patchDate'
@@ -7,7 +8,6 @@ import type { MetaWindow } from './query'
 
 const DAY = 86_400
 const HOUR = 3_600
-const DATE = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
 
 export type ForumPatch = { title: string; /** unix seconds, UTC day start */ day: number; link: string | null }
 
@@ -26,12 +26,15 @@ export type ResolvedScope = {
   tierNames: Map<number, string>
   /** Every rank tier with its emblem (lib/deadlock/rankAssets): resolve ranks for display through it. */
   ranks: RankCatalog
-  rankLabels: Record<RankBandId, string>
-  windowLabels: Record<MetaWindow, string>
+  /** Every rank band and window as scope values (worded per locale by components/data/scopeWording). */
+  rankRefs: Record<RankBandId, ScopeRank>
+  windows: Record<MetaWindow, ScopeWindow>
   /** Forum changelog patches, newest first, dated from their titles. */
   patches: ForumPatch[]
-  scopeText: string
-  modeText: string
+  /** The selected window and rank band. */
+  selected: ScopeRef
+  /** Ranked matches only (match mode). */
+  ranked: boolean
 }
 
 /** Forum changelog entries dated by title (reliable) with pub_date as fallback, newest first. */
@@ -61,11 +64,11 @@ export async function resolveScope(input: { window: MetaWindow; rank: RankBandId
   const badges = badgeRange(band)
   const tierNames = new Map(ranks.map((r) => [r.tier, r.name]))
   const rankTiers = rankCatalog(ranks)
-  const rankLabels = Object.fromEntries(RANK_BANDS.map((b) => [b.id, rankBandLabel(b, tierNames)])) as Record<RankBandId, string>
-  const windowLabels: Record<MetaWindow, string> = {
-    patch: patchStart === null ? 'Current patch' : `Current patch (since ${DATE.format(patchStart * 1000)})`,
-    '7d': 'Last 7 days',
-    '30d': 'Last 30 days',
+  const rankRefs = Object.fromEntries(RANK_BANDS.map((b) => [b.id, rankBandRef(b, tierNames)])) as Record<RankBandId, ScopeRank>
+  const windows: Record<MetaWindow, ScopeWindow> = {
+    patch: { kind: 'patch', since: patchStart },
+    '7d': { kind: 'days', days: 7 },
+    '30d': { kind: 'days', days: 30 },
   }
 
   return {
@@ -83,10 +86,10 @@ export async function resolveScope(input: { window: MetaWindow; rank: RankBandId
     },
     tierNames,
     ranks: rankTiers,
-    rankLabels,
-    windowLabels,
+    rankRefs,
+    windows,
     patches,
-    scopeText: `${windowLabels[window]}, ${rankLabels[band.id]}`,
-    modeText: input.mode === 'ranked' ? ' · Ranked only' : '',
+    selected: { window: windows[window], rank: rankRefs[band.id] },
+    ranked: input.mode === 'ranked',
   }
 }

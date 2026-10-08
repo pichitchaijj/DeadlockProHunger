@@ -29,6 +29,7 @@ import { TrendChart } from '@/features/hero/components/TrendChart'
 import { getAnalyzeTrends, heroQueryFor } from '../loaders'
 import { comparisonText, trendRangeText, type PeerComparison, type TrendRange } from '../model'
 import { analyzeHref, type AnalyzeQuery } from '../query'
+import { getScopeWording, type ScopeWording } from '@/components/data/scopeWording'
 
 /*
  * Analyze sections, worded from the Analyze catalog (analyze.*). The parts shared with Hero Detail get
@@ -146,11 +147,12 @@ export async function InsightsSection({ ctx }: { ctx: HeroContext }) {
 // ── Trends ───────────────────────────────────────────────────────────
 
 export async function TrendsSection({ ctx, query }: { ctx: HeroContext; query: AnalyzeQuery }) {
-  const [result, t, heroes, locale] = await Promise.all([
+  const [result, t, heroes, locale, scopeWords] = await Promise.all([
     attempt('[analyze] trends failed', getAnalyzeTrends(ctx)),
     getTranslations('analyze.trends'),
     getTranslations('heroes'),
     getLocale(),
+    getScopeWording(),
   ])
   const { trend } = partLabels(heroes)
   const winRate = heroes('trendChart.winRate')
@@ -161,8 +163,8 @@ export async function TrendsSection({ ctx, query }: { ctx: HeroContext; query: A
       title={t('title')}
       description={
         result.ok
-          ? rangeText(result.value, ctx.statScope, locale, (key, values) => t(key as 'range', values))
-          : t('fallback', { window: ctx.statScope.windowLabel.toLowerCase(), rank: ctx.statScope.rankLabel })
+          ? rangeText(result.value, ctx.statScope, locale, scopeWords, (key, values) => t(key as 'range', values))
+          : t('fallback', { window: scopeWords.window(ctx.statScope.window, { inSentence: true }), rank: scopeWords.rankScope(ctx.statScope) })
       }
       actions={<SeeMore href={heroHref(ctx.hero.slug, heroQueryFor(query, { tab: 'trends' }))}>{t('seeMore')}</SeeMore>}
     >
@@ -182,19 +184,16 @@ export async function TrendsSection({ ctx, query }: { ctx: HeroContext; query: A
   )
 }
 
-/** "Last 7 days" → "last 7 days"; leaves month names inside the label alone. */
-const lowerFirst = (text: string) => text.charAt(0).toLowerCase() + text.slice(1)
-
 const DAY: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', timeZone: 'UTC' }
 
 /**
  * States exactly which days the charts cover: the selected window, its dates, and any days the source
  * returned no data for (never filled in). The "current patch" window is capped at 60 days of history.
  */
-function rangeText(range: TrendRange, scope: HeroContext['statScope'], locale: Locale, t: (key: string, values?: Record<string, string | number>) => string) {
+function rangeText(range: TrendRange, scope: HeroContext['statScope'], locale: Locale, scopeWords: ScopeWording, t: (key: string, values?: Record<string, string | number>) => string) {
   const day = dateFormat(locale, DAY)
   const dates = `${day.format(range.from * 1000)} – ${day.format(range.to * 1000)}`
-  return trendRangeText(range, { window: lowerFirst(scope.windowLabel), rank: scope.rankLabel, dates }, t, sentenceGap(locale))
+  return trendRangeText(range, { window: scopeWords.window(scope.window, { inSentence: true }), rank: scopeWords.rankScope(scope), dates }, t, sentenceGap(locale))
 }
 
 // ── Peer comparison ──────────────────────────────────────────────────

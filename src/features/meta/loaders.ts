@@ -1,7 +1,8 @@
 import 'server-only'
 import type { RankCatalog } from '@/lib/deadlock/rankAssets'
 import { cache } from 'react'
-import type { StatScope } from '@/lib/analytics/scope'
+import type { ScopeRank, ScopeWindow, StatScope } from '@/lib/analytics/scope'
+import { englishScopeWording } from '@/components/data/scopeWording'
 import { badgeRange, RANK_BANDS, type RankBandId } from '@/lib/analytics/rankBands'
 import { DeadlockApiError } from '@/lib/deadlock/client'
 import { classifyError, type DataErrorKind } from '@/lib/deadlock/errors'
@@ -22,8 +23,9 @@ export type MetaPageData =
       ok: true
       model: MetaModel
       scope: StatScope
-      windowLabels: Record<MetaWindow, string>
-      rankLabels: Record<RankBandId, string>
+      /** Every window and rank band as scope values (filters word them per locale). */
+      windows: Record<MetaWindow, ScopeWindow>
+      rankRefs: Record<RankBandId, ScopeRank>
       /** Rank tiers with emblems (lib/deadlock/rankAssets). */
       ranks: RankCatalog
       /** Share of ranked players (latest ranked match) whose rank falls in each band; null if unavailable. */
@@ -49,7 +51,7 @@ const loadMetaPageData = cache(async (key: string): Promise<MetaPageData> => {
       getActiveHeroes(),
       getBadgeDistribution(Math.floor(Date.now() / 1000 / DAY) * DAY - 29 * DAY).catch(() => null),
     ])
-    const { today, window, windowStart, band, rankLabels, windowLabels, scopeText, modeText } = scopeInfo
+    const { today, window, windowStart, band, rankRefs, windows } = scopeInfo
     const latest = scopeInfo.patches[0] ?? null
     const patchStart = latest?.day ?? null
 
@@ -87,20 +89,22 @@ const loadMetaPageData = cache(async (key: string): Promise<MetaPageData> => {
       query: { ...query, window },
       windowStart,
       today,
-      scopeText,
+      // The Meta page isn't localized yet: its "Why?" facts stay English, scope included.
+      scopeText: englishScopeWording().scope(scopeInfo.selected),
     })
 
     return {
       ok: true,
       model,
       scope: {
-        windowLabel: windowLabels[window],
-        rankLabel: `${rankLabels[band.id]}${modeText}`,
+        window: windows[window],
+        rank: rankRefs[band.id],
+        ranked: scopeInfo.ranked,
         sampleSize: model.summary.matchesAnalyzed,
         ...(fallback.at ? { source: 'snapshot' as const, fetchedAt: fallback.at.getTime() } : { source: 'live' as const }),
       },
-      windowLabels,
-      rankLabels,
+      windows,
+      rankRefs,
       ranks: scopeInfo.ranks,
       rankShares: distribution ? bandShares(distribution) : null,
       patch: latest ? { title: latest.title, startedAt: latest.day * 1000, days: patchDays, limited: patchDays < MIN_PATCH_DAYS } : null,

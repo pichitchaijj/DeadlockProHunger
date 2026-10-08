@@ -8,6 +8,7 @@ import { ArrowRightIcon, HeroesIcon, MatchesIcon, PlayersIcon, TrendsIcon } from
 import { cx } from '@/lib/cx'
 import type { HomeSource, HomeSummary } from '../types'
 import { HeroBackdrop } from './HeroBackdrop'
+import { useScopeWording } from '@/components/data/scopeWording'
 
 /** The brand statement, one line each (`home.hero.headline.<key>`); the last line carries the accent. */
 const HEADLINE = ['play', 'learn', 'analyze', 'improve', 'together'] as const
@@ -94,13 +95,14 @@ function SummaryStat({ label, icon, children, note }: { label: string; icon: Rea
  */
 export function HeroStats({ summary, source, footer }: { summary: HomeSummary; source: HomeSource | null; footer?: ReactNode }) {
   const t = useTranslations('home.stats')
+  const scopeWords = useScopeWording()
   return (
     <>
       <dl className="grid max-w-4xl grid-cols-2 gap-px overflow-hidden rounded-md border border-border bg-border lg:grid-cols-4">
         <SummaryStat label={t('heroes')} icon={<HeroesIcon size={18} />} note={t('heroesNote', { count: summary.heroesTracked })}>
           <CountUp value={summary.heroesTotal} format="integer" durationMs={800} />
         </SummaryStat>
-        <SummaryStat label={t('matches')} icon={<MatchesIcon size={18} />} note={summary.dataScopeLabel}>
+        <SummaryStat label={t('matches')} icon={<MatchesIcon size={18} />} note={scopeWords.line(summary.dataScope)}>
           <CountUp value={summary.matchesAnalyzed} format="compact" durationMs={800} />
         </SummaryStat>
         <SummaryStat label={t('newMatches')} icon={<TrendsIcon size={18} />} note={t('newMatchesNote')}>

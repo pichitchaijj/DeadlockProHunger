@@ -24,6 +24,7 @@ import { rankBandOptions } from '@/features/meta/rankFilter'
 import { resolveScope } from '@/features/meta/scope'
 import { DataNotice } from '@/components/data/DataState'
 import { attempt } from '@/lib/deadlock/errors'
+import { getScopeWording } from '@/components/data/scopeWording'
 
 export async function generateMetadata(): Promise<Metadata> {
   const [t, locale] = await Promise.all([getTranslations('matches.meta'), getLocale()])
@@ -50,6 +51,7 @@ export default async function MatchesPage({ searchParams }: { searchParams: Sear
     getTranslations('matches.list'),
     getTranslations('builds.list'),
   ])
+  const scopeWords = await getScopeWording()
   const perspective = hasPerspective(query)
 
   return (
@@ -96,7 +98,7 @@ export default async function MatchesPage({ searchParams }: { searchParams: Sear
             options={[{ value: 'any', label: t('any'), href: matchesHref(query, { duration: 'any' }) }, ...(Object.keys(DURATIONS) as Array<keyof typeof DURATIONS>).map((d) => ({ value: d, label: t(`durations.${d}`), href: matchesHref(query, { duration: d }) }))]}
           />
           {scope && (
-            <Filter label={builds('rank')} value={query.rank} options={rankBandOptions(scope.rankLabels, scope.ranks, (rank) => matchesHref(query, { rank }))} />
+            <Filter label={builds('rank')} value={query.rank} options={rankBandOptions(scopeWords.rankLabels(scope.rankRefs), scope.ranks, (rank) => matchesHref(query, { rank }))} />
           )}
           {perspective ? (
             <Filter
@@ -131,7 +133,7 @@ export default async function MatchesPage({ searchParams }: { searchParams: Sear
 }
 
 async function Results({ query }: { query: MatchesQuery }) {
-  const [dataLoad, t, common, locale] = await Promise.all([attempt('[matches] list failed', getMatchesPage(query)), getTranslations('matches'), getTranslations('common'), getLocale()])
+  const [dataLoad, t, common, locale, scopeWords] = await Promise.all([attempt('[matches] list failed', getMatchesPage(query)), getTranslations('matches'), getTranslations('common'), getLocale(), getScopeWording()])
   const data = dataLoad.ok ? dataLoad.value : null
   const failed = dataLoad.ok ? 'unavailable' : dataLoad.kind
   if (!data) {
@@ -167,7 +169,7 @@ async function Results({ query }: { query: MatchesQuery }) {
         {' · '}
         {data.heroFilter ? `${data.heroFilter.name} · ` : ''}
         {data.player ? `${data.player.name ?? t('common.player', { id: data.player.accountId })} · ` : ''}
-        {t('list.since', { time: formatRelativeTime(data.dateFrom, undefined, locale), rank: data.rankLabel, limit: MATCH_LIMIT })}
+        {t('list.since', { time: formatRelativeTime(data.dateFrom, undefined, locale), rank: scopeWords.rank(data.rank), limit: MATCH_LIMIT })}
       </p>
 
       {data.rows.length === 0 ? (

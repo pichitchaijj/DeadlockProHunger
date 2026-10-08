@@ -15,6 +15,7 @@ import { capitalize } from '@/features/meta/model'
 import type { getBuildCompare, getHeroCompare, getPlayerCompare } from '../loaders'
 import { ratioDifference, type Rate } from '../model'
 import { Block, DualSparkline, KeyDifferences, PairedBars, RateRow, SIDE_TEXT, ValueRow } from './parts'
+import { useScopeWording } from '@/components/data/scopeWording'
 
 type HeroData = NonNullable<Awaited<ReturnType<typeof getHeroCompare>>>
 type BuildData = NonNullable<Awaited<ReturnType<typeof getBuildCompare>>>
@@ -45,6 +46,7 @@ function TwoColumns({ children }: { children: [ReactNode, ReactNode] }) {
 
 export function HeroCompareView({ data }: { data: HeroData }) {
   const t = useTranslations('compare.heroes')
+  const scopeText = useScopeWording().scope(data.scope)
   const heroes = useTranslations('heroes.parts')
   const locale = useLocale()
   const [A, B] = data.sides
@@ -71,9 +73,9 @@ export function HeroCompareView({ data }: { data: HeroData }) {
   return (
     <div className="flex flex-col gap-8">
       <VsHeader sides={[ident(A, 'left'), ident(B, 'right')]} />
-      <KeyDifferences differences={data.differences} names={names} scope={data.scopeText} />
+      <KeyDifferences differences={data.differences} names={names} scope={scopeText} />
 
-      <Block title={t('atGlance')} description={data.scopeText}>
+      <Block title={t('atGlance')} description={scopeText}>
         <div className="flex flex-col gap-3">
           <RateRow label={t('winRate')} a={sA} b={sB} />
           <ValueRow label={t('pickRate')} a={sA ? formatPercent(sA.pickRate) : '—'} b={sB ? formatPercent(sB.pickRate) : '—'} highlight={pick?.side ?? null} />
@@ -145,6 +147,7 @@ export function HeroCompareView({ data }: { data: HeroData }) {
 
 export function BuildCompareView({ data }: { data: BuildData }) {
   const t = useTranslations('compare.builds')
+  const scopeWords = useScopeWording()
   const heroes = useTranslations('compare.heroes')
   const builds = useTranslations('builds')
   const locale = useLocale()
@@ -168,10 +171,10 @@ export function BuildCompareView({ data }: { data: BuildData }) {
   return (
     <div className="flex flex-col gap-8">
       <VsHeader sides={[ident(A, 'a'), ident(B, 'b')]} />
-      <KeyDifferences differences={data.differences} names={names} scope={A.scopeText} />
+      <KeyDifferences differences={data.differences} names={names} scope={scopeWords.scope(A.scopeRef)} />
       {!data.sameHero && <p className="text-sm text-text-muted">{t('differentHeroes')}</p>}
 
-      <Block title={heroes('atGlance')} description={A.scopeText}>
+      <Block title={heroes('atGlance')} description={scopeWords.scope(A.scopeRef)}>
         <div className="flex flex-col gap-3">
           <RateRow label={heroes('winRate')} a={A.stats as Rate | null} b={B.stats as Rate | null} />
           <ValueRow label={t('vsOwnHero')} a={vsHero(A)} b={vsHero(B)} />

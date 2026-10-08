@@ -196,7 +196,6 @@ export async function getBuildDetail(heroSlug: string, buildId: number, query: P
   const flowView = flow ? flowForBuild(items.map((i) => i.id), flow, shop) : null
   const plan = abilityPlan(hb.details.ability_order?.currency_changes ?? [], new Set(abilities.keys()))
   const updatedAt = hb.last_updated_timestamp ? hb.last_updated_timestamp * 1000 : null
-  const scopeText = `${c.scope.windowLabels[c.scope.window]}, ${c.scope.rankLabels[c.scope.band.id]}`
 
   return {
     kind: 'build' as const,
@@ -235,6 +234,7 @@ export async function getBuildDetail(heroSlug: string, buildId: number, query: P
       flow: flowView,
     }),
     statScope: c.statScope,
-    scopeText,
+    /** The selected window and rank band (the page words it). */
+    scopeRef: c.scope.selected,
   }
 }

@@ -1,0 +1,26 @@
+{
+  "window": {
+    "label": {
+      "days": "최근 {days}일",
+      "patch": "현재 패치",
+      "patchSince": "현재 패치 ({date}부터)"
+    },
+    "inSentence": {
+      "days": "최근 {days}일",
+      "patch": "현재 패치",
+      "patchSince": "현재 패치 ({date}부터)"
+    }
+  },
+  "rank": {
+    "all": "전체 랭크",
+    "band": "{from} – {to}",
+    "tier": "티어 {tier}",
+    "everyBand": "모든 랭크 구간",
+    "rankedOnly": "{rank} · 랭크 매치만",
+    "heroPlayers": "{rank} · {hero} 플레이어"
+  },
+  "joined": "{window}, {rank}",
+  "line": "{window} · {rank}",
+  "lineSample": "{window} · {rank} · n = {count}",
+  "snapshot": "· {time} UTC 기준 데이터"
+}

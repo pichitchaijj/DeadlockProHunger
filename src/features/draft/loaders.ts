@@ -36,9 +36,9 @@ export async function getDraftData(query: DraftQuery) {
   const allyBalance = teamBalance(profile, allyIds)
 
   return {
-    scopeText: scope.scopeText,
-    windowLabels: scope.windowLabels,
-    rankLabels: scope.rankLabels,
+    scope: scope.selected,
+    windows: scope.windows,
+    rankRefs: scope.rankRefs,
     ranks: scope.ranks,
     heroes,
     allies,

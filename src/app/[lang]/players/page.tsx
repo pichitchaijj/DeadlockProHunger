@@ -19,6 +19,7 @@ import { getSearchView } from '@/features/players/loaders'
 import { parsePlayersQuery, playersHref, type PlayersQuery } from '@/features/players/query'
 import { DataNotice } from '@/components/data/DataState'
 import { attempt } from '@/lib/deadlock/errors'
+import { getScopeWording } from '@/components/data/scopeWording'
 
 export async function generateMetadata(): Promise<Metadata> {
   const [t, locale] = await Promise.all([getTranslations('players.meta'), getLocale()])
@@ -60,7 +61,7 @@ export default async function PlayersPage({ searchParams }: { searchParams: Sear
 }
 
 async function SearchView({ query }: { query: PlayersQuery }) {
-  const [dataLoad, t, locale] = await Promise.all([attempt('[players] search failed', getSearchView(query)), getTranslations('players.list'), getLocale()])
+  const [dataLoad, t, locale, scopeWords] = await Promise.all([attempt('[players] search failed', getSearchView(query)), getTranslations('players.list'), getLocale(), getScopeWording()])
   const data = dataLoad.ok ? dataLoad.value : null
   const failed = dataLoad.ok ? 'unavailable' : dataLoad.kind
   return (
@@ -83,8 +84,8 @@ async function SearchView({ query }: { query: PlayersQuery }) {
             <Button type="submit" variant="secondary" leadingIcon={<SearchIcon size={18} />}>{t('search')}</Button>
           </div>
         </form>
-        {data?.rankLabels && (
-          <Filter label={t('rankFilter')} value={query.rank} options={rankBandOptions(data.rankLabels, data.ranks, (rank) => playersHref(query, { rank }))} />
+        {data?.rankRefs && (
+          <Filter label={t('rankFilter')} value={query.rank} options={rankBandOptions(scopeWords.rankLabels(data.rankRefs), data.ranks, (rank) => playersHref(query, { rank }))} />
         )}
       </div>
       {!data ? (

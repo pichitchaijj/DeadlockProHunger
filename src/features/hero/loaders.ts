@@ -150,9 +150,9 @@ export async function getOverviewData(ctx: HeroContext) {
       ? heroInsights({
           name: ctx.hero.name,
           winRate: s.winRate,
-          scope: ctx.scope.scopeText,
-          weekScope: `Last 14 days, ${ctx.scope.rankLabels[ctx.scope.band.id]}`,
-          rankScope: `${ctx.scope.windowLabels[ctx.scope.window]}, every rank band`,
+          scope: ctx.scope.selected,
+          weekScope: { window: { kind: 'days', days: 14 }, rank: ctx.scope.selected.rank },
+          rankScope: { window: ctx.scope.selected.window, rank: { kind: 'everyBand' } },
           weeks: s.weeks,
           patch: days ? latestPatchShift(ctx, days) : null,
           length,

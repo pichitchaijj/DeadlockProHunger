@@ -22,6 +22,7 @@ import { capitalize } from '@/features/meta/model'
 import { ROLES } from '@/features/meta/query'
 import { DataNotice } from '@/components/data/DataState'
 import { attempt } from '@/lib/deadlock/errors'
+import { getScopeWording } from '@/components/data/scopeWording'
 
 export async function generateMetadata(): Promise<Metadata> {
   const [t, locale] = await Promise.all([getTranslations('leaderboard.meta'), getLocale()])
@@ -77,6 +78,7 @@ async function Board({ query }: { query: LeaderboardQuery }) {
     getTranslations('builds.list'),
     getLocale(),
   ])
+  const scopeWords = await getScopeWording()
   const data = dataLoad.ok ? dataLoad.value : null
   const failed = dataLoad.ok ? 'unavailable' : dataLoad.kind
   if (!data) return <DataNotice error={failed} what="Leaderboard" action={<ButtonLink href={leaderboardHref(query)} variant="secondary" size="sm">{common('tryAgain')}</ButtonLink>} />
@@ -98,7 +100,7 @@ async function Board({ query }: { query: LeaderboardQuery }) {
               {query.scope !== 'global' && (
                 <div className="grid gap-4 xl:grid-cols-2">
                   <Filter label={t('filters.role')} value={query.role} options={[{ value: 'all', label: t('filters.allRoles'), href: leaderboardHref(query, { role: 'all' }) }, ...ROLES.map((r) => ({ value: r, label: capitalize(r), href: leaderboardHref(query, { role: r }) }))]} />
-                  {data.rankLabels && <Filter label={t('filters.currentRank')} value={query.rank} options={rankBandOptions(data.rankLabels, data.ranks, (rank) => leaderboardHref(query, { rank }))} />}
+                  {data.rankRefs && <Filter label={t('filters.currentRank')} value={query.rank} options={rankBandOptions(scopeWords.rankLabels(data.rankRefs), data.ranks, (rank) => leaderboardHref(query, { rank }))} />}
                 </div>
               )}
             </>
@@ -108,7 +110,7 @@ async function Board({ query }: { query: LeaderboardQuery }) {
               <div className="grid gap-4 xl:grid-cols-3">
                 <Filter label={t('filters.minMatches')} value={String(query.min)} options={([20, 50, 100] as const).map((n) => ({ value: String(n), label: t('filters.minOption', { count: n }), href: leaderboardHref(query, { min: n }) }))} />
                 <Filter label={t('filters.window')} value={query.window} options={[{ value: '7d', label: t('filters.days', { count: 7 }), href: leaderboardHref(query, { window: '7d' }) }, { value: '30d', label: t('filters.days', { count: 30 }), href: leaderboardHref(query, { window: '30d' }) }]} />
-                {data.rankLabels && <Filter label={t('filters.matchRank')} value={query.rank} options={rankBandOptions(data.rankLabels, data.ranks, (rank) => leaderboardHref(query, { rank }))} />}
+                {data.rankRefs && <Filter label={t('filters.matchRank')} value={query.rank} options={rankBandOptions(scopeWords.rankLabels(data.rankRefs), data.ranks, (rank) => leaderboardHref(query, { rank }))} />}
               </div>
             </>
           )}

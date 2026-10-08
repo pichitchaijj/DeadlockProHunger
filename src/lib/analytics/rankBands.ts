@@ -1,3 +1,4 @@
+import type { ScopeRank } from './scope'
 /**
  * Rank-band presets for analytics filters.
  * A badge is `tier * 10 + subrank` (subranks 1–6); tiers 0–11 come from /v1/assets/ranks
@@ -30,7 +31,14 @@ export function badgeRange(band: RankBand): { min: number; max: number } | null 
   return { min: band.tiers[0] * 10 + 1, max: band.tiers[1] * 10 + 6 }
 }
 
-/** "Oracle – Phantom" from tier names; "All ranks" for no filter. */
+/** A band as a scope value: every rank, or its tier range with the game's tier names (worded by lib/analytics/scopeText). */
+export function rankBandRef(band: RankBand, tierNames: Map<number, string>): ScopeRank {
+  if (!band.tiers) return { kind: 'all' }
+  const [from, to] = band.tiers
+  return { kind: 'band', from: { tier: from, name: tierNames.get(from) ?? null }, to: { tier: to, name: tierNames.get(to) ?? null } }
+}
+
+/** "Oracle – Phantom" from tier names; "All ranks" for no filter. English: rank-split group labels (tier names are data). */
 export function rankBandLabel(band: RankBand, tierNames: Map<number, string>): string {
   if (!band.tiers) return 'All ranks'
   const [from, to] = band.tiers

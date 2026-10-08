@@ -109,7 +109,7 @@ describe('purchase phases and the standout rule', () => {
 
   it('words the insight descriptively, with its rule and caveat', () => {
     const phases = purchasePhases([phase(0, 50_000, 100_000, 0.5), phase(3, 5_600, 10_000, 0.54)])
-    const insight = purchaseTimingInsight('Rapid Rounds', standoutPhase(phases)!, phases, 'Last 7 days, All ranks')
+    const insight = purchaseTimingInsight('Rapid Rounds', standoutPhase(phases)!, phases, { window: { kind: 'days', days: 7 }, rank: { kind: 'all' } })
     const text = english(insight)
     expect(nonDescriptiveTerms(text)).toEqual([])
     expect(text.statement).not.toMatch(/optimal|recommend/i)
@@ -119,7 +119,7 @@ describe('purchase phases and the standout rule', () => {
 
   it('keeps the standout as facts: phase, gaps, every phase with data, and the smallest sample', () => {
     const phases = purchasePhases([phase(0, 50_000, 100_000, 0.5), phase(1, 26_000, 50_000, 0.505), phase(3, 5_600, 10_000, 0.54)])
-    const insight = purchaseTimingInsight('Rapid Rounds', standoutPhase(phases)!, phases, 'Last 7 days, All ranks')
+    const insight = purchaseTimingInsight('Rapid Rounds', standoutPhase(phases)!, phases, { window: { kind: 'days', days: 7 }, rank: { kind: 'all' } })
     expect(insight).toMatchObject({ id: 'purchase-timing-very-late', kind: 'purchase-timing', tone: 'neutral', item: 'Rapid Rounds', phase: 'very-late', winRate: 0.56, sampleSize: 10_000, sample: 'high' })
     if (insight.kind !== 'purchase-timing') throw new Error('expected a purchase-timing insight')
     expect(insight.gap).toBeCloseTo(0.04)

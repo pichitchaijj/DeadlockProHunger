@@ -8,6 +8,8 @@ import { resolveScope } from '@/features/meta/scope'
 import { liveSummary, toMatchRow, type HeroLite, type MatchRow } from './model'
 import { DURATIONS, type MatchesQuery } from './query'
 import { heroIconUrl } from '@/lib/deadlock/heroImages'
+import type { RankBandId } from '@/lib/analytics/rankBands'
+import type { ScopeRank } from '@/lib/analytics/scope'
 
 const DAY = 86_400
 const LIMIT = 40
@@ -23,8 +25,9 @@ export type MatchesPage = {
   player: { accountId: number; name: string | null } | null
   /** When `player` was a name: matching profiles to choose from (the list isn't player-filtered yet). */
   candidates: PlayerCandidate[] | null
-  rankLabel: string
-  rankLabels: Record<string, string>
+  /** The selected rank band and every band, as scope values (worded per locale by the page). */
+  rank: ScopeRank
+  rankRefs: Record<RankBandId, ScopeRank>
   dateFrom: number // unix ms
   /** Render time (unix ms), so server and client format relative times identically. */
   now: number
@@ -85,8 +88,8 @@ export async function getMatchesPage(query: MatchesQuery): Promise<MatchesPage> 
     heroFilter,
     player,
     candidates,
-    rankLabel: scope.rankLabels[scope.band.id],
-    rankLabels: scope.rankLabels,
+    rank: scope.selected.rank,
+    rankRefs: scope.rankRefs,
     dateFrom: fromSec * 1000,
     now: nowSec * 1000,
   }

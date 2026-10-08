@@ -2,6 +2,7 @@ import { MIN_EFFECT, type Insight } from '@/lib/analytics/insights'
 import { sampleTier, type SampleTier } from '@/lib/analytics/sampleTier'
 import { wilsonInterval, type Interval } from '@/lib/analytics/wilson'
 import type { ItemSlot, ItemSort } from './query'
+import type { ScopeRef } from '@/lib/analytics/scope'
 
 /*
  * Item analytics view-models (pure). Definitions:
@@ -152,7 +153,7 @@ export function standoutPhase(phases: PhaseRow[]): Standout | null {
  * The standout phase as an Insight fact (rendered with InsightCard via lib/analytics/insightText: statement,
  * then "Why?" with every phase's numbers and the rule). The sample is the smallest non-Low phase.
  */
-export function purchaseTimingInsight(itemName: string, standout: Standout, phases: PhaseRow[], scope: string): Insight {
+export function purchaseTimingInsight(itemName: string, standout: Standout, phases: PhaseRow[], scope: ScopeRef): Insight {
   const { phase, gap, adjustedGap } = standout
   const stats = phase.stats!
   const smallest = Math.min(...phases.flatMap((p) => (p.stats && p.stats.sample !== 'low' ? [p.stats.matches] : [])))

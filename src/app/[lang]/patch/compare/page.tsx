@@ -17,6 +17,7 @@ import { PatchFilters } from '@/features/patches/components/PatchFilters'
 import { getPatchCompare, getPatchContext, patchList, type PatchContext } from '@/features/patches/loaders'
 import { changeMarks, CLEAR_RULE, groupChanges, mostImpacted, type PatchSummary, type Window } from '@/features/patches/model'
 import { compareHref, parseCompareQuery, patchHref, patchListHref, type CompareQuery } from '@/features/patches/query'
+import { getScopeWording } from '@/components/data/scopeWording'
 
 export const metadata: Metadata = {
   title: 'Compare patches',
@@ -68,7 +69,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
             href={(changes) => compareHref(query, changes)}
             heroes={heroes}
             items={items}
-            rankLabels={ctxLoad.value.scope.rankLabels}
+            rankLabels={(await getScopeWording('en')).rankLabels(ctxLoad.value.scope.rankRefs)}
             ranks={ctxLoad.value.scope.ranks}
           >
             <SelectNav label="Patch A" options={options} value={query.a ?? ''} hrefFor={Object.fromEntries(patches.map((p) => [p.id, compareHref(query, { a: p.id })]))} />
@@ -143,7 +144,7 @@ async function Comparison({ patches, ia, ib, ctx }: { patches: PatchSummary[]; i
     <div className="flex flex-col gap-(--spacing-section)">
       <section aria-labelledby="cmp-heroes" className="flex flex-col gap-5">
         <SectionHeader id="cmp-heroes" title="Hero win rate changes" description={`${labels.a} → ${labels.b}. Observed differences between the two periods, not effects of the patches.`} />
-        <ScopeLine scope={{ windowLabel: `${labels.a} vs ${labels.b}`, rankLabel: ctx.rankText, source: 'live' }} />
+        <ScopeLine scope={{ window: { kind: 'text', text: `${labels.a} vs ${labels.b}` }, rank: { kind: 'text', text: (await getScopeWording('en')).rankScope(ctx.rank) }, source: 'live' }} />
         {periods.newer.days < 3 && (
           <p role="status" className="rounded-md border border-orange/40 bg-orange/10 px-4 py-3 text-sm text-text">
             The newer patch has only {periods.newer.days} {periods.newer.days === 1 ? 'day' : 'days'} of data so far. Treat changes as early signals.

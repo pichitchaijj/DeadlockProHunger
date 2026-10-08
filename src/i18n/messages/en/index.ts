@@ -20,8 +20,9 @@ import matches from './matches.json'
 import nav from './nav.json'
 import notFound from './notFound.json'
 import players from './players.json'
+import scope from './scope.json'
 
-const messages = { analyze, builds, cards, commandPalette, common, compare, data, draft, errors, footer, header, heroes, home, insights, items, languages, leaderboard, matches, nav, notFound, players }
+const messages = { analyze, builds, cards, commandPalette, common, compare, data, draft, errors, footer, header, heroes, home, insights, items, languages, leaderboard, matches, nav, notFound, players, scope }
 
 export type Messages = typeof messages
 export default messages

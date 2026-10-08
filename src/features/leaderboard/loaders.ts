@@ -12,6 +12,7 @@ import { rankFromBadge, type RankCatalog } from '@/lib/deadlock/rankAssets'
 import { rankChange, scoreboardRows, type BoardNote, type BoardRow, type RankChange } from './model'
 import type { LeaderboardQuery } from './query'
 import { heroIconUrl } from '@/lib/deadlock/heroImages'
+import type { ScopeRank } from '@/lib/analytics/scope'
 
 export const PAGE_SIZE = 50
 const REGIONAL_SCOPE = 200
@@ -28,7 +29,7 @@ async function context(query: LeaderboardQuery) {
     heroes,
     hero,
     ranks,
-    rankLabels: scope?.rankLabels ?? null,
+    rankRefs: scope?.rankRefs ?? null,
     rank: (b: number | null) => rankFromBadge(ranks, b),
   }
 }
@@ -54,7 +55,7 @@ export type BoardData = {
   note: BoardNote
   heroes: HeroLite[]
   hero: HeroLite | null
-  rankLabels: Record<RankBandId, string> | null
+  rankRefs: Record<RankBandId, ScopeRank> | null
   ranks: RankCatalog
 }
 
@@ -97,7 +98,7 @@ export async function getLeaderboardData(query: LeaderboardQuery): Promise<Board
       note: { kind: 'regional', savedAt: savedAt ? (savedAt as Date).getTime() : null, hero: ctx.hero?.name ?? null, shown: filtered.length, top: top.length, ambiguous },
       heroes,
       hero: ctx.hero,
-      rankLabels: ctx.rankLabels,
+      rankRefs: ctx.rankRefs,
     ranks: ctx.ranks,
     }
   }
@@ -137,7 +138,7 @@ export async function getLeaderboardData(query: LeaderboardQuery): Promise<Board
       : { kind: 'performance', minMatches, hero: ctx.hero?.name ?? null, days: query.window === '7d' ? 7 : 30 },
     heroes,
     hero: ctx.hero,
-    rankLabels: ctx.rankLabels,
+    rankRefs: ctx.rankRefs,
     ranks: ctx.ranks,
   }
 }

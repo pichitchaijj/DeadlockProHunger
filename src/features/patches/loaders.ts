@@ -12,6 +12,7 @@ import { diffSnapshots, snapshotEntities, splitBroadChanges, type BroadChange, t
 import { heroPickRates, itemBuyRates, movements, patchPeriod, patchesFromFeed, patchWindows, sumWindow, type Movement, type PatchSummary, type Window } from './model'
 import { parseNotes, type NoteLine } from './notes'
 import type { PatchQuery } from './query'
+import type { ScopeRef } from '@/lib/analytics/scope'
 
 /*
  * Patch pages. Sources: /v2/patches (dates, names, official notes), versioned game assets (before → after
@@ -85,7 +86,7 @@ export async function getPatchDiff(patches: PatchSummary[], index: number): Prom
 
 // ── Scope ────────────────────────────────────────────────────────────
 
-export type PatchContext = { scope: ResolvedScope; hero: HeroRef | null; item: ItemRef | null; rankText: string }
+export type PatchContext = { scope: ResolvedScope; hero: HeroRef | null; item: ItemRef | null; rank: ScopeRef }
 
 /** Rank / match type through the shared scope; hero and item slugs resolved. `unknown` when a slug doesn't match. */
 export const getPatchContext = (query: PatchQuery) => patchContext(query.hero, query.item, query.rank, query.mode)
@@ -97,7 +98,7 @@ const patchContext = cache(async (heroSlug: string, itemSlug: string, rank: Patc
   if (hero === undefined) return 'unknown-hero'
   const item = itemSlug === 'all' ? null : ([...items.values()].find((i) => i.slug === itemSlug) ?? undefined)
   if (item === undefined) return 'unknown-item'
-  return { scope, hero, item, rankText: `${scope.rankLabels[scope.band.id]}${scope.modeText}` }
+  return { scope, hero, item, rank: { ...scope.selected, ranked: scope.ranked } }
 })
 
 /** Analytics query for [from, to) (whole UTC days; see throughDay), end capped at the current hour. */

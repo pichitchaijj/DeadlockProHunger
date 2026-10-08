@@ -19,6 +19,7 @@ import { ItemTable } from '@/features/items/components/ItemTable'
 import { getItemContext, heroOptions, itemTotals, type ItemContext } from '@/features/items/loaders'
 import { filterAndSort } from '@/features/items/model'
 import { itemsHref, parseItemsQuery, type ItemSort, type ItemsQuery } from '@/features/items/query'
+import { getScopeWording } from '@/components/data/scopeWording'
 
 export async function generateMetadata(): Promise<Metadata> {
   const [t, locale] = await Promise.all([getTranslations('items.meta'), getLocale()])
@@ -42,6 +43,7 @@ export default async function ItemsPage({ searchParams }: { searchParams: Search
     getTranslations('common'),
     getLocale(),
   ])
+  const scopeWords = await getScopeWording()
   const term = (chunks: ReactNode) => <span className="font-semibold text-text">{chunks}</span>
 
   return (
@@ -59,7 +61,7 @@ export default async function ItemsPage({ searchParams }: { searchParams: Search
               query={query}
               href={(changes) => itemsHref(query, changes)}
               heroes={heroes}
-              rankLabels={ctxLoad.value.scope.rankLabels}
+              rankLabels={scopeWords.rankLabels(ctxLoad.value.scope.rankRefs)}
               ranks={ctxLoad.value.scope.ranks}
               slot={{ value: query.slot, href: (slot) => itemsHref(query, { slot }) }}
             />

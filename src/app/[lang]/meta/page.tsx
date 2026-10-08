@@ -20,6 +20,8 @@ import { TierBoard } from '@/features/meta/components/TierBoard'
 import { WhyProvider, type WhyHero } from '@/features/meta/components/WhyPanel'
 import { getMetaPageData } from '@/features/meta/loaders'
 import { metaHref, parseMetaQuery } from '@/features/meta/query'
+import { getScopeWording } from '@/components/data/scopeWording'
+import type { StatScope } from '@/lib/analytics/scope'
 
 export const metadata: Metadata = {
   title: 'Meta',
@@ -42,6 +44,9 @@ export default async function MetaPage({ searchParams }: { searchParams: SearchP
   }
 
   const { model, scope } = data
+  // Meta isn't localized yet: its scope text stays English with the rest of the page.
+  const en = await getScopeWording('en')
+  const scopeLine: StatScope = { ...scope, window: { kind: 'text', text: en.window(scope.window) }, rank: { kind: 'text', text: en.rankScope(scope) }, ranked: false }
   const whyHeroes: WhyHero[] = model.heroes.map(({ slug, name, iconUrl, tier, sample, winRate, matches, interval, pickRate, trend, history, why }) => ({
     slug, name, iconUrl, tier, sample, winRate, matches, interval, pickRate, trend, history, why,
   }))
@@ -78,11 +83,11 @@ export default async function MetaPage({ searchParams }: { searchParams: SearchP
           </p>
         )}
 
-        <MetaFilters query={query} windowLabels={data.windowLabels} rankLabels={data.rankLabels} ranks={data.ranks} rankShares={data.rankShares} />
-        <ScopeLine scope={scope} />
+        <MetaFilters query={query} windowLabels={en.windowLabels(data.windows)} rankLabels={en.rankLabels(data.rankRefs)} ranks={data.ranks} rankShares={data.rankShares} />
+        <ScopeLine scope={scopeLine} />
       </div>
 
-      <WhyProvider heroes={whyHeroes} scopeText={`${scope.windowLabel} · ${scope.rankLabel}`}>
+      <WhyProvider heroes={whyHeroes} scopeText={en.line({ window: scope.window, rank: scope.rank, ranked: scope.ranked })}>
         <section aria-labelledby="glance-title" className="flex flex-col gap-5">
           <SectionHeader id="glance-title" eyebrow="Layer 1" title="At a glance" description="The six answers most people need. Low-sample heroes are never used here." />
           <MetaSummary summary={model.summary} />
@@ -119,7 +124,7 @@ export default async function MetaPage({ searchParams }: { searchParams: SearchP
               </Link>
             </p>
           )}
-          <ScopeLine scope={scope} />
+          <ScopeLine scope={scopeLine} />
         </section>
       </WhyProvider>
     </PageContainer>

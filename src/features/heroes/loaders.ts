@@ -12,6 +12,7 @@ import { DEFAULT_QUERY, type MetaWindow } from '@/features/meta/query'
 import type { DirectoryScope } from './query'
 import { heroCardUrl } from '@/lib/deadlock/heroImages'
 import type { DataErrorKind } from '@/lib/deadlock/errors'
+import type { ScopeRank, ScopeWindow } from '@/lib/analytics/scope'
 
 /** Serializable hero card data for the client-side directory. */
 export type DirectoryHero = {
@@ -36,8 +37,8 @@ export type DirectoryData =
       ok: true
       heroes: DirectoryHero[]
       scope: StatScope
-      windowLabels: Record<MetaWindow, string>
-      rankLabels: Record<RankBandId, string>
+      windows: Record<MetaWindow, ScopeWindow>
+      rankRefs: Record<RankBandId, ScopeRank>
       ranks: RankCatalog
     }
   | { ok: false; message: string; kind: DataErrorKind }
@@ -57,8 +58,8 @@ export async function getDirectoryData(scope: DirectoryScope): Promise<Directory
   return {
     ok: true,
     scope: meta.scope,
-    windowLabels: meta.windowLabels,
-    rankLabels: meta.rankLabels,
+    windows: meta.windows,
+    rankRefs: meta.rankRefs,
     ranks: meta.ranks,
     heroes: heroes
       .map((hero) => {

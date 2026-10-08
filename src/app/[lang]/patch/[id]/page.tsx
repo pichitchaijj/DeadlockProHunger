@@ -19,6 +19,7 @@ import { DIRECTION_RULE } from '@/features/patches/direction'
 import { findPatch, getPatchContext, patchDiffById, patchImpactById, patchNotes, type PatchContext } from '@/features/patches/loaders'
 import { changeMarks, CLEAR_RULE, diffCounts, groupChanges, mostImpacted, noteCounts, type PatchSummary, type Window } from '@/features/patches/model'
 import { compareHref, parsePatchQuery, patchHref, patchListHref, type PatchQuery } from '@/features/patches/query'
+import { getScopeWording } from '@/components/data/scopeWording'
 
 type Params = Promise<{ id: string }>
 type SearchParams = Promise<Record<string, string | string[] | undefined>>
@@ -111,7 +112,7 @@ export default async function PatchPage({ params, searchParams }: { params: Para
             href={(changes) => patchHref(patch.id, query, changes)}
             heroes={heroes}
             items={items}
-            rankLabels={ctxLoad.value.scope.rankLabels}
+            rankLabels={(await getScopeWording('en')).rankLabels(ctxLoad.value.scope.rankRefs)}
             ranks={ctxLoad.value.scope.ranks}
           >
             <SelectNav
@@ -299,7 +300,7 @@ async function Impact({ patch, ctx }: { patch: PatchSummary; ctx: PatchContext }
 
   return (
     <div className="flex flex-col gap-8">
-      <ScopeLine scope={{ windowLabel: `${labels.a} vs ${labels.b}`, rankLabel: ctx.rankText, sampleSize: Math.round(sample / 12), source: 'live' }} />
+      <ScopeLine scope={{ window: { kind: 'text', text: `${labels.a} vs ${labels.b}` }, rank: { kind: 'text', text: (await getScopeWording('en')).rankScope(ctx.rank) }, sampleSize: Math.round(sample / 12), source: 'live' }} />
       {after.days < 3 && (
         <p role="status" className="rounded-md border border-orange/40 bg-orange/10 px-4 py-3 text-sm text-text">
           Only {after.days} {after.days === 1 ? 'day' : 'days'} after the patch so far (the latest day is incomplete). Treat changes as early signals.

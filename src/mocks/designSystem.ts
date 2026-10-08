@@ -7,13 +7,13 @@ import type { StatScope } from '@/lib/analytics/scope'
 import { rankFromBadge, type RankCatalog } from '@/lib/deadlock/rankAssets'
 
 export const demoScope: StatScope = {
-  windowLabel: 'Last 7 days',
-  rankLabel: 'All ranks',
+  window: { kind: 'days', days: 7 },
+  rank: { kind: 'all' },
   sampleSize: 18_420,
   source: 'demo',
 }
 
-export const demoLowScope: StatScope = { ...demoScope, rankLabel: 'Top band', sampleSize: 140 }
+export const demoLowScope: StatScope = { ...demoScope, rank: { kind: 'text', text: 'Top band' }, sampleSize: 140 }
 
 export type DemoHeroRow = {
   slug: string

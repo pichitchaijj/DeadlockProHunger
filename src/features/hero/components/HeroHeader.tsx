@@ -19,11 +19,13 @@ import { capitalize } from '@/features/meta/model'
 import { ComplexityDots } from '@/features/heroes/components/HeroDirectoryCard'
 import type { HeroContext } from '../loaders'
 import { HERO_TABS, heroHref, type HeroQuery } from '../query'
+import { useScopeWording } from '@/components/data/scopeWording'
 
 const WINDOWS = ['patch', '7d', '30d'] as const
 
 /** Identity + headline stats + scope. The intro fades in as one unit (no cinematic effects). */
 export function HeroHeader({ ctx, query }: { ctx: HeroContext; query: HeroQuery }) {
+  const scopeWords = useScopeWording()
   const { hero, stats } = ctx
   const t = useTranslations('heroes')
   const winRate = useTranslations('cards')('winRate')
@@ -87,7 +89,7 @@ export function HeroHeader({ ctx, query }: { ctx: HeroContext; query: HeroQuery 
           <Filter
             label={t('list.rank')}
             value={query.rank}
-            options={rankBandOptions(ctx.scope.rankLabels, ctx.scope.ranks, (rank) => heroHref(hero.slug, query, { rank }))}
+            options={rankBandOptions(scopeWords.rankLabels(ctx.scope.rankRefs), ctx.scope.ranks, (rank) => heroHref(hero.slug, query, { rank }))}
           />
         </div>
         <ScopeLine scope={ctx.statScope} />

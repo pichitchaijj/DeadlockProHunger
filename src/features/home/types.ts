@@ -1,4 +1,4 @@
-import type { StatScope } from '@/lib/analytics/scope'
+import type { ScopeRef, StatScope } from '@/lib/analytics/scope'
 import type { TrendDirection } from '@/components/data/TrendBadge'
 import type { BuildCardProps } from '@/components/cards/BuildCard'
 import type { MatchCardProps } from '@/components/cards/MatchCard'
@@ -11,8 +11,8 @@ import type { MatchCardProps } from '@/components/cards/MatchCard'
 
 export type HomeSummary = {
   matchesAnalyzed: number
-  /** Human label for the active window and rank scope, e.g. "Last 7 days · All ranks". */
-  dataScopeLabel: string
+  /** The active window and rank scope (worded when rendered, e.g. "Last 7 days · All ranks"). */
+  dataScope: ScopeRef
   heroesTracked: number
   /** Every hero with matches in the window (Low sample included). */
   heroesTotal: number

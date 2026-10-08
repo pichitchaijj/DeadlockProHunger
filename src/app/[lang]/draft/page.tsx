@@ -15,6 +15,7 @@ import { getDraftData } from '@/features/draft/loaders'
 import { draftHref, parseDraftQuery, TEAM_SIZE } from '@/features/draft/query'
 import { DataNotice } from '@/components/data/DataState'
 import { attempt } from '@/lib/deadlock/errors'
+import { getScopeWording } from '@/components/data/scopeWording'
 
 export async function generateMetadata(): Promise<Metadata> {
   const [t, locale] = await Promise.all([getTranslations('draft.meta'), getLocale()])
@@ -47,6 +48,7 @@ export default async function DraftPage({ searchParams }: { searchParams: Search
     getTranslations('common'),
     getTranslations('builds'),
   ])
+  const scopeWords = await getScopeWording()
   const data = dataLoad.ok ? dataLoad.value : null
   const failed = dataLoad.ok ? 'unavailable' : dataLoad.kind
 
@@ -58,13 +60,13 @@ export default async function DraftPage({ searchParams }: { searchParams: Search
       ) : (
         <>
           <div className="grid gap-4 rounded-md border border-border bg-surface/60 p-(--spacing-card) md:grid-cols-2">
-            <Filter label={builds('detail.window')} value={query.window} options={(['patch', '7d', '30d'] as const).map((w) => ({ value: w, label: data.windowLabels[w].replace(/ \(since .*\)/, ''), href: draftHref(query, { window: w }) }))} />
-            <Filter label={builds('list.rank')} value={query.rank} options={rankBandOptions(data.rankLabels, data.ranks, (rank) => draftHref(query, { rank }))} />
+            <Filter label={builds('detail.window')} value={query.window} options={(['patch', '7d', '30d'] as const).map((w) => ({ value: w, label: scopeWords.window(data.windows[w], { short: true }), href: draftHref(query, { window: w }) }))} />
+            <Filter label={builds('list.rank')} value={query.rank} options={rankBandOptions(scopeWords.rankLabels(data.rankRefs), data.ranks, (rank) => draftHref(query, { rank }))} />
           </div>
 
           <TeamSlots query={query} allies={data.allies} enemies={data.enemies} base={data.baseWinRate} />
           <HeroPicker query={query} heroes={data.heroes} />
-          <p className="text-caption text-text-muted">{t('scopeNote', { scope: data.scopeText })}</p>
+          <p className="text-caption text-text-muted">{t('scopeNote', { scope: scopeWords.scope(data.scope) })}</p>
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
             <Panel id="relations" title={t('panels.relations')} description={t('panels.relationsDescription')}>

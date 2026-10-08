@@ -131,9 +131,9 @@ describe('heroInsights', () => {
   const base: HeroInsightInput = {
     name: 'H1',
     winRate: 0.52,
-    scope: 'Last 30 days, All ranks',
-    weekScope: 'Last 14 days, All ranks',
-    rankScope: 'Last 30 days, every rank band',
+    scope: { window: { kind: 'days', days: 30 }, rank: { kind: 'all' } },
+    weekScope: { window: { kind: 'days', days: 14 }, rank: { kind: 'all' } },
+    rankScope: { window: { kind: 'days', days: 30 }, rank: { kind: 'everyBand' } },
     weeks: null,
     patch: null,
     length: compareGroups([{ key: 'short', label: 'Under 25 min', wins: 500, matches: 1_000 }, { key: 'long', label: 'Over 35 min', wins: 650, matches: 1_000 }]),

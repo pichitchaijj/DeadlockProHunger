@@ -1,0 +1,26 @@
+{
+  "window": {
+    "label": {
+      "days": "最近 {days} 天",
+      "patch": "当前补丁",
+      "patchSince": "当前补丁（自 {date} 起）"
+    },
+    "inSentence": {
+      "days": "最近 {days} 天",
+      "patch": "当前补丁",
+      "patchSince": "当前补丁（自 {date} 起）"
+    }
+  },
+  "rank": {
+    "all": "所有段位",
+    "band": "{from} – {to}",
+    "tier": "第 {tier} 级",
+    "everyBand": "所有段位区间",
+    "rankedOnly": "{rank} · 仅排位赛",
+    "heroPlayers": "{rank} · {hero} 玩家"
+  },
+  "joined": "{window}，{rank}",
+  "line": "{window} · {rank}",
+  "lineSample": "{window} · {rank} · n = {count}",
+  "snapshot": "· {time} UTC 的数据"
+}

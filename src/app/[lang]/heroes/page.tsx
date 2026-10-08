@@ -11,6 +11,7 @@ import { heroesHref, parseScope, parseView } from '@/features/heroes/query'
 import { DataNotice } from '@/components/data/DataState'
 import { WithClientMessages } from '@/i18n/WithClientMessages'
 import { OG_LOCALE } from '@/i18n/config'
+import { getScopeWording } from '@/components/data/scopeWording'
 
 export async function generateMetadata(): Promise<Metadata> {
   const [t, locale] = await Promise.all([getTranslations('heroes.meta'), getLocale()])
@@ -30,7 +31,7 @@ export default async function HeroesPage({ searchParams }: { searchParams: Searc
   const raw = await searchParams
   const scope = parseScope(raw)
   const view = parseView(raw)
-  const [data, t, common] = await Promise.all([getDirectoryData(scope), getTranslations('heroes.list'), getTranslations('common')])
+  const [data, t, common, scopeWords] = await Promise.all([getDirectoryData(scope), getTranslations('heroes.list'), getTranslations('common'), getScopeWording()])
 
   return (
     <PageContainer className="flex flex-col gap-8">
@@ -43,7 +44,7 @@ export default async function HeroesPage({ searchParams }: { searchParams: Searc
       {data.ok ? (
         <>
           <WithClientMessages paths={DIRECTORY_MESSAGES}>
-            <HeroDirectory heroes={data.heroes} scope={scope} initialView={view} windowLabels={data.windowLabels} rankLabels={data.rankLabels} ranks={data.ranks} />
+            <HeroDirectory heroes={data.heroes} scope={scope} initialView={view} windowLabels={scopeWords.windowLabels(data.windows)} rankLabels={scopeWords.rankLabels(data.rankRefs)} ranks={data.ranks} />
           </WithClientMessages>
           <ScopeLine scope={data.scope} />
         </>

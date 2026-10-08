@@ -83,7 +83,7 @@ export async function getHeroCompare(q: CompareQuery) {
     differences,
     lengthGroups: groups('length'),
     rankGroups: groups('rank'),
-    scopeText: ctxA.scope.scopeText,
+    scope: ctxA.scope.selected,
   }
 }
 

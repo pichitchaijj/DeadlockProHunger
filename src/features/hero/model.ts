@@ -5,6 +5,7 @@ import { RANK_BANDS, rankBandLabel, type RankBandId } from '@/lib/analytics/rank
 import { sampleTier, type SampleTier } from '@/lib/analytics/sampleTier'
 import { wilsonInterval, type Interval } from '@/lib/analytics/wilson'
 import { formatDuration, formatPointDelta } from '@/lib/format'
+import type { ScopeRef } from '@/lib/analytics/scope'
 
 /*
  * Pure Hero Detail model. Every number and sentence is derived from API rows here;
@@ -287,11 +288,11 @@ export type HeroInsightInput = {
   name: string
   winRate: number
   /** Scope text of the selected window and rank, e.g. "Last 30 days, All ranks". */
-  scope: string
+  scope: ScopeRef
   /** Scope of the week-over-week comparison (rank only; the weeks are fixed). */
-  weekScope: string
+  weekScope: ScopeRef
   /** Scope of the rank splits (all ranks, selected window). */
-  rankScope: string
+  rankScope: ScopeRef
   weeks: { current: WinLossPair; previous: WinLossPair } | null
   /** The latest patch in the last ~7 weeks, with the hero's 7 days either side; `inWeeks` when it falls in the last 14 days. */
   patch: { title: string; before: WinLossPair | null; after: WinLossPair | null; inWeeks: boolean } | null

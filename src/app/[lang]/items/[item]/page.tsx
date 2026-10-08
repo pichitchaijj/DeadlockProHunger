@@ -24,6 +24,7 @@ import { findItem, getItemContext, getItemHeroes, getItemPerformance, getItemTim
 import { purchaseTimingInsight, type ItemRef } from '@/features/items/model'
 import { capitalize } from '@/features/meta/model'
 import { itemHref, itemsHref, parseItemScope, DEFAULT_ITEMS_QUERY, type ItemScopeQuery } from '@/features/items/query'
+import { getScopeWording } from '@/components/data/scopeWording'
 
 type Params = Promise<{ item: string }>
 type SearchParams = Promise<Record<string, string | string[] | undefined>>
@@ -61,7 +62,7 @@ export default async function ItemPage({ params, searchParams }: { params: Param
   const item = itemLoad.value
   if (!item) notFound()
 
-  const [heroes, ctxLoad] = await Promise.all([heroOptions(), attempt('[item] scope failed', getItemContext(query))])
+  const [heroes, ctxLoad, scopeWords] = await Promise.all([heroOptions(), attempt('[item] scope failed', getItemContext(query)), getScopeWording()])
   const href = (changes: Partial<ItemScopeQuery>) => itemHref(item.slug, query, changes)
   // Slot is the game's item category (data); "Tier" and "souls" are UI words around numbers.
   const eyebrow = [item.slot && capitalize(item.slot), item.tier && t('tier', { tier: item.tier }), item.cost && t('cost', { cost: formatInteger(item.cost, locale) })]
@@ -83,7 +84,7 @@ export default async function ItemPage({ params, searchParams }: { params: Param
           <EmptyState title={builds('unknownHero')} action={<ButtonLink href={href({ hero: 'all' })} variant="secondary" size="sm">{builds('allHeroes')}</ButtonLink>} />
         ) : (
           <>
-            <ItemFilters query={query} href={href} heroes={heroes} rankLabels={ctxLoad.value.scope.rankLabels} ranks={ctxLoad.value.scope.ranks} />
+            <ItemFilters query={query} href={href} heroes={heroes} rankLabels={scopeWords.rankLabels(ctxLoad.value.scope.rankRefs)} ranks={ctxLoad.value.scope.ranks} />
             <ScopeLine scope={ctxLoad.value.statScope} />
           </>
         )}
@@ -161,7 +162,6 @@ async function Timing({ item, query, ctx }: { item: ItemRef; query: ItemScopeQue
   if (points.length === 0 && phases.every((p) => p.stats === null)) {
     return <EmptyState title={t('detail.noTimingsTitle')} description={t('detail.noTimingsDescription', { item: item.name })} />
   }
-  const scopeText = `${ctx.statScope.windowLabel}, ${ctx.statScope.rankLabel}`
 
   return (
     <div className="flex flex-col gap-6">
@@ -179,7 +179,7 @@ async function Timing({ item, query, ctx }: { item: ItemRef; query: ItemScopeQue
       </div>
 
       {/* The standout phase is an Insight Engine result: facts from the model, worded for the request's language. */}
-      {standout ? <StandoutCard insight={purchaseTimingInsight(item.name, standout, phases, scopeText)} wording={wording} /> : <NoStandout />}
+      {standout ? <StandoutCard insight={purchaseTimingInsight(item.name, standout, phases, ctx.statScope)} wording={wording} /> : <NoStandout />}
     </div>
   )
 }

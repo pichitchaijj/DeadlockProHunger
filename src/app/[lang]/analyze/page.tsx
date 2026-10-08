@@ -21,6 +21,7 @@ import { Block, BuildsSection, ComparisonSection, DataContext, HeroSummary, Insi
 import { getAnalyzeHero, getAnalyzeMeta, getPickerHeroes } from '@/features/analyze/loaders'
 import { peerComparison } from '@/features/analyze/model'
 import { analyzeHref, parseAnalyzeQuery } from '@/features/analyze/query'
+import { getScopeWording } from '@/components/data/scopeWording'
 
 export async function generateMetadata(): Promise<Metadata> {
   const [t, locale] = await Promise.all([getTranslations('analyze.meta'), getLocale()])
@@ -42,6 +43,7 @@ export default async function AnalyzePage({ searchParams }: { searchParams: Sear
     getTranslations('analyze'),
     getTranslations('common'),
   ])
+  const scopeWords = await getScopeWording()
 
   const header = <SectionHeader as="h1" eyebrow={t('eyebrow')} title={t('title')} description={t('description')} />
 
@@ -62,7 +64,7 @@ export default async function AnalyzePage({ searchParams }: { searchParams: Sear
     <PageContainer className="flex flex-col gap-(--spacing-section)">
       <div className="flex flex-col gap-6">
         {header}
-        <Controls query={query} heroes={pickerResult.ok ? pickerResult.value : meta.model.heroes} rankLabels={meta.rankLabels} ranks={meta.ranks} windowLabels={meta.windowLabels} selectedName={ctx?.hero.name ?? null} />
+        <Controls query={query} heroes={pickerResult.ok ? pickerResult.value : meta.model.heroes} rankLabels={scopeWords.rankLabels(meta.rankRefs)} ranks={meta.ranks} windowLabels={scopeWords.windowLabels(meta.windows)} selectedName={ctx?.hero.name ?? null} />
       </div>
 
       {!heroResult.ok ? (

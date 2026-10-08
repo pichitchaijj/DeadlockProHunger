@@ -19,6 +19,7 @@ import { rankBandOptions } from '@/features/meta/rankFilter'
 import { resolveScope } from '@/features/meta/scope'
 import { DataNotice } from '@/components/data/DataState'
 import { attempt } from '@/lib/deadlock/errors'
+import { getScopeWording } from '@/components/data/scopeWording'
 
 export async function generateMetadata(): Promise<Metadata> {
   const [t, locale] = await Promise.all([getTranslations('compare.meta'), getLocale()])
@@ -98,14 +99,14 @@ async function Pickers({ query, pickHero }: { query: CompareQuery; pickHero: str
     )
   }
 
-  const [heroLoad, scope] = await Promise.all([attempt('[compare] hero list failed', heroOptions()), resolveScope({ window: query.window, rank: query.rank, mode: 'all' }).catch(() => null)])
+  const [heroLoad, scope, scopeWords] = await Promise.all([attempt('[compare] hero list failed', heroOptions()), resolveScope({ window: query.window, rank: query.rank, mode: 'all' }).catch(() => null), getScopeWording()])
   // Hero and build comparisons both start from the hero list: without it, say why instead of showing empty pickers.
   if (!heroLoad.ok) return <DataNotice error={heroLoad.kind} what="Hero list" />
   const heroes = heroLoad.value
   const scopeFilters = scope && (
     <div className="grid gap-4 md:grid-cols-2">
-      <Filter label={builds('detail.window')} value={query.window} options={(['patch', '7d', '30d'] as const).map((w) => ({ value: w, label: scope.windowLabels[w].replace(/ \(since .*\)/, ''), href: compareHref(query, { window: w }) }))} />
-      <Filter label={builds('list.rank')} value={query.rank} options={rankBandOptions(scope.rankLabels, scope.ranks, (rank) => compareHref(query, { rank }))} />
+      <Filter label={builds('detail.window')} value={query.window} options={(['patch', '7d', '30d'] as const).map((w) => ({ value: w, label: scopeWords.window(scope.windows[w], { short: true }), href: compareHref(query, { window: w }) }))} />
+      <Filter label={builds('list.rank')} value={query.rank} options={rankBandOptions(scopeWords.rankLabels(scope.rankRefs), scope.ranks, (rank) => compareHref(query, { rank }))} />
     </div>
   )
 

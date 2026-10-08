@@ -1,5 +1,6 @@
 import type { Insight, Measured, PurchasePhaseKey, SplitGroup } from './insights'
 import type { SampleTier } from './sampleTier'
+import type { ScopeRef } from './scope'
 
 /*
  * Insight Engine wording: an insight's facts (lib/analytics/insights.ts) → the text InsightCard shows, from
@@ -25,6 +26,8 @@ export type InsightFormat = {
   length: (key: string) => string
   /** Purchase phase → its label and minute range (items.phases). */
   phase: (key: PurchasePhaseKey) => { label: string; range: string }
+  /** The insight's scope → "Last 30 days, All ranks" (lib/analytics/scopeText). */
+  scope: (scope: ScopeRef) => string
 }
 
 export type InsightMetricText = { id: string; label: string; value: string }
@@ -53,7 +56,7 @@ const lead = (gap: number) => (gap * 100).toFixed(1)
 export function insightText(insight: Insight, t: InsightTranslate, f: InsightFormat): InsightText {
   const interval = (low: number, high: number) => t('metric.range', { low: f.percent(low), high: f.percent(high) })
   const wonInterval = (m: Measured) => t('metric.wonInterval', { rate: f.percent(m.winRate), count: f.integer(m.matches), range: interval(m.interval.low, m.interval.high) })
-  const context = t('context.matches', { scope: insight.scope, count: f.integer(insight.sampleSize), sample: f.sample(insight.sample) })
+  const context = t('context.matches', { scope: f.scope(insight.scope), count: f.integer(insight.sampleSize), sample: f.sample(insight.sample) })
 
   switch (insight.kind) {
     case 'rising':
@@ -199,7 +202,7 @@ export function insightText(insight: Insight, t: InsightTranslate, f: InsightFor
         })),
         rule: t('kinds.purchaseTiming.rule'),
         caveat: t('kinds.purchaseTiming.caveat'),
-        context: t('context.phases', { scope: insight.scope, count: f.integer(insight.sampleSize), sample: f.sample(insight.sample) }),
+        context: t('context.phases', { scope: f.scope(insight.scope), count: f.integer(insight.sampleSize), sample: f.sample(insight.sample) }),
       }
     }
   }

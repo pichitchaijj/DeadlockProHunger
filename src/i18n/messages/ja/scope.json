@@ -1,0 +1,26 @@
+{
+  "window": {
+    "label": {
+      "days": "直近 {days} 日間",
+      "patch": "現在のパッチ",
+      "patchSince": "現在のパッチ（{date} から）"
+    },
+    "inSentence": {
+      "days": "直近 {days} 日間",
+      "patch": "現在のパッチ",
+      "patchSince": "現在のパッチ（{date} から）"
+    }
+  },
+  "rank": {
+    "all": "全ランク",
+    "band": "{from} – {to}",
+    "tier": "ティア {tier}",
+    "everyBand": "全ランク帯",
+    "rankedOnly": "{rank} · ランク戦のみ",
+    "heroPlayers": "{rank} · {hero} プレイヤー"
+  },
+  "joined": "{window}、{rank}",
+  "line": "{window} · {rank}",
+  "lineSample": "{window} · {rank} · n = {count}",
+  "snapshot": "· {time} UTC 時点のデータ"
+}

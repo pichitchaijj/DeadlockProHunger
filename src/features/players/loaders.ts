@@ -29,12 +29,12 @@ async function context() {
     heroes,
     tierNames: scope?.tierNames ?? new Map<number, string>(),
     ranks: scope?.ranks ?? [],
-    rankLabels: scope?.rankLabels ?? null,
+    rankRefs: scope?.rankRefs ?? null,
   }
 }
 
 export async function getSearchView(query: PlayersQuery) {
-  const { ranks, rankLabels, heroes } = await context()
+  const { ranks, rankRefs, heroes } = await context()
   const minBadge = badgeRange(rankBand(query.rank))?.min
   const results = query.q.length >= 2 ? await searchProfiles(query.q, minBadge) : []
   return {
@@ -45,7 +45,7 @@ export async function getSearchView(query: PlayersQuery) {
       matches30d: p.matches_played_last_30d ?? null,
       teamRank: rankFromBadge(ranks, p.last_team_avg_badge),
     })),
-    rankLabels,
+    rankRefs,
     ranks,
     heroes: [...heroes.values()].sort((a, b) => a.name.localeCompare(b.name)),
   }
