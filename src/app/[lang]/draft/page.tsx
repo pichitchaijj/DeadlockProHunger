@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
+import { getLocale, getTranslations } from 'next-intl/server'
 import type { ReactNode } from 'react'
+import { OG_LOCALE } from '@/i18n/config'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { ButtonLink } from '@/components/ui/Button'
 import { Filter } from '@/components/ui/Filter'
@@ -14,9 +16,13 @@ import { draftHref, parseDraftQuery, TEAM_SIZE } from '@/features/draft/query'
 import { DataNotice } from '@/components/data/DataState'
 import { attempt } from '@/lib/deadlock/errors'
 
-export const metadata: Metadata = {
-  title: 'Draft Lab',
-  description: 'Explore Deadlock team compositions: measured synergy, matchups, role coverage and data-backed next picks with confidence levels.',
+export async function generateMetadata(): Promise<Metadata> {
+  const [t, locale] = await Promise.all([getTranslations('draft.meta'), getLocale()])
+  return {
+    title: t('title'),
+    description: t('description'),
+    openGraph: { title: t('title'), description: t('description'), locale: OG_LOCALE[locale], type: 'website' },
+  }
 }
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>
@@ -35,59 +41,57 @@ function Panel({ id, title, description, children, className }: { id: string; ti
 
 export default async function DraftPage({ searchParams }: { searchParams: SearchParams }) {
   const query = parseDraftQuery(await searchParams)
-  const dataLoad = await attempt('[draft] load failed', getDraftData(query))
+  const [dataLoad, t, common, builds] = await Promise.all([
+    attempt('[draft] load failed', getDraftData(query)),
+    getTranslations('draft'),
+    getTranslations('common'),
+    getTranslations('builds'),
+  ])
   const data = dataLoad.ok ? dataLoad.value : null
   const failed = dataLoad.ok ? 'unavailable' : dataLoad.kind
 
   return (
     <PageContainer className="flex flex-col gap-6">
-      <SectionHeader
-        as="h1"
-        eyebrow="Advanced tool"
-        title="Draft Lab"
-        description="Pick heroes for both teams to see how they have performed together and against each other in public matches. These are statistical associations, not coaching: players, lanes and items matter and aren’t captured here."
-      />
+      <SectionHeader as="h1" eyebrow={t('eyebrow')} title={t('title')} description={t('description')} />
       {!data ? (
-        <DataNotice error={failed} what="Draft data" action={<ButtonLink href={draftHref(query)} variant="secondary" size="sm">Try again</ButtonLink>} />
+        <DataNotice error={failed} what="Draft data" action={<ButtonLink href={draftHref(query)} variant="secondary" size="sm">{common('tryAgain')}</ButtonLink>} />
       ) : (
         <>
           <div className="grid gap-4 rounded-md border border-border bg-surface/60 p-(--spacing-card) md:grid-cols-2">
-            <Filter label="Patch / time" value={query.window} options={(['patch', '7d', '30d'] as const).map((w) => ({ value: w, label: data.windowLabels[w].replace(/ \(since .*\)/, ''), href: draftHref(query, { window: w }) }))} />
-            <Filter label="Rank (match average)" value={query.rank} options={rankBandOptions(data.rankLabels, data.ranks, (rank) => draftHref(query, { rank }))} />
+            <Filter label={builds('detail.window')} value={query.window} options={(['patch', '7d', '30d'] as const).map((w) => ({ value: w, label: data.windowLabels[w].replace(/ \(since .*\)/, ''), href: draftHref(query, { window: w }) }))} />
+            <Filter label={builds('list.rank')} value={query.rank} options={rankBandOptions(data.rankLabels, data.ranks, (rank) => draftHref(query, { rank }))} />
           </div>
 
           <TeamSlots query={query} allies={data.allies} enemies={data.enemies} base={data.baseWinRate} />
           <HeroPicker query={query} heroes={data.heroes} />
-          <p className="text-caption text-text-muted">Scope: {data.scopeText}. Numbers under heroes are their win rates in this scope.</p>
+          <p className="text-caption text-text-muted">{t('scopeNote', { scope: data.scopeText })}</p>
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-            <Panel id="relations" title="Relationships" description="Pairs whose results differ clearly from what each hero’s own win rate predicts.">
+            <Panel id="relations" title={t('panels.relations')} description={t('panels.relationsDescription')}>
               {data.allies.length + data.enemies.length < 2 ? (
-                <p className="text-sm text-text-muted">Pick at least two heroes.</p>
+                <p className="text-sm text-text-muted">{t('panels.needTwo')}</p>
               ) : (
                 <RelationMap allies={data.allies} enemies={data.enemies} relations={data.relations.clear} checked={data.relations.checked} withData={data.relations.withData} />
               )}
             </Panel>
-            <Panel id="recs" title="Next pick for your team" description="Heroes with clear positive results alongside your picks or against the enemy’s. Ordered by confidence, then by measured gap.">
+            <Panel id="recs" title={t('panels.recs')} description={t('panels.recsDescription')}>
               <Recommendations query={query} recs={data.recommendations} heroes={data.heroes} hasPicks={data.allies.length + data.enemies.length > 0} alliesFull={data.allies.length >= TEAM_SIZE} />
             </Panel>
           </div>
 
           <div className="grid gap-6 lg:grid-cols-3">
-            <Panel id="weak" title="Weak points" description="Measured, for your team.">
+            <Panel id="weak" title={t('panels.weak')} description={t('panels.weakDescription')}>
               <WeakPoints points={data.weakPoints} hasAllies={data.allies.length > 0} />
             </Panel>
-            <Panel id="roles" title="Role coverage">
+            <Panel id="roles" title={t('panels.roles')}>
               <RoleCoverage allies={data.allies} enemies={data.enemies} />
             </Panel>
-            <Panel id="balance" title="Damage / frontline balance">
+            <Panel id="balance" title={t('panels.balance')}>
               <Balance allies={data.balance.allies} enemies={data.balance.enemies} />
             </Panel>
           </div>
 
-          <p className="text-caption text-text-muted">
-            How it works: each pair’s win rate is compared with the expectation from the two heroes’ individual win rates (same team: wr₁ + wr₂ − 50%; opposing: wr₁ − wr₂ + 50%). A relationship counts only when its 95% interval excludes that expectation, the gap is at least 1 percentage point, and it has 200+ matches. Pairs need 100+ matches to appear at all.
-          </p>
+          <p className="text-caption text-text-muted">{t('howItWorks')}</p>
         </>
       )}
     </PageContainer>

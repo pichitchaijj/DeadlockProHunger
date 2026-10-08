@@ -1,7 +1,8 @@
+import { useLocale, useTranslations } from 'next-intl'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
 import { cx } from '@/lib/cx'
 import { formatInteger, formatPercent } from '@/lib/format'
-import type { DraftHero, Relation } from '../model'
+import { pp, type DraftHero, type Relation } from '../model'
 
 const ROW = 56
 const W = 100
@@ -12,14 +13,14 @@ export function favorsYou(r: Relation, allyIds: Set<number>): boolean {
   return allyIds.has(r.from) ? r.clear === 'positive' : r.clear === 'negative'
 }
 
-const pp = (v: number) => `${v >= 0 ? '+' : '−'}${(Math.abs(v) * 100).toFixed(1)}pp`
-
 /**
  * Only clear relationships are drawn, so the map stays quiet:
  * left arcs = your pairs, right arcs = enemy pairs, straight lines = matchups.
  * Lines fade in once; the list below carries the same information as text.
  */
 export function RelationMap({ allies, enemies, relations, checked, withData }: { allies: DraftHero[]; enemies: DraftHero[]; relations: Relation[]; checked: number; withData: number }) {
+  const t = useTranslations('draft.map')
+  const locale = useLocale()
   const allyIds = new Set(allies.map((h) => h.id))
   const rows = Math.max(allies.length, enemies.length, 1)
   const H = rows * ROW
@@ -76,15 +77,13 @@ export function RelationMap({ allies, enemies, relations, checked, withData }: {
       </div>
 
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-caption text-text-muted">
-        <span className="flex items-center gap-1.5"><span className="h-0.5 w-5 bg-primary" /> Favors your team</span>
-        <span className="flex items-center gap-1.5"><span className="w-5 border-t-2 border-dashed border-orange" /> Favors the enemy (dashed)</span>
-        <span>Arcs: same-team pairs · straight: matchups · thicker = bigger gap · faded = moderate sample</span>
+        <span className="flex items-center gap-1.5"><span className="h-0.5 w-5 bg-primary" /> {t('favorsYou')}</span>
+        <span className="flex items-center gap-1.5"><span className="w-5 border-t-2 border-dashed border-orange" /> {t('favorsEnemyLegend')}</span>
+        <span>{t('legend')}</span>
       </div>
 
       {relations.length === 0 ? (
-        <p className="text-sm text-text-muted">
-          No clear relationships among these picks. {formatInteger(checked)} pairings checked, {formatInteger(withData)} with enough data; every one is within what the heroes’ individual win rates predict.
-        </p>
+        <p className="text-sm text-text-muted">{t('none', { checked: formatInteger(checked, locale), withData: formatInteger(withData, locale) })}</p>
       ) : (
         <>
           <ul className="flex flex-col gap-1.5">
@@ -93,17 +92,19 @@ export function RelationMap({ allies, enemies, relations, checked, withData }: {
               return (
                 <li key={`${r.kind}-${r.from}-${r.to}`} className="flex flex-wrap items-baseline gap-x-2 text-sm">
                   <span className={cx('font-semibold', good ? 'text-primary' : 'text-orange')}>
-                    {r.kind === 'matchup' ? `${name(r.from)} vs ${name(r.to)}` : `${name(r.from)} + ${name(r.to)}`}
+                    {t(r.kind === 'matchup' ? 'matchupPair' : 'synergyPair', { a: name(r.from), b: name(r.to) })}
                   </span>
                   <span className="text-text">
-                    {r.kind === 'matchup' ? `${name(r.from)} wins ${formatPercent(r.winRate)}` : `${formatPercent(r.winRate)} together`}, expected {formatPercent(r.expected)} ({pp(r.lift)})
+                    {r.kind === 'matchup'
+                      ? t('matchupResult', { a: name(r.from), rate: formatPercent(r.winRate), expected: formatPercent(r.expected), gap: pp(r.lift) })
+                      : t('synergyResult', { rate: formatPercent(r.winRate), expected: formatPercent(r.expected), gap: pp(r.lift) })}
                   </span>
-                  <span className="text-caption text-text-muted">{good ? 'Favors your team' : 'Favors the enemy'} · n = {formatInteger(r.matches)} · {r.sample === 'high' ? 'high' : 'moderate'} sample</span>
+                  <span className="text-caption text-text-muted">{t('relationMeta', { favor: good ? t('favorsYou') : t('favorsEnemy'), n: formatInteger(r.matches, locale), sample: r.sample === 'high' ? 'high' : 'moderate' })}</span>
                 </li>
               )
             })}
           </ul>
-          <p className="text-caption text-text-muted">{relations.length} of {formatInteger(checked)} pairings differ clearly from expectation; the rest are within noise or lack data and aren’t drawn.</p>
+          <p className="text-caption text-text-muted">{t('summary', { count: relations.length, checked: formatInteger(checked, locale) })}</p>
         </>
       )}
     </div>

@@ -5,6 +5,7 @@ import commandPalette from './commandPalette.json'
 import compare from './compare.json'
 import common from './common.json'
 import data from './data.json'
+import draft from './draft.json'
 import errors from './errors.json'
 import footer from './footer.json'
 import header from './header.json'
@@ -19,4 +20,4 @@ import notFound from './notFound.json'
 import players from './players.json'
 
 /** Must match English key for key (`satisfies Messages`; tests also check placeholders). */
-export default { builds, cards, commandPalette, common, compare, data, errors, footer, header, heroes, home, items, languages, leaderboard, matches, nav, notFound, players } satisfies Messages
+export default { builds, cards, commandPalette, common, compare, data, draft, errors, footer, header, heroes, home, items, languages, leaderboard, matches, nav, notFound, players } satisfies Messages

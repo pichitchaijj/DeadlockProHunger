@@ -1,0 +1,114 @@
+{
+  "meta": {
+    "title": "Draft Lab",
+    "description": "Deadlock のチーム編成を分析：測定されたシナジー、対面、ロールの網羅、信頼度付きのデータに基づく次のピック。"
+  },
+  "eyebrow": "上級ツール",
+  "title": "Draft Lab",
+  "description": "両チームのヒーローを選ぶと、公開試合で一緒に、また互いに対してどんな成績だったかを確認できます。これは統計的な関連であり、コーチングではありません。プレイヤー、レーン、アイテムも影響しますが、ここでは扱っていません。",
+  "scopeNote": "範囲：{scope}。ヒーローの下の数値はこの範囲での勝率です。",
+  "howItWorks": "仕組み：各ペアの勝率を、2 体のヒーローそれぞれの勝率から求めた期待値と比較します（同じチーム：wr₁ + wr₂ − 50%、敵同士：wr₁ − wr₂ + 50%）。95% 区間がその期待値を含まず、差が 1 ポイント以上で、200 試合以上ある場合にのみ関係として数えます。ペアは 100 試合以上ないと表示されません。",
+  "panels": {
+    "relations": "関係",
+    "relationsDescription": "各ヒーロー自身の勝率から予想される結果と明確に異なるペア。",
+    "needTwo": "ヒーローを 2 体以上選んでください。",
+    "recs": "あなたのチームの次のピック",
+    "recsDescription": "あなたのピックと一緒に、または敵のピックに対して明確にプラスの結果を持つヒーロー。信頼度順、次に測定された差の順。",
+    "weak": "弱点",
+    "weakDescription": "あなたのチームについて測定したもの。",
+    "roles": "ロールの網羅",
+    "balance": "ダメージ / 前衛のバランス"
+  },
+  "board": {
+    "sides": {
+      "allies": "あなたのチーム",
+      "enemies": "敵チーム"
+    },
+    "sidesLower": {
+      "allies": "あなたのチーム",
+      "enemies": "敵チーム"
+    },
+    "addingHere": "ここに追加中",
+    "addHere": "ここにヒーローを追加",
+    "remove": "{hero} を{side}から外す",
+    "addTo": "<side>{team}</side>に追加",
+    "teamFull": "チームが満員",
+    "clear": "ドラフトをクリア",
+    "otherRole": "その他",
+    "picked": "{hero}（選択済み）",
+    "add": "{hero} を追加",
+    "addToSide": "{hero} を{side}に追加"
+  },
+  "recs": {
+    "needPicks": "どちらかの側でヒーローを 1 体以上選んでください。候補は、現在のピックと一緒に、または対してヒーローがどんな成績かだけに基づきます。",
+    "full": "あなたのチームは満員です。",
+    "none": "これらのピックで明確にプラスの根拠があるヒーローはいません。データが選択肢を区別できないという意味であり、どの選択も間違いという意味ではありません。",
+    "confidence": {
+      "high": "信頼度：高",
+      "moderate": "信頼度：中"
+    },
+    "rule": {
+      "high": "明確なプラスの関係が 2 つ以上あり、明確なマイナスの関係がない。",
+      "moderate": "明確なプラスの関係が 1 つ以上あり、プラスがマイナスより多い。"
+    },
+    "addToTeam": "あなたのチームに追加",
+    "why": "理由",
+    "with": "{hero} と一緒",
+    "against": "{hero} に対して",
+    "vsExpected": "{rate}（期待値 {expected}、{gap}）",
+    "status": {
+      "clear": "明確",
+      "low": "サンプル少",
+      "noise": "誤差の範囲内または 1pp 未満"
+    },
+    "newRole": "あなたのチーム初の {role} になります。ロールの網羅は事実として示すもので、スコアには含みません。",
+    "otherPairings": "ほか {count} {count, plural, other {組}}は明確ではない",
+    "withoutData": "{count} 組はデータ不足"
+  },
+  "weak": {
+    "needAllies": "あなたのチームにヒーローを追加すると、測定された弱点を確認できます。",
+    "none": "測定された弱点はありません：あなたのピックに明確に勝つ敵はおらず、あなたのピック同士で明確に成績が落ちるペアもなく、下位 4 分の 1 に入るバランス指標もありません。",
+    "threat": "{enemy}：{allies} の結果が期待より低い",
+    "and": "と",
+    "threatDetail": "{ally} は {enemy} に対して勝率 {rate}、期待値 {expected}（{gap}、n = {n}）",
+    "clash": "{a} + {b} は一緒だと期待より勝てていない",
+    "clashDetail": "一緒で {rate}、期待値 {expected}（{gap}、n = {n}）",
+    "low": {
+      "damage": "ヒーローダメージが低い",
+      "damageTaken": "被ダメージが低い（前衛）",
+      "objectiveDamage": "オブジェクトダメージが低い"
+    },
+    "lowDetail": "あなたのピックは、この 1 試合あたりの指標でヒーロー全体の平均 {percentile} パーセンタイルです。",
+    "heroFallback": "ヒーロー {id}"
+  },
+  "roles": {
+    "caption": "各チームのロール別ヒーロー数",
+    "role": "ロール",
+    "you": "あなた",
+    "enemy": "敵"
+  },
+  "balance": {
+    "axes": {
+      "damage": "ヒーローダメージ",
+      "damageTaken": "被ダメージ（前衛）",
+      "objectiveDamage": "オブジェクトダメージ"
+    },
+    "needPicks": "ヒーローを選ぶと測定されたプロフィールが表示されます。",
+    "percentile": "{value} パーセンタイル",
+    "noPicks": "ピックなし",
+    "note": "各チームのヒーローが全ヒーロー中で占める平均パーセンタイル（50 = 標準）。この範囲での 1 試合あたりの平均から算出。試合が長いほどすべての合計は増えます。回復や CC などのユーティリティはデータにないため、測定していません。"
+  },
+  "map": {
+    "favorsYou": "あなたのチームに有利",
+    "favorsEnemy": "敵に有利",
+    "favorsEnemyLegend": "敵に有利（破線）",
+    "legend": "弧：同じチームのペア · 直線：対面 · 太い = 差が大きい · 淡色 = サンプル中",
+    "none": "これらのピックに明確な関係はありません。{checked} 組を確認し、{withData} 組に十分なデータがあり、いずれもヒーロー個別の勝率から予想される範囲内です。",
+    "matchupPair": "{a} 対 {b}",
+    "synergyPair": "{a} + {b}",
+    "matchupResult": "{a} の勝率 {rate}、期待値 {expected}（{gap}）",
+    "synergyResult": "一緒で {rate}、期待値 {expected}（{gap}）",
+    "relationMeta": "{favor} · n = {n} · サンプル{sample, select, high {多} other {中}}",
+    "summary": "{checked} 組中 {count} 組が期待値と明確に異なります。残りは誤差の範囲内かデータ不足のため描画していません。"
+  }
+}

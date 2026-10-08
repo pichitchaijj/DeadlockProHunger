@@ -1,0 +1,114 @@
+{
+  "meta": {
+    "title": "Draft Lab",
+    "description": "探索 Deadlock 阵容：经测量的配合、对位、定位覆盖，以及带置信度的数据支持的下一手选择。"
+  },
+  "eyebrow": "高级工具",
+  "title": "Draft Lab",
+  "description": "为双方选择英雄，查看他们在公开比赛中同队及对阵时的表现。这些是统计关联，而非指导：玩家、线路和物品也有影响，但这里没有统计。",
+  "scopeNote": "范围：{scope}。英雄下方的数字是其在此范围内的胜率。",
+  "howItWorks": "原理：将每对英雄的胜率与由两名英雄各自胜率得出的期望值比较（同队：wr₁ + wr₂ − 50%；对阵：wr₁ − wr₂ + 50%）。只有当 95% 区间不包含该期望值、差距至少 1 个百分点且有 200+ 场比赛时，才计为一种关系。英雄对至少需要 100+ 场比赛才会显示。",
+  "panels": {
+    "relations": "关系",
+    "relationsDescription": "结果与各英雄自身胜率预测明显不同的英雄对。",
+    "needTwo": "请至少选择两名英雄。",
+    "recs": "你方的下一手选择",
+    "recsDescription": "与你方已选英雄同队或对阵敌方已选英雄时有明确正面结果的英雄。按置信度排序，其次按测得的差距。",
+    "weak": "弱点",
+    "weakDescription": "针对你方测得。",
+    "roles": "定位覆盖",
+    "balance": "伤害 / 前排平衡"
+  },
+  "board": {
+    "sides": {
+      "allies": "你方",
+      "enemies": "敌方"
+    },
+    "sidesLower": {
+      "allies": "你方",
+      "enemies": "敌方"
+    },
+    "addingHere": "正在添加到此方",
+    "addHere": "在此添加英雄",
+    "remove": "将 {hero} 从{side}移除",
+    "addTo": "添加到<side>{team}</side>",
+    "teamFull": "队伍已满",
+    "clear": "清空选择",
+    "otherRole": "其他",
+    "picked": "{hero}（已选）",
+    "add": "添加 {hero}",
+    "addToSide": "将 {hero} 添加到{side}"
+  },
+  "recs": {
+    "needPicks": "请在任意一方至少选择一名英雄。建议仅来自英雄与当前已选英雄同队或对阵时的表现。",
+    "full": "你方已满员。",
+    "none": "在这些选择下，没有英雄有明确的正面证据。这表示数据无法区分这些选项，而不是说任何选择是错的。",
+    "confidence": {
+      "high": "高置信度",
+      "moderate": "中等置信度"
+    },
+    "rule": {
+      "high": "至少 2 个明确的正面关系，且没有明确的负面关系。",
+      "moderate": "至少 1 个明确的正面关系，且正面多于负面。"
+    },
+    "addToTeam": "添加到你方",
+    "why": "原因",
+    "with": "与 {hero} 同队",
+    "against": "对阵 {hero}",
+    "vsExpected": "{rate}，期望 {expected}（{gap}）",
+    "status": {
+      "clear": "明确",
+      "low": "样本少",
+      "noise": "在误差范围内或低于 1pp"
+    },
+    "newRole": "将成为你方第一个{role}。定位覆盖仅作为事实展示，不计入评分。",
+    "otherPairings": "另有 {count} {count, plural, other {组}}不明确",
+    "withoutData": "{count} 组数据不足"
+  },
+  "weak": {
+    "needAllies": "为你方添加英雄以检查测得的弱点。",
+    "none": "没有测得的弱点：没有敌方英雄明显克制你的选择，你方没有哪对英雄同队时明显表现不佳，也没有平衡指标处于后四分之一。",
+    "threat": "{enemy}：{allies} 的结果低于预期",
+    "and": "和",
+    "threatDetail": "{ally} 对阵 {enemy} 胜率 {rate}，期望 {expected}（{gap}，n = {n}）",
+    "clash": "{a} + {b} 同队时胜率低于预期",
+    "clashDetail": "同队 {rate}，期望 {expected}（{gap}，n = {n}）",
+    "low": {
+      "damage": "英雄伤害偏低",
+      "damageTaken": "承受伤害偏低（前排）",
+      "objectiveDamage": "目标伤害偏低"
+    },
+    "lowDetail": "你方英雄在此场均指标上平均处于所有英雄的第 {percentile} 百分位。",
+    "heroFallback": "英雄 {id}"
+  },
+  "roles": {
+    "caption": "每队各定位的英雄数量",
+    "role": "定位",
+    "you": "你方",
+    "enemy": "敌方"
+  },
+  "balance": {
+    "axes": {
+      "damage": "英雄伤害",
+      "damageTaken": "承受伤害（前排）",
+      "objectiveDamage": "目标伤害"
+    },
+    "needPicks": "选择英雄以查看其测得的特征。",
+    "percentile": "第 {value} 百分位",
+    "noPicks": "未选择",
+    "note": "各队英雄在所有英雄中的平均百分位（50 = 一般水平），基于此范围内的场均数据。比赛越长，各项总量越高。治疗或控制等功能性数据不在数据中，因此未测量。"
+  },
+  "map": {
+    "favorsYou": "对你方有利",
+    "favorsEnemy": "对敌方有利",
+    "favorsEnemyLegend": "对敌方有利（虚线）",
+    "legend": "弧线：同队组合 · 直线：对位 · 越粗 = 差距越大 · 淡色 = 样本中等",
+    "none": "这些选择之间没有明确的关系。已检查 {checked} 组，其中 {withData} 组数据充足；全部都在英雄各自胜率的预测范围内。",
+    "matchupPair": "{a} 对阵 {b}",
+    "synergyPair": "{a} + {b}",
+    "matchupResult": "{a} 胜率 {rate}，期望 {expected}（{gap}）",
+    "synergyResult": "同队 {rate}，期望 {expected}（{gap}）",
+    "relationMeta": "{favor} · n = {n} · 样本{sample, select, high {充足} other {中等}}",
+    "summary": "{checked} 组中有 {count} 组与期望明显不同；其余在误差范围内或数据不足，未绘制。"
+  }
+}

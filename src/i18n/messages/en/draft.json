@@ -1,0 +1,114 @@
+{
+  "meta": {
+    "title": "Draft Lab",
+    "description": "Explore Deadlock team compositions: measured synergy, matchups, role coverage and data-backed next picks with confidence levels."
+  },
+  "eyebrow": "Advanced tool",
+  "title": "Draft Lab",
+  "description": "Pick heroes for both teams to see how they have performed together and against each other in public matches. These are statistical associations, not coaching: players, lanes and items matter and aren’t captured here.",
+  "scopeNote": "Scope: {scope}. Numbers under heroes are their win rates in this scope.",
+  "howItWorks": "How it works: each pair’s win rate is compared with the expectation from the two heroes’ individual win rates (same team: wr₁ + wr₂ − 50%; opposing: wr₁ − wr₂ + 50%). A relationship counts only when its 95% interval excludes that expectation, the gap is at least 1 percentage point, and it has 200+ matches. Pairs need 100+ matches to appear at all.",
+  "panels": {
+    "relations": "Relationships",
+    "relationsDescription": "Pairs whose results differ clearly from what each hero’s own win rate predicts.",
+    "needTwo": "Pick at least two heroes.",
+    "recs": "Next pick for your team",
+    "recsDescription": "Heroes with clear positive results alongside your picks or against the enemy’s. Ordered by confidence, then by measured gap.",
+    "weak": "Weak points",
+    "weakDescription": "Measured, for your team.",
+    "roles": "Role coverage",
+    "balance": "Damage / frontline balance"
+  },
+  "board": {
+    "sides": {
+      "allies": "Your team",
+      "enemies": "Enemy team"
+    },
+    "sidesLower": {
+      "allies": "your team",
+      "enemies": "enemy team"
+    },
+    "addingHere": "Adding here",
+    "addHere": "Add heroes here",
+    "remove": "Remove {hero} from {side}",
+    "addTo": "Add to <side>{team}</side>",
+    "teamFull": "team full",
+    "clear": "Clear draft",
+    "otherRole": "Other",
+    "picked": "{hero} (picked)",
+    "add": "Add {hero}",
+    "addToSide": "Add {hero} to {side}"
+  },
+  "recs": {
+    "needPicks": "Pick at least one hero on either side. Suggestions come only from how heroes perform with or against the current picks.",
+    "full": "Your team is full.",
+    "none": "No hero has clear positive evidence with these picks. That means the data doesn’t separate the options, not that any choice is wrong.",
+    "confidence": {
+      "high": "High confidence",
+      "moderate": "Moderate confidence"
+    },
+    "rule": {
+      "high": "At least 2 clear positive relationships and no clear negative one.",
+      "moderate": "At least 1 clear positive relationship, more positives than negatives."
+    },
+    "addToTeam": "Add to your team",
+    "why": "Why?",
+    "with": "With {hero}",
+    "against": "Against {hero}",
+    "vsExpected": "{rate} vs {expected} expected ({gap})",
+    "status": {
+      "clear": "clear",
+      "low": "low sample",
+      "noise": "within noise or under 1pp"
+    },
+    "newRole": "Would be your first {role}. Role coverage is shown as a fact; it isn’t scored.",
+    "otherPairings": "{count} other {count, plural, one {pairing} other {pairings}} not clear",
+    "withoutData": "{count} without enough data"
+  },
+  "weak": {
+    "needAllies": "Add heroes to your team to check for measured weak points.",
+    "none": "No measured weak points: no enemy clearly beats your picks, no pair of your picks clearly underperforms together, and no balance measure is in the bottom quarter.",
+    "threat": "{enemy}: lower results than expected for {allies}",
+    "and": " and ",
+    "threatDetail": "{ally} wins {rate} vs {enemy}, expected {expected} ({gap}, n = {n})",
+    "clash": "{a} + {b} win less together than expected",
+    "clashDetail": "{rate} together, expected {expected} ({gap}, n = {n})",
+    "low": {
+      "damage": "Low hero damage",
+      "damageTaken": "Low damage taken (frontline)",
+      "objectiveDamage": "Low objective damage"
+    },
+    "lowDetail": "Your picks average the {percentile}th percentile of heroes on this per-match measure.",
+    "heroFallback": "Hero {id}"
+  },
+  "roles": {
+    "caption": "Heroes per role on each team",
+    "role": "Role",
+    "you": "You",
+    "enemy": "Enemy"
+  },
+  "balance": {
+    "axes": {
+      "damage": "Hero damage",
+      "damageTaken": "Damage taken (frontline)",
+      "objectiveDamage": "Objective damage"
+    },
+    "needPicks": "Pick heroes to see their measured profile.",
+    "percentile": "{value}th percentile",
+    "noPicks": "no picks",
+    "note": "Average percentile of each team’s heroes among all heroes (50 = typical), from per-match averages in this scope. Longer matches raise every total. Utility such as healing or crowd control isn’t in the data, so it isn’t measured."
+  },
+  "map": {
+    "favorsYou": "Favors your team",
+    "favorsEnemy": "Favors the enemy",
+    "favorsEnemyLegend": "Favors the enemy (dashed)",
+    "legend": "Arcs: same-team pairs · straight: matchups · thicker = bigger gap · faded = moderate sample",
+    "none": "No clear relationships among these picks. {checked} pairings checked, {withData} with enough data; every one is within what the heroes’ individual win rates predict.",
+    "matchupPair": "{a} vs {b}",
+    "synergyPair": "{a} + {b}",
+    "matchupResult": "{a} wins {rate}, expected {expected} ({gap})",
+    "synergyResult": "{rate} together, expected {expected} ({gap})",
+    "relationMeta": "{favor} · n = {n} · {sample, select, high {high} other {moderate}} sample",
+    "summary": "{count} of {checked} pairings differ clearly from expectation; the rest are within noise or lack data and aren’t drawn."
+  }
+}

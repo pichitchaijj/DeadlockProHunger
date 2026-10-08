@@ -1,0 +1,114 @@
+{
+  "meta": {
+    "title": "Draft Lab",
+    "description": "Deadlock 팀 조합 탐색: 측정된 시너지, 상성, 역할 구성, 신뢰도와 함께 데이터 기반 다음 픽."
+  },
+  "eyebrow": "고급 도구",
+  "title": "Draft Lab",
+  "description": "양 팀의 영웅을 선택하면 공개 매치에서 함께, 그리고 서로를 상대로 어떤 성과를 냈는지 볼 수 있습니다. 이는 통계적 연관성이며 코칭이 아닙니다. 플레이어, 라인, 아이템도 중요하지만 여기서는 반영되지 않습니다.",
+  "scopeNote": "범위: {scope}. 영웅 아래 숫자는 이 범위에서의 승률입니다.",
+  "howItWorks": "작동 방식: 각 쌍의 승률을 두 영웅 각각의 승률로 계산한 기대값과 비교합니다 (같은 팀: wr₁ + wr₂ − 50%, 상대 팀: wr₁ − wr₂ + 50%). 95% 구간이 기대값을 포함하지 않고, 차이가 1%p 이상이며, 200회 이상의 매치가 있을 때만 관계로 셉니다. 쌍은 100회 이상의 매치가 있어야 표시됩니다.",
+  "panels": {
+    "relations": "관계",
+    "relationsDescription": "각 영웅의 승률로 예측한 결과와 명확히 다른 쌍.",
+    "needTwo": "영웅을 두 명 이상 선택하세요.",
+    "recs": "우리 팀 다음 픽",
+    "recsDescription": "우리 픽과 함께하거나 상대 픽을 상대로 명확히 긍정적인 결과를 낸 영웅. 신뢰도순, 그다음 측정된 차이순.",
+    "weak": "약점",
+    "weakDescription": "우리 팀 기준으로 측정한 것.",
+    "roles": "역할 구성",
+    "balance": "피해량 / 전열 균형"
+  },
+  "board": {
+    "sides": {
+      "allies": "우리 팀",
+      "enemies": "상대 팀"
+    },
+    "sidesLower": {
+      "allies": "우리 팀",
+      "enemies": "상대 팀"
+    },
+    "addingHere": "여기에 추가 중",
+    "addHere": "여기에 영웅 추가",
+    "remove": "{side}에서 {hero} 제거",
+    "addTo": "<side>{team}</side>에 추가",
+    "teamFull": "팀 가득 참",
+    "clear": "드래프트 초기화",
+    "otherRole": "기타",
+    "picked": "{hero} (선택됨)",
+    "add": "{hero} 추가",
+    "addToSide": "{side}에 {hero} 추가"
+  },
+  "recs": {
+    "needPicks": "어느 쪽이든 영웅을 한 명 이상 선택하세요. 추천은 현재 픽과 함께하거나 상대할 때의 영웅 성과로만 만들어집니다.",
+    "full": "우리 팀이 가득 찼습니다.",
+    "none": "이 픽들과 명확한 긍정적 근거가 있는 영웅이 없습니다. 데이터가 선택지를 구분하지 못한다는 뜻이지, 어떤 선택이 틀렸다는 뜻은 아닙니다.",
+    "confidence": {
+      "high": "높은 신뢰도",
+      "moderate": "보통 신뢰도"
+    },
+    "rule": {
+      "high": "명확한 긍정적 관계가 2개 이상이고 명확한 부정적 관계가 없음.",
+      "moderate": "명확한 긍정적 관계가 1개 이상이고 긍정이 부정보다 많음."
+    },
+    "addToTeam": "우리 팀에 추가",
+    "why": "이유",
+    "with": "{hero}와(과) 함께",
+    "against": "{hero} 상대",
+    "vsExpected": "{rate}, 기대값 {expected} ({gap})",
+    "status": {
+      "clear": "명확함",
+      "low": "표본 적음",
+      "noise": "오차 범위 내 또는 1pp 미만"
+    },
+    "newRole": "우리 팀의 첫 {role}이(가) 됩니다. 역할 구성은 사실로만 표시하며 점수에는 반영하지 않습니다.",
+    "otherPairings": "명확하지 않은 다른 {count, plural, other {조합}} {count}개",
+    "withoutData": "데이터 부족 {count}개"
+  },
+  "weak": {
+    "needAllies": "우리 팀에 영웅을 추가하면 측정된 약점을 확인할 수 있습니다.",
+    "none": "측정된 약점이 없습니다: 우리 픽을 명확히 이기는 상대가 없고, 우리 픽 중 함께할 때 명확히 부진한 쌍도 없으며, 하위 25%에 있는 균형 지표도 없습니다.",
+    "threat": "{enemy}: {allies}의 결과가 기대보다 낮음",
+    "and": ", ",
+    "threatDetail": "{ally}의 {enemy} 상대 승률 {rate}, 기대값 {expected} ({gap}, n = {n})",
+    "clash": "{a} + {b}은(는) 함께할 때 기대보다 덜 이김",
+    "clashDetail": "함께 {rate}, 기대값 {expected} ({gap}, n = {n})",
+    "low": {
+      "damage": "낮은 영웅 피해량",
+      "damageTaken": "낮은 받은 피해량 (전열)",
+      "objectiveDamage": "낮은 오브젝트 피해량"
+    },
+    "lowDetail": "우리 픽은 이 매치당 지표에서 전체 영웅 중 평균 {percentile}번째 백분위입니다.",
+    "heroFallback": "영웅 {id}"
+  },
+  "roles": {
+    "caption": "각 팀의 역할별 영웅 수",
+    "role": "역할",
+    "you": "우리",
+    "enemy": "상대"
+  },
+  "balance": {
+    "axes": {
+      "damage": "영웅 피해량",
+      "damageTaken": "받은 피해량 (전열)",
+      "objectiveDamage": "오브젝트 피해량"
+    },
+    "needPicks": "영웅을 선택하면 측정된 프로필이 표시됩니다.",
+    "percentile": "{value}번째 백분위",
+    "noPicks": "선택 없음",
+    "note": "각 팀 영웅들이 전체 영웅 중 차지하는 평균 백분위 (50 = 보통), 이 범위의 매치당 평균 기준. 매치가 길수록 모든 합계가 커집니다. 치유나 군중 제어 같은 유틸리티는 데이터에 없어 측정하지 않습니다."
+  },
+  "map": {
+    "favorsYou": "우리 팀에 유리",
+    "favorsEnemy": "상대에 유리",
+    "favorsEnemyLegend": "상대에 유리 (점선)",
+    "legend": "호: 같은 팀 쌍 · 직선: 상성 · 두꺼울수록 = 차이 큼 · 흐림 = 표본 보통",
+    "none": "이 픽들 사이에 명확한 관계가 없습니다. {checked}개 조합을 확인했고 {withData}개에 충분한 데이터가 있으며, 모두 영웅 개별 승률로 예측되는 범위 안에 있습니다.",
+    "matchupPair": "{a} 대 {b}",
+    "synergyPair": "{a} + {b}",
+    "matchupResult": "{a} 승률 {rate}, 기대값 {expected} ({gap})",
+    "synergyResult": "함께 {rate}, 기대값 {expected} ({gap})",
+    "relationMeta": "{favor} · n = {n} · 표본 {sample, select, high {많음} other {보통}}",
+    "summary": "{checked}개 조합 중 {count}개가 기대값과 명확히 다릅니다. 나머지는 오차 범위 내이거나 데이터가 부족해 그리지 않았습니다."
+  }
+}

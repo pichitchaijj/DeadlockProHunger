@@ -50,14 +50,22 @@ export type Recommendation = {
   newRole: string | null
 }
 
-export type WeakPoint = { kind: 'threat' | 'clash' | 'balance'; title: string; detail: string }
+/** A hero in a weak point: the id, and its name (null if the hero list doesn't have it; the page words a fallback). */
+export type HeroRef = { id: number; name: string | null }
+/** One measured pair result: win rate, the additive expectation, the gap and the sample. */
+export type PairFigures = { winRate: number; expected: number; lift: number; matches: number }
+
+/**
+ * Measured weak points as facts; `weakPointText` words them from the catalog (draft.weak), so hero names
+ * and every number stay data.
+ */
+export type WeakPoint =
+  | { kind: 'threat'; enemy: HeroRef; hits: Array<{ ally: HeroRef } & PairFigures> }
+  | ({ kind: 'clash'; a: HeroRef; b: HeroRef } & PairFigures)
+  | { kind: 'balance'; axis: BalanceAxis; percentile: number }
 
 export type BalanceAxis = 'damage' | 'damageTaken' | 'objectiveDamage'
-export const BALANCE_LABELS: Record<BalanceAxis, string> = {
-  damage: 'Hero damage',
-  damageTaken: 'Damage taken (frontline)',
-  objectiveDamage: 'Objective damage',
-}
+export const BALANCE_AXES: BalanceAxis[] = ['damage', 'damageTaken', 'objectiveDamage']
 
 export const ROLE_ORDER = ['brawler', 'assassin', 'marksman', 'mystic'] as const
 
@@ -156,36 +164,48 @@ export function teamBalance(profile: Map<number, Record<BalanceAxis, number>>, i
   return { damage: avg('damage'), damageTaken: avg('damageTaken'), objectiveDamage: avg('objectiveDamage') }
 }
 
-const pp = (v: number) => `${v >= 0 ? '+' : '−'}${(Math.abs(v) * 100).toFixed(1)}pp`
+/** Signed percentage-point gap: 0.012 → "+1.2pp". */
+export const pp = (v: number) => `${v >= 0 ? '+' : '−'}${(Math.abs(v) * 100).toFixed(1)}pp`
+
+const figures = (r: Relation): PairFigures => ({ winRate: r.winRate, expected: r.expected, lift: r.lift, matches: r.matches })
 
 /** Measured weak points of the allied side. Facts only; no claim about what to do. */
 export function weakPoints(idx: RelationIndex, heroes: DraftHero[], allies: number[], enemies: number[], balance: Record<BalanceAxis, number> | null): WeakPoint[] {
-  const name = (id: number) => heroes.find((h) => h.id === id)?.name ?? `Hero ${id}`
+  const ref = (id: number): HeroRef => ({ id, name: heroes.find((h) => h.id === id)?.name ?? null })
   const out: WeakPoint[] = []
   for (const e of enemies) {
     const hit = allies.map((a) => idx.matchup(a, e)).filter((r): r is Relation => r?.clear === 'negative')
-    if (hit.length) {
-      out.push({
-        kind: 'threat',
-        title: `${name(e)}: lower results than expected for ${hit.map((r) => name(r.from)).join(' and ')}`,
-        detail: hit.map((r) => `${name(r.from)} wins ${(r.winRate * 100).toFixed(1)}% vs ${name(e)}, expected ${(r.expected * 100).toFixed(1)}% (${pp(r.lift)}, n = ${r.matches.toLocaleString('en-US')})`).join(' · '),
-      })
-    }
+    if (hit.length) out.push({ kind: 'threat', enemy: ref(e), hits: hit.map((r) => ({ ally: ref(r.from), ...figures(r) })) })
   }
   allies.forEach((x, i) =>
     allies.slice(i + 1).forEach((y) => {
       const r = idx.synergy(x, y)
-      if (r?.clear === 'negative') {
-        out.push({ kind: 'clash', title: `${name(x)} + ${name(y)} win less together than expected`, detail: `${(r.winRate * 100).toFixed(1)}% together, expected ${(r.expected * 100).toFixed(1)}% (${pp(r.lift)}, n = ${r.matches.toLocaleString('en-US')})` })
-      }
+      if (r?.clear === 'negative') out.push({ kind: 'clash', a: ref(x), b: ref(y), ...figures(r) })
     }),
   )
   if (balance && allies.length >= 3) {
-    for (const axis of Object.keys(BALANCE_LABELS) as BalanceAxis[]) {
-      if (balance[axis] < 0.25) {
-        out.push({ kind: 'balance', title: `Low ${BALANCE_LABELS[axis].toLowerCase()}`, detail: `Your picks average the ${Math.round(balance[axis] * 100)}th percentile of heroes on this per-match measure.` })
-      }
+    for (const axis of BALANCE_AXES) {
+      if (balance[axis] < 0.25) out.push({ kind: 'balance', axis, percentile: Math.round(balance[axis] * 100) })
     }
   }
   return out
+}
+
+type Translate = (key: string, values?: Record<string, string | number>) => string
+
+/**
+ * Title and detail for one weak point. `t` reads draft.weak; `name` resolves a hero (with the page's
+ * fallback); `integer` formats sample sizes. Percentages keep the fixed one-decimal form.
+ */
+export function weakPointText(p: WeakPoint, t: Translate, name: (hero: HeroRef) => string, integer: (v: number) => string): { title: string; detail: string } {
+  const pct = (v: number) => `${(v * 100).toFixed(1)}%`
+  const stats = (f: PairFigures) => ({ rate: pct(f.winRate), expected: pct(f.expected), gap: pp(f.lift), n: integer(f.matches) })
+  if (p.kind === 'threat') {
+    return {
+      title: t('threat', { enemy: name(p.enemy), allies: p.hits.map((h) => name(h.ally)).join(t('and')) }),
+      detail: p.hits.map((h) => t('threatDetail', { ally: name(h.ally), enemy: name(p.enemy), ...stats(h) })).join(' · '),
+    }
+  }
+  if (p.kind === 'clash') return { title: t('clash', { a: name(p.a), b: name(p.b) }), detail: t('clashDetail', stats(p)) }
+  return { title: t(`low.${p.axis}`), detail: t('lowDetail', { percentile: p.percentile }) }
 }
