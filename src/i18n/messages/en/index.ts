@@ -14,8 +14,9 @@ import languages from './languages.json'
 import matches from './matches.json'
 import nav from './nav.json'
 import notFound from './notFound.json'
+import players from './players.json'
 
-const messages = { builds, cards, commandPalette, common, data, errors, footer, header, heroes, home, items, languages, matches, nav, notFound }
+const messages = { builds, cards, commandPalette, common, data, errors, footer, header, heroes, home, items, languages, matches, nav, notFound, players }
 
 export type Messages = typeof messages
 export default messages

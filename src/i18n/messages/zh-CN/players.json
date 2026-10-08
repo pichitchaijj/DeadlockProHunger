@@ -1,0 +1,107 @@
+{
+  "meta": {
+    "listTitle": "玩家",
+    "listDescription": "Deadlock 地区排行榜和玩家搜索，附当前段位和公开资料。",
+    "detailTitle": "玩家 {id}",
+    "detailDescription": "玩家 {id} 的 Deadlock 公开资料：当前段位、胜率、英雄池、队友和比赛记录。"
+  },
+  "fallbackName": "玩家 {id}",
+  "list": {
+    "eyebrow": "玩家",
+    "title": "玩家",
+    "description": "通过 Steam 名称或 SteamID3 查找玩家。资料只显示公开数据。",
+    "views": "玩家视图",
+    "search": "搜索",
+    "query": "名称或 SteamID3",
+    "placeholder": "至少 2 个字符",
+    "rankFilter": "近期队伍平均段位（不低于）",
+    "promptTitle": "搜索玩家",
+    "promptDescription": "输入 Steam 名称或 SteamID3。只列出有近期比赛的玩家。",
+    "noResultsTitle": "未找到玩家",
+    "noResultsDescription": "在这些筛选条件下，没有与“{query}”匹配的公开资料。",
+    "matches30d": "30 天内 {count} 场比赛",
+    "activityUnknown": "近期活动未知",
+    "teamAverage": "近期队伍平均",
+    "teamAverageNote": "“近期队伍平均”是该玩家最近比赛中队伍的平均段位，而不是玩家本人的段位。打开资料可查看其当前段位。",
+    "loading": "正在加载玩家"
+  },
+  "profile": {
+    "afterLatest": "最近一场排位赛后（{date}）",
+    "placements": "定级赛中（剩余 {count} 场）",
+    "noRank": "未报告当前段位",
+    "steamId": "SteamID3 {id}",
+    "steamProfile": "Steam 公开资料",
+    "lastN": "最近 {count} 场",
+    "normalMode": "普通模式",
+    "winsOf": "{matches} 场中胜 {wins} 场",
+    "basis": "基于数据源保存的 {counted} 场普通模式比赛",
+    "basisSince": "基于数据源自 {date} 起保存的 {counted} 场普通模式比赛",
+    "excluded": "；{count, plural, other {# 场结果为受罚或不计分的比赛}}未计入胜率",
+    "summary": "{basis}{excluded}。记录可能不完整。这些是比赛结果，而非水平评级。",
+    "sectionsNav": "资料分区",
+    "sections": {
+      "recent": "最近",
+      "trend": "趋势",
+      "heroes": "英雄池",
+      "teammates": "队友",
+      "enemies": "对手",
+      "history": "记录"
+    },
+    "recentTitle": "最近比赛",
+    "recentDescription": "最近保存的 {count} 场普通模式比赛。",
+    "noStored": "没有保存的比赛",
+    "trendTitle": "表现趋势",
+    "trendDescription": "随时间变化的胜率，以及 Valve 报告的每场排位赛后的段位。",
+    "poolTitle": "英雄池",
+    "poolDescription": "最常使用的英雄（所有保存的普通模式比赛）。样本较少的会淡化显示。",
+    "matesTitle": "队友",
+    "matesDescription": "最常同队的玩家（共同比赛 10 场以上）。胜率 = 该玩家与其同队时的结果。",
+    "matesEmpty": "没有共同比赛 10 场以上的队友。",
+    "enemiesTitle": "对手",
+    "enemiesDescription": "最常遇到的玩家（5 场以上）。胜率 = 该玩家与其对阵时的结果。",
+    "enemiesEmpty": "没有遇到 5 次以上的对手。",
+    "historyTitle": "比赛记录",
+    "historyDescription": "{count} 场比赛，最新在前。",
+    "historyPages": "记录分页",
+    "notFoundTitle": "未找到玩家",
+    "notFoundDescription": "该账号没有公开资料或保存的比赛。私密或受保护的账号不会显示。",
+    "searchPlayers": "搜索玩家"
+  },
+  "trend": {
+    "tooFew": "计入的比赛少于 {count} 场，因此没有趋势可显示。",
+    "blockTitle": "{from} – {to}：{rate}（{wins}/{matches}）",
+    "block": "第 {n} 段，{from} 至 {to}：{matches} 场中 {rate}。",
+    "legend": "每根柱代表连续 {count} 场比赛（最早在左，最新高亮）。刻度 {scale}；虚线 50%；须线 = 95% 区间。",
+    "noChange": "最新一段与前一段没有明显差异。",
+    "changed": "最新一段明显{direction, select, higher {高于} other {低于}}前一段（区间不重叠）。"
+  },
+  "rankHistory": {
+    "tooFew": "报告了段位的排位赛不足，无法绘制图表。",
+    "chart": "在最近 {count} 场排位赛中，段位从 {first} 变为 {last}。",
+    "caption": "在最近 {count} 场报告了段位的排位赛中，{first} → {last}（{from} – {to}）。"
+  },
+  "pool": {
+    "empty": "该玩家没有英雄统计数据。",
+    "matches": "{count} 场比赛",
+    "last": "最近 {time}",
+    "kda": "K/D/A {kda}"
+  },
+  "peers": {
+    "player": "玩家",
+    "matches": "比赛",
+    "confidence": "可信度",
+    "matchCount": "{count} 场比赛"
+  },
+  "history": {
+    "label": "比赛记录",
+    "date": "日期",
+    "hero": "英雄",
+    "result": "结果",
+    "kda": "K/D/A",
+    "souls": "魂",
+    "length": "时长",
+    "mode": "模式",
+    "rankAfter": "赛后段位",
+    "notCounted": "不计入"
+  }
+}

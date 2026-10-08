@@ -14,6 +14,7 @@ import languages from './languages.json'
 import matches from './matches.json'
 import nav from './nav.json'
 import notFound from './notFound.json'
+import players from './players.json'
 
 /** Must match English key for key (`satisfies Messages`; tests also check placeholders). */
-export default { builds, cards, commandPalette, common, data, errors, footer, header, heroes, home, items, languages, matches, nav, notFound } satisfies Messages
+export default { builds, cards, commandPalette, common, data, errors, footer, header, heroes, home, items, languages, matches, nav, notFound, players } satisfies Messages

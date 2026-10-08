@@ -1,0 +1,107 @@
+{
+  "meta": {
+    "listTitle": "플레이어",
+    "listDescription": "Deadlock 지역별 리더보드와 플레이어 검색. 현재 랭크와 공개 프로필 포함.",
+    "detailTitle": "플레이어 {id}",
+    "detailDescription": "플레이어 {id}의 Deadlock 공개 프로필: 현재 랭크, 승률, 영웅 풀, 팀원, 매치 기록."
+  },
+  "fallbackName": "플레이어 {id}",
+  "list": {
+    "eyebrow": "플레이어",
+    "title": "플레이어",
+    "description": "Steam 이름이나 SteamID3로 플레이어를 찾습니다. 프로필에는 공개 데이터만 표시됩니다.",
+    "views": "플레이어 보기",
+    "search": "검색",
+    "query": "이름 또는 SteamID3",
+    "placeholder": "2자 이상",
+    "rankFilter": "최근 팀 평균 랭크 (이상)",
+    "promptTitle": "플레이어 검색",
+    "promptDescription": "Steam 이름이나 SteamID3를 입력하세요. 최근 매치가 있는 플레이어만 표시됩니다.",
+    "noResultsTitle": "플레이어를 찾을 수 없습니다",
+    "noResultsDescription": "이 필터로 “{query}”와 일치하는 공개 프로필이 없습니다.",
+    "matches30d": "30일 동안 {count}매치",
+    "activityUnknown": "최근 활동 알 수 없음",
+    "teamAverage": "최근 팀 평균",
+    "teamAverageNote": "“최근 팀 평균”은 플레이어의 최근 매치 팀들의 평균 랭크로, 플레이어 본인의 랭크가 아닙니다. 현재 랭크는 프로필에서 확인하세요.",
+    "loading": "플레이어 불러오는 중"
+  },
+  "profile": {
+    "afterLatest": "최근 랭크 매치 이후 ({date})",
+    "placements": "배치 매치 중 ({count}경기 남음)",
+    "noRank": "보고된 현재 랭크 없음",
+    "steamId": "SteamID3 {id}",
+    "steamProfile": "공개 Steam 프로필",
+    "lastN": "최근 {count}경기",
+    "normalMode": "일반 모드",
+    "winsOf": "{matches}경기 중 {wins}승",
+    "basis": "데이터 출처에 저장된 일반 모드 매치 {counted}개 기준",
+    "basisSince": "데이터 출처에 {date}부터 저장된 일반 모드 매치 {counted}개 기준",
+    "excluded": "; 패널티 또는 점수 미반영 결과인 {count, plural, other {매치 #개}}는 승률에 포함하지 않았습니다",
+    "summary": "{basis}{excluded}. 기록이 완전하지 않을 수 있습니다. 이는 결과이며 실력 평가가 아닙니다.",
+    "sectionsNav": "프로필 섹션",
+    "sections": {
+      "recent": "최근",
+      "trend": "추세",
+      "heroes": "영웅 풀",
+      "teammates": "팀원",
+      "enemies": "상대",
+      "history": "기록"
+    },
+    "recentTitle": "최근 매치",
+    "recentDescription": "저장된 최근 일반 모드 매치 {count}개.",
+    "noStored": "저장된 매치 없음",
+    "trendTitle": "성적 추세",
+    "trendDescription": "시간에 따른 승률과, Valve가 보고한 랭크 매치마다의 매치 후 랭크.",
+    "poolTitle": "영웅 풀",
+    "poolDescription": "가장 많이 플레이한 영웅 (저장된 모든 일반 모드 매치). 표본이 적으면 흐리게 표시합니다.",
+    "matesTitle": "팀원",
+    "matesDescription": "가장 자주 같은 팀이 된 플레이어 (함께한 매치 10개 이상). 승률 = 함께했을 때 이 플레이어의 결과.",
+    "matesEmpty": "함께한 매치가 10개 이상인 팀원이 없습니다.",
+    "enemiesTitle": "상대",
+    "enemiesDescription": "가장 자주 만난 플레이어 (5매치 이상). 승률 = 상대했을 때 이 플레이어의 결과.",
+    "enemiesEmpty": "5번 이상 만난 상대가 없습니다.",
+    "historyTitle": "매치 기록",
+    "historyDescription": "매치 {count}개, 최신순.",
+    "historyPages": "기록 페이지",
+    "notFoundTitle": "플레이어를 찾을 수 없습니다",
+    "notFoundDescription": "이 계정의 공개 프로필이나 저장된 매치가 없습니다. 비공개 또는 보호된 계정은 표시되지 않습니다.",
+    "searchPlayers": "플레이어 검색"
+  },
+  "trend": {
+    "tooFew": "집계된 매치가 {count}개 미만이라 추세를 표시할 수 없습니다.",
+    "blockTitle": "{from} – {to}: {rate} ({wins}/{matches})",
+    "block": "블록 {n}, {from}–{to}: {matches}매치에서 {rate}.",
+    "legend": "각 막대는 연속 {count}매치입니다 (왼쪽이 가장 오래됨, 최신은 강조). 척도 {scale}, 점선 50%, 수염 = 95% 구간.",
+    "noChange": "최신 블록은 이전 블록과 뚜렷한 차이가 없습니다.",
+    "changed": "최신 블록은 이전 블록보다 뚜렷하게 {direction, select, higher {높습니다} other {낮습니다}} (구간이 겹치지 않음)."
+  },
+  "rankHistory": {
+    "tooFew": "랭크가 보고된 랭크 매치가 충분하지 않아 차트를 표시할 수 없습니다.",
+    "chart": "최근 랭크 매치 {count}번 동안 랭크가 {first}에서 {last}로 바뀌었습니다.",
+    "caption": "랭크가 보고된 최근 랭크 매치 {count}번 동안 {first} → {last} ({from} – {to})."
+  },
+  "pool": {
+    "empty": "이 플레이어의 영웅 통계가 없습니다.",
+    "matches": "{count}매치",
+    "last": "최근 {time}",
+    "kda": "K/D/A {kda}"
+  },
+  "peers": {
+    "player": "플레이어",
+    "matches": "매치",
+    "confidence": "신뢰도",
+    "matchCount": "{count}매치"
+  },
+  "history": {
+    "label": "매치 기록",
+    "date": "날짜",
+    "hero": "영웅",
+    "result": "결과",
+    "kda": "K/D/A",
+    "souls": "소울",
+    "length": "길이",
+    "mode": "모드",
+    "rankAfter": "매치 후 랭크",
+    "notCounted": "집계 제외"
+  }
+}

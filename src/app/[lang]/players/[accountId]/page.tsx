@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
+import { OG_LOCALE } from '@/i18n/config'
 import { notFound } from 'next/navigation'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { RankBadge } from '@/components/game-assets/RankBadge'
@@ -7,8 +9,8 @@ import { Avatar } from '@/components/ui/Avatar'
 import { ButtonLink } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/States'
 import { cx } from '@/lib/cx'
-import { formatInteger } from '@/lib/format'
-import { HeroPoolGrid, HistoryTable, Panel, PeerTable, RankHistory, RecentMatches, RecordStat, TrendBlocks } from '@/features/players/components/profile'
+import { dateFormat, formatInteger } from '@/lib/format'
+import { DATE, HeroPoolGrid, HistoryTable, Panel, PeerTable, RankHistory, RecentMatches, RecordStat, TrendBlocks } from '@/features/players/components/profile'
 import { getPlayerProfile, PAGE_SIZE } from '@/features/players/loaders'
 import { BLOCK_SIZE } from '@/features/players/model'
 import { DataNotice } from '@/components/data/DataState'
@@ -17,18 +19,32 @@ import { classifyError } from '@/lib/deadlock/errors'
 type Params = Promise<{ accountId: string }>
 type SearchParams = Promise<Record<string, string | string[] | undefined>>
 
+/** The account id is data; only the words around it are translated. Profiles stay out of search indexes. */
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { accountId } = await params
-  return { title: `Player ${accountId}`, robots: { index: false } }
+  const [t, locale] = await Promise.all([getTranslations('players.meta'), getLocale()])
+  const title = t('detailTitle', { id: accountId })
+  const description = t('detailDescription', { id: accountId })
+  return { title, description, robots: { index: false }, openGraph: { title, description, locale: OG_LOCALE[locale], type: 'website' } }
 }
 
-const DATE = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
+const SECTIONS = ['recent', 'trend', 'heroes', 'teammates', 'enemies', 'history'] as const
+const RECENT = 10
 
 export default async function PlayerPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   const { accountId: raw } = await params
   if (!/^\d{1,10}$/.test(raw)) notFound()
   const accountId = Number(raw)
   const pageParam = Number((await searchParams).page)
+  const [t, common, winRate, ranked, locale] = await Promise.all([
+    getTranslations('players'),
+    getTranslations('common'),
+    getTranslations('cards').then((c) => c('winRate')),
+    getTranslations('matches.common').then((m) => m('ranked')),
+    getLocale(),
+  ])
+  // Public Steam name (data) when there is one; otherwise the localized fallback around the same id.
+  const fallback = t('fallbackName', { id: accountId })
 
   let data: Awaited<ReturnType<typeof getPlayerProfile>>
   try {
@@ -37,16 +53,20 @@ export default async function PlayerPage({ params, searchParams }: { params: Par
     console.error('[player] load failed', error)
     return (
       <PageContainer>
-        <h1 className="sr-only">Player {accountId}</h1>
-        <DataNotice error={classifyError(error)} what="Player profile" action={<ButtonLink href={`/players/${accountId}`} variant="secondary" size="sm">Try again</ButtonLink>} />
+        <h1 className="sr-only">{fallback}</h1>
+        <DataNotice error={classifyError(error)} what="Player profile" action={<ButtonLink href={`/players/${accountId}`} variant="secondary" size="sm">{common('tryAgain')}</ButtonLink>} />
       </PageContainer>
     )
   }
   if (!data) {
     return (
       <PageContainer>
-        <h1 className="sr-only">Player {accountId}</h1>
-        <EmptyState title="Player not found" description="No public profile or stored matches for this account. Private or protected accounts aren’t shown." action={<ButtonLink href="/players?tab=search" variant="secondary" size="sm">Search players</ButtonLink>} />
+        <h1 className="sr-only">{fallback}</h1>
+        <EmptyState
+          title={t('profile.notFoundTitle')}
+          description={t('profile.notFoundDescription')}
+          action={<ButtonLink href="/players?tab=search" variant="secondary" size="sm">{t('profile.searchPlayers')}</ButtonLink>}
+        />
       </PageContainer>
     )
   }
@@ -54,13 +74,19 @@ export default async function PlayerPage({ params, searchParams }: { params: Par
   const h = data.history
   const pages = Math.max(1, Math.ceil(h.matches.length / PAGE_SIZE))
   const page = Number.isInteger(pageParam) && pageParam >= 1 ? Math.min(pageParam, pages) : 1
-  const name = data.name ?? `Player ${accountId}`
+  const name = data.name ?? fallback
+  const day = dateFormat(locale, DATE)
+  const counted = formatInteger(h.counted, locale)
+  const summary = t('profile.summary', {
+    basis: h.firstAt ? t('profile.basisSince', { counted, date: day.format(h.firstAt) }) : t('profile.basis', { counted }),
+    excluded: h.excluded > 0 ? t('profile.excluded', { count: h.excluded }) : '',
+  })
 
   return (
     <PageContainer className="flex flex-col gap-12">
       {/* Identity */}
       <section aria-labelledby="player-name" className="flex animate-awaken flex-col gap-5">
-        <p className="text-eyebrow"><Link href="/players" className="hover:text-text pointer-coarse:inline-flex pointer-coarse:min-h-11 pointer-coarse:items-center">Players</Link> <span aria-hidden="true">/</span> {name}</p>
+        <p className="text-eyebrow"><Link href="/players" className="hover:text-text pointer-coarse:inline-flex pointer-coarse:min-h-11 pointer-coarse:items-center">{t('list.title')}</Link> <span aria-hidden="true">/</span> {name}</p>
         <div className="flex flex-wrap items-center gap-4">
           <Avatar name={name} src={data.avatar ?? undefined} size="lg" />
           <div className="flex min-w-0 flex-col gap-1">
@@ -68,67 +94,64 @@ export default async function PlayerPage({ params, searchParams }: { params: Par
             {data.rank ? (
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-text-muted">
                 <RankBadge rank={data.rank} variant="full" />
-                {data.rank.at && <span>after their latest ranked match ({DATE.format(data.rank.at)})</span>}
+                {data.rank.at && <span>{t('profile.afterLatest', { date: day.format(data.rank.at) })}</span>}
               </div>
             ) : (
-              <p className="text-sm text-text-muted">{data.placements ? `In placement matches (${data.placements} left)` : 'No current rank reported'}</p>
+              <p className="text-sm text-text-muted">{data.placements ? t('profile.placements', { count: data.placements }) : t('profile.noRank')}</p>
             )}
             <p className="text-caption text-text-muted">
-              SteamID3 {accountId}
+              {t('profile.steamId', { id: accountId })}
               {data.profileUrl && (
                 <>
                   {' · '}
-                  <a href={data.profileUrl} rel="noopener noreferrer" className="underline decoration-steel hover:decoration-primary">Public Steam profile</a>
+                  <a href={data.profileUrl} rel="noopener noreferrer" className="underline decoration-steel hover:decoration-primary">{t('profile.steamProfile')}</a>
                 </>
               )}
             </p>
           </div>
         </div>
         <dl className="grid gap-px overflow-hidden rounded-md border border-border bg-border sm:grid-cols-3 lg:max-w-4xl">
-          <RecordStat label="Win rate" r={h.overall} note="normal mode" />
-          <RecordStat label={`Last ${BLOCK_SIZE}`} r={h.recent} />
-          <RecordStat label="Ranked" r={h.ranked} />
+          <RecordStat label={winRate} r={h.overall} note={t('profile.normalMode')} />
+          <RecordStat label={t('profile.lastN', { count: BLOCK_SIZE })} r={h.recent} />
+          <RecordStat label={ranked} r={h.ranked} />
         </dl>
-        <p className="text-caption text-text-muted">
-          Based on {formatInteger(h.counted)} normal-mode matches stored by the data source{h.firstAt ? ` since ${DATE.format(h.firstAt)}` : ''}
-          {h.excluded > 0 && `; ${h.excluded} ${h.excluded === 1 ? 'match' : 'matches'} with a penalized or not-scored outcome ${h.excluded === 1 ? 'isn’t' : 'aren’t'} counted in win rates`}. History may be incomplete. These are results, not a skill rating.
-        </p>
+        <p className="text-caption text-text-muted">{summary}</p>
       </section>
 
-      <nav aria-label="Profile sections" className="-my-6 flex gap-1 overflow-x-auto border-b border-border [scrollbar-width:none]">
-        {[['recent', 'Recent'], ['trend', 'Trend'], ['heroes', 'Hero pool'], ['teammates', 'Teammates'], ['enemies', 'Opponents'], ['history', 'History']].map(([id, label]) => (
-          <a key={id} href={`#${id}`} className="flex h-11 shrink-0 items-center px-3 font-display text-sm font-semibold tracking-[0.08em] text-text-muted uppercase hover:text-text">{label}</a>
+      <nav aria-label={t('profile.sectionsNav')} className="-my-6 flex gap-1 overflow-x-auto border-b border-border [scrollbar-width:none]">
+        {SECTIONS.map((id) => (
+          <a key={id} href={`#${id}`} className="flex h-11 shrink-0 items-center px-3 font-display text-sm font-semibold tracking-[0.08em] text-text-muted uppercase hover:text-text">{t(`profile.sections.${id}`)}</a>
         ))}
       </nav>
 
-      <Panel id="recent" title="Recent matches" description="The 10 most recent stored normal-mode matches.">
-        {h.matches.length ? <RecentMatches matches={h.matches.slice(0, 10)} /> : <EmptyState title="No stored matches" />}
+      <Panel id="recent" title={t('profile.recentTitle')} description={t('profile.recentDescription', { count: RECENT })}>
+        {h.matches.length ? <RecentMatches matches={h.matches.slice(0, RECENT)} /> : <EmptyState title={t('profile.noStored')} />}
       </Panel>
 
-      <Panel id="trend" title="Performance trend" description="Win rate over time, plus rank after each ranked match where Valve reported one.">
+      <Panel id="trend" title={t('profile.trendTitle')} description={t('profile.trendDescription')}>
         <div className="grid gap-6 xl:grid-cols-2">
           <TrendBlocks blocks={h.trend} change={h.trendChange} />
           <RankHistory points={h.rankPoints} tierNames={data.tierNames} />
         </div>
       </Panel>
 
-      <Panel id="heroes" title="Hero pool" description="Most-played heroes (all stored normal-mode matches). Small samples are muted.">
+      <Panel id="heroes" title={t('profile.poolTitle')} description={t('profile.poolDescription')}>
         <HeroPoolGrid pool={data.pool} />
       </Panel>
 
       <div className="grid gap-8 xl:grid-cols-2">
-        <Panel id="teammates" title="Teammates" description="Players most often on the same team (10+ shared matches). Win rate = this player’s results together.">
-          <PeerTable peers={data.mates} label="Teammates" empty="No teammate with 10+ shared matches." />
+        <Panel id="teammates" title={t('profile.matesTitle')} description={t('profile.matesDescription')}>
+          <PeerTable peers={data.mates} label={t('profile.matesTitle')} empty={t('profile.matesEmpty')} />
         </Panel>
-        <Panel id="enemies" title="Opponents" description="Players most often faced (5+ matches). Win rate = this player’s results against them.">
-          <PeerTable peers={data.enemies} label="Opponents" empty="No opponent faced 5+ times." />
+        <Panel id="enemies" title={t('profile.enemiesTitle')} description={t('profile.enemiesDescription')}>
+          <PeerTable peers={data.enemies} label={t('profile.enemiesTitle')} empty={t('profile.enemiesEmpty')} />
         </Panel>
       </div>
 
-      <Panel id="history" title="Match history" description={`${formatInteger(h.matches.length)} matches, newest first.`}>
+      <Panel id="history" title={t('profile.historyTitle')} description={t('profile.historyDescription', { count: formatInteger(h.matches.length, locale) })}>
         <HistoryTable matches={h.matches.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)} ranks={data.ranks} />
         {pages > 1 && (
-          <nav aria-label="History pages" className="flex flex-wrap gap-2">
+          <nav aria-label={t('profile.historyPages')} className="flex flex-wrap gap-2">
             {Array.from({ length: pages }, (_, i) => i + 1)
               .filter((p) => p === 1 || p === pages || Math.abs(p - page) <= 2)
               .map((p) => (

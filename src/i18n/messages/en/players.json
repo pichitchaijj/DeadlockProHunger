@@ -1,0 +1,107 @@
+{
+  "meta": {
+    "listTitle": "Players",
+    "listDescription": "Deadlock regional leaderboards and player search, with current ranks and public profiles.",
+    "detailTitle": "Player {id}",
+    "detailDescription": "Public Deadlock profile for player {id}: current rank, win rates, hero pool, teammates and match history."
+  },
+  "fallbackName": "Player {id}",
+  "list": {
+    "eyebrow": "Players",
+    "title": "Players",
+    "description": "Find a player by Steam name or SteamID3. Profiles show public data only.",
+    "views": "Player views",
+    "search": "Search",
+    "query": "Name or SteamID3",
+    "placeholder": "At least 2 characters",
+    "rankFilter": "Recent team average rank (at least)",
+    "promptTitle": "Search for a player",
+    "promptDescription": "Enter a Steam name or a SteamID3. Only players with recent matches are listed.",
+    "noResultsTitle": "No players found",
+    "noResultsDescription": "No public profiles match “{query}” with these filters.",
+    "matches30d": "{count} matches in 30 days",
+    "activityUnknown": "Recent activity unknown",
+    "teamAverage": "recent teams avg.",
+    "teamAverageNote": "“Recent team average” is the average rank of the player’s last match teams, not the player’s own rank. Open a profile for their current rank.",
+    "loading": "Loading players"
+  },
+  "profile": {
+    "afterLatest": "after their latest ranked match ({date})",
+    "placements": "In placement matches ({count} left)",
+    "noRank": "No current rank reported",
+    "steamId": "SteamID3 {id}",
+    "steamProfile": "Public Steam profile",
+    "lastN": "Last {count}",
+    "normalMode": "normal mode",
+    "winsOf": "{wins} wins of {matches}",
+    "basis": "Based on {counted} normal-mode matches stored by the data source",
+    "basisSince": "Based on {counted} normal-mode matches stored by the data source since {date}",
+    "excluded": "; {count, plural, one {# match with a penalized or not-scored outcome isn’t counted in win rates} other {# matches with a penalized or not-scored outcome aren’t counted in win rates}}",
+    "summary": "{basis}{excluded}. History may be incomplete. These are results, not a skill rating.",
+    "sectionsNav": "Profile sections",
+    "sections": {
+      "recent": "Recent",
+      "trend": "Trend",
+      "heroes": "Hero pool",
+      "teammates": "Teammates",
+      "enemies": "Opponents",
+      "history": "History"
+    },
+    "recentTitle": "Recent matches",
+    "recentDescription": "The {count} most recent stored normal-mode matches.",
+    "noStored": "No stored matches",
+    "trendTitle": "Performance trend",
+    "trendDescription": "Win rate over time, plus rank after each ranked match where Valve reported one.",
+    "poolTitle": "Hero pool",
+    "poolDescription": "Most-played heroes (all stored normal-mode matches). Small samples are muted.",
+    "matesTitle": "Teammates",
+    "matesDescription": "Players most often on the same team (10+ shared matches). Win rate = this player’s results together.",
+    "matesEmpty": "No teammate with 10+ shared matches.",
+    "enemiesTitle": "Opponents",
+    "enemiesDescription": "Players most often faced (5+ matches). Win rate = this player’s results against them.",
+    "enemiesEmpty": "No opponent faced 5+ times.",
+    "historyTitle": "Match history",
+    "historyDescription": "{count} matches, newest first.",
+    "historyPages": "History pages",
+    "notFoundTitle": "Player not found",
+    "notFoundDescription": "No public profile or stored matches for this account. Private or protected accounts aren’t shown.",
+    "searchPlayers": "Search players"
+  },
+  "trend": {
+    "tooFew": "Fewer than {count} counted matches, so there is no trend to show.",
+    "blockTitle": "{from} – {to}: {rate} ({wins}/{matches})",
+    "block": "Block {n}, {from} to {to}: {rate} over {matches} matches.",
+    "legend": "Each bar is {count} consecutive matches (oldest left, newest highlighted). Scale {scale}; dashed line 50%; whisker = 95% interval.",
+    "noChange": "The latest block isn’t clearly different from the one before.",
+    "changed": "The latest block is clearly {direction, select, higher {higher} other {lower}} than the one before (intervals don’t overlap)."
+  },
+  "rankHistory": {
+    "tooFew": "Not enough ranked matches with a reported rank to chart.",
+    "chart": "Rank went from {first} to {last} over the last {count} ranked matches.",
+    "caption": "{first} → {last} across the last {count} ranked matches with a reported rank ({from} – {to})."
+  },
+  "pool": {
+    "empty": "No hero statistics for this player.",
+    "matches": "{count} matches",
+    "last": "last {time}",
+    "kda": "K/D/A {kda}"
+  },
+  "peers": {
+    "player": "Player",
+    "matches": "Matches",
+    "confidence": "Confidence",
+    "matchCount": "{count} matches"
+  },
+  "history": {
+    "label": "Match history",
+    "date": "Date",
+    "hero": "Hero",
+    "result": "Result",
+    "kda": "K/D/A",
+    "souls": "Souls",
+    "length": "Length",
+    "mode": "Mode",
+    "rankAfter": "Rank after",
+    "notCounted": "Not counted"
+  }
+}

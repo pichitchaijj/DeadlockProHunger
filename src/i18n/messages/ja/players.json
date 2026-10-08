@@ -1,0 +1,107 @@
+{
+  "meta": {
+    "listTitle": "プレイヤー",
+    "listDescription": "Deadlock の地域別リーダーボードとプレイヤー検索。現在のランクと公開プロフィールつき。",
+    "detailTitle": "プレイヤー {id}",
+    "detailDescription": "プレイヤー {id} の Deadlock 公開プロフィール：現在のランク、勝率、使用ヒーロー、チームメイト、試合履歴。"
+  },
+  "fallbackName": "プレイヤー {id}",
+  "list": {
+    "eyebrow": "プレイヤー",
+    "title": "プレイヤー",
+    "description": "Steam の名前または SteamID3 でプレイヤーを検索。プロフィールには公開データのみを表示します。",
+    "views": "プレイヤーの表示",
+    "search": "検索",
+    "query": "名前または SteamID3",
+    "placeholder": "2 文字以上",
+    "rankFilter": "最近のチーム平均ランク（以上）",
+    "promptTitle": "プレイヤーを検索",
+    "promptDescription": "Steam の名前または SteamID3 を入力してください。最近の試合があるプレイヤーのみ表示されます。",
+    "noResultsTitle": "プレイヤーが見つかりません",
+    "noResultsDescription": "このフィルターで「{query}」に一致する公開プロフィールはありません。",
+    "matches30d": "30 日間で {count} 試合",
+    "activityUnknown": "最近の活動は不明",
+    "teamAverage": "最近のチーム平均",
+    "teamAverageNote": "「最近のチーム平均」はプレイヤーの直近の試合のチームの平均ランクで、プレイヤー自身のランクではありません。現在のランクはプロフィールで確認できます。",
+    "loading": "プレイヤーを読み込み中"
+  },
+  "profile": {
+    "afterLatest": "直近のランク戦後（{date}）",
+    "placements": "ランク認定戦中（残り {count} 試合）",
+    "noRank": "現在のランクの報告なし",
+    "steamId": "SteamID3 {id}",
+    "steamProfile": "Steam の公開プロフィール",
+    "lastN": "直近 {count} 試合",
+    "normalMode": "通常モード",
+    "winsOf": "{matches} 試合中 {wins} 勝",
+    "basis": "データソースが保存している通常モードの {counted} 試合に基づく",
+    "basisSince": "データソースが {date} 以降に保存している通常モードの {counted} 試合に基づく",
+    "excluded": "。ペナルティまたはスコア対象外の結果となった {count, plural, other {# 試合}}は勝率に含めていません",
+    "summary": "{basis}{excluded}。履歴は不完全な場合があります。これは結果であり、スキルの評価ではありません。",
+    "sectionsNav": "プロフィールのセクション",
+    "sections": {
+      "recent": "最近",
+      "trend": "推移",
+      "heroes": "使用ヒーロー",
+      "teammates": "チームメイト",
+      "enemies": "対戦相手",
+      "history": "履歴"
+    },
+    "recentTitle": "最近の試合",
+    "recentDescription": "保存されている最近の通常モードの試合 {count} 件。",
+    "noStored": "保存された試合はありません",
+    "trendTitle": "成績の推移",
+    "trendDescription": "時間ごとの勝率と、Valve が報告したランク戦ごとの試合後のランク。",
+    "poolTitle": "使用ヒーロー",
+    "poolDescription": "最もよく使うヒーロー（保存されたすべての通常モードの試合）。サンプルが少ないものは薄く表示します。",
+    "matesTitle": "チームメイト",
+    "matesDescription": "最もよく同じチームになるプレイヤー（共有試合 10 以上）。勝率 = 一緒にプレイしたときのこのプレイヤーの結果。",
+    "matesEmpty": "共有試合が 10 以上のチームメイトはいません。",
+    "enemiesTitle": "対戦相手",
+    "enemiesDescription": "最もよく対戦するプレイヤー（5 試合以上）。勝率 = 対戦したときのこのプレイヤーの結果。",
+    "enemiesEmpty": "5 回以上対戦した相手はいません。",
+    "historyTitle": "試合履歴",
+    "historyDescription": "{count} 試合、新しい順。",
+    "historyPages": "履歴のページ",
+    "notFoundTitle": "プレイヤーが見つかりません",
+    "notFoundDescription": "このアカウントの公開プロフィールも保存された試合もありません。非公開または保護されたアカウントは表示されません。",
+    "searchPlayers": "プレイヤーを検索"
+  },
+  "trend": {
+    "tooFew": "集計対象の試合が {count} 試合未満のため、推移は表示できません。",
+    "blockTitle": "{from} – {to}：{rate}（{wins}/{matches}）",
+    "block": "ブロック {n}、{from} から {to}：{matches} 試合で {rate}。",
+    "legend": "各バーは連続 {count} 試合（左が最も古く、最新を強調）。スケール {scale}、破線 50%、ひげ = 95% 区間。",
+    "noChange": "最新のブロックは前のブロックと明確な違いはありません。",
+    "changed": "最新のブロックは前のブロックより明確に{direction, select, higher {高い} other {低い}}です（区間が重なりません）。"
+  },
+  "rankHistory": {
+    "tooFew": "ランクが報告されたランク戦が少ないため、グラフを表示できません。",
+    "chart": "直近 {count} 回のランク戦でランクは {first} から {last} に変化しました。",
+    "caption": "ランクが報告された直近 {count} 回のランク戦で {first} → {last}（{from} – {to}）。"
+  },
+  "pool": {
+    "empty": "このプレイヤーのヒーロー統計はありません。",
+    "matches": "{count} 試合",
+    "last": "最終 {time}",
+    "kda": "K/D/A {kda}"
+  },
+  "peers": {
+    "player": "プレイヤー",
+    "matches": "試合数",
+    "confidence": "信頼度",
+    "matchCount": "{count} 試合"
+  },
+  "history": {
+    "label": "試合履歴",
+    "date": "日付",
+    "hero": "ヒーロー",
+    "result": "結果",
+    "kda": "K/D/A",
+    "souls": "ソウル",
+    "length": "試合時間",
+    "mode": "モード",
+    "rankAfter": "試合後のランク",
+    "notCounted": "集計対象外"
+  }
+}
