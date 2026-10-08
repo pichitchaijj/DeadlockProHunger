@@ -12,6 +12,7 @@ import footer from './footer.json'
 import header from './header.json'
 import heroes from './heroes.json'
 import home from './home.json'
+import insights from './insights.json'
 import items from './items.json'
 import languages from './languages.json'
 import leaderboard from './leaderboard.json'
@@ -20,7 +21,7 @@ import nav from './nav.json'
 import notFound from './notFound.json'
 import players from './players.json'
 
-const messages = { analyze, builds, cards, commandPalette, common, compare, data, draft, errors, footer, header, heroes, home, items, languages, leaderboard, matches, nav, notFound, players }
+const messages = { analyze, builds, cards, commandPalette, common, compare, data, draft, errors, footer, header, heroes, home, insights, items, languages, leaderboard, matches, nav, notFound, players }
 
 export type Messages = typeof messages
 export default messages

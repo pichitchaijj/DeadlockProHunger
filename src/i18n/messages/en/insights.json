@@ -1,0 +1,113 @@
+{
+  "card": {
+    "why": "Why?",
+    "hide": "Hide explanation",
+    "rule": "Rule:"
+  },
+  "grid": {
+    "titleStrong": "Why is {hero} strong?",
+    "title": "What the data says about {hero}",
+    "intro": "Measured results from public match data. Each shows only when it passes its rule; open “Why?” for the numbers behind it.{strong, select, yes { They show where the wins come from, not why the hero is designed that way.} other {}}",
+    "empty": "No result clears its sample and confidence rules in this scope yet. Try a longer window or a broader rank band."
+  },
+  "context": {
+    "matches": "{scope} · {count} matches ({sample})",
+    "phases": "{scope} · smallest phase {count} purchases ({sample})"
+  },
+  "weeks": {
+    "current": "The last 7 days",
+    "previous": "The 7 days before"
+  },
+  "metric": {
+    "range": "{low}–{high}",
+    "won": "{rate} of {count} matches won",
+    "wonLow": "{rate} of {count} matches won (Low sample, not compared)",
+    "wonInterval": "{rate} of {count} matches won (95% interval {range})",
+    "change": "Change",
+    "interval": "95% interval"
+  },
+  "kinds": {
+    "shift": {
+      "rising": "Rising",
+      "falling": "Falling",
+      "statement": "{subject}’s win rate {direction, select, rising {increased} other {decreased}} {points} percentage points, from {previous} in the 7 days before to {current} in the last 7 days.",
+      "rule": "Both windows have at least 200 matches, their 95% intervals don’t overlap, and the change is at least 1 percentage point."
+    },
+    "patch": {
+      "title": "Recent shift",
+      "statement": "{subject}’s win rate was {points} percentage points {direction, select, rising {higher} other {lower}} in the days after the “{patch}” update ({after}) than in the 7 days before ({before}).",
+      "after": "After the patch",
+      "before": "7 days before",
+      "rule": "Both periods have at least 200 matches, their 95% intervals don’t overlap, and the change is at least 1 percentage point.",
+      "caveat": "This shows timing only. Other changes in the same days (player mix, other heroes) can move a win rate too."
+    },
+    "pairing": {
+      "positiveTitle": "Positive matchup",
+      "negativeTitle": "Negative matchup",
+      "synergyTitle": "Positive pairing",
+      "versus": "vs {other}",
+      "matchupStatement": "Shows a {positive, select, yes {positive} other {negative}} matchup against {other}{relation, select, lane { in lane} other {}} in the selected dataset: {rate} won over {count} {relation, select, lane {lane matchups} other {matches}}.",
+      "synergyStatement": "{subject} won {rate} of {count} matches with {other} on the same team in the selected dataset.",
+      "with": "With {other}",
+      "against": "Against {other}",
+      "result": "{rate} won over {count} {relation, select, lane {lane matchups} other {matches}}",
+      "rule": "At least 200 {relation, select, lane {lane matchups} other {matches}}, a 95% interval entirely {positive, select, yes {above} other {below}} 50%, and a gap of at least 1 percentage point."
+    },
+    "popularBuild": {
+      "title": "Most-selected build",
+      "statement": "“{build}” was selected at game start in {count} {subject} matches, {share} of matches using a tracked build.",
+      "buildMatches": "Matches with this build",
+      "trackedMatches": "Matches with any tracked build",
+      "trackedValue": "{total} ({builds} builds)",
+      "winRate": "Its win rate",
+      "rule": "The tracked build selected in the most matches, with at least 200 of them.",
+      "caveat": "Tracked builds are the most-favorited published builds; matches using other builds aren’t counted."
+    },
+    "highBuild": {
+      "title": "High-performing build",
+      "statement": "Matches where “{build}” was selected were won {rate} of the time, above {subject}’s {heroRate} overall.",
+      "with": "With this build",
+      "overall": "{subject} overall",
+      "rule": "At least 200 matches, and the build’s 95% interval sits entirely above the hero’s win rate by at least 1 percentage point.",
+      "caveat": "Players choose their build, so this compares groups of matches; it doesn’t isolate the build’s effect."
+    },
+    "itemTrend": {
+      "more": "Item bought more",
+      "less": "Item bought less",
+      "statement": "{item} was bought in {current} of {subject} matches in the last 7 days, {direction, select, up {up} other {down}} from {previous} in the 7 days before.",
+      "bought": "{buyers} of {matches} matches",
+      "rule": "Both windows have at least 200 hero matches and 200 buyers, the buy-rate 95% intervals don’t overlap, and the change is at least 3 percentage points."
+    },
+    "split": {
+      "rankTitle": "By rank",
+      "lengthTitle": "By match length",
+      "statement": "{subject}’s win rate is highest in {best} ({bestRate}) and lowest in {worst} ({worstRate}).",
+      "lengthIn": {
+        "short": "under 25 min",
+        "standard": "25–35 min",
+        "long": "over 35 min"
+      },
+      "rule": "{by, select, rank {Rank bands} other {Match-length groups}} with at least 200 matches; the highest group’s 95% interval sits entirely above the lowest group’s.",
+      "rankCaveat": "Only matches with an average rank are counted."
+    },
+    "rankPopularity": {
+      "title": "Pick rate by rank",
+      "statement": "Frequently picked by {band} players: in {pick} of {band} matches, vs {overall} across all ranks.",
+      "bandPick": "{band} pick rate",
+      "allRanks": "All ranks",
+      "estimate": "{count} of ~{total} matches",
+      "ratio": "Ratio",
+      "ratioValue": "{ratio}×",
+      "rule": "At least 200 matches in the band, a pick rate at least 1.5× the all-rank rate, and non-overlapping 95% intervals. Match counts are estimated as hero picks ÷ 12.",
+      "caveat": "{subject} is popular there; popularity alone says nothing about results."
+    },
+    "purchaseTiming": {
+      "title": "Purchase timing",
+      "phase": "{label} ({range})",
+      "statement": "{item} bought at {range} has a {rate} win rate: {gap}pp higher than the next purchase phase, and {adjusted}pp higher after the net-worth adjustment.",
+      "metric": "{rate} raw · {adjusted} adjusted · {count} purchases",
+      "rule": "A phase is named only when it has 200+ purchases, its 95% interval sits entirely above every other phase’s, it leads the next phase by at least 1 point, and it also leads by at least 1 point after the net-worth adjustment.",
+      "caveat": "Observational: players who buy at different times are in different games (lead, net worth, match length). The adjustment re-weights for net worth only; this is not a causal estimate."
+    }
+  }
+}

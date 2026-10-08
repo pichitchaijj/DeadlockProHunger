@@ -6,6 +6,7 @@ import { PageContainer } from '@/components/layout/PageContainer'
 import { ButtonLink } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { LoadingState } from '@/components/ui/States'
+import { getInsightWording } from '@/components/data/insightWording'
 import { HeroHeader, HeroTabs, InsightGrid } from '@/features/hero/components/HeroHeader'
 import { AbilitiesTab, BuildsTab, MatchesTab, MatchupsTab, OverviewTab, TrendsTab } from '@/features/hero/components/tabs'
 import { getHeroContext, getOverviewData, type HeroContext } from '@/features/hero/loaders'
@@ -62,12 +63,12 @@ export default async function HeroPage({ params, searchParams }: { params: Param
  * insight data, other tabs stream in on their own.
  */
 async function InsightsAndOverview({ ctx, query }: { ctx: HeroContext; query: HeroQuery }) {
-  const [result, t] = await Promise.all([attempt('[hero] overview failed', getOverviewData(ctx)), getTranslations('heroes.detail')])
+  const [result, t, wording] = await Promise.all([attempt('[hero] overview failed', getOverviewData(ctx)), getTranslations('heroes.detail'), getInsightWording()])
   const overview = result.ok ? result.value : null
 
   return (
     <>
-      {overview && ctx.stats && <InsightGrid heroName={ctx.hero.name} tier={ctx.stats.tier} insights={overview.insights} />}
+      {overview && ctx.stats && <InsightGrid heroName={ctx.hero.name} tier={ctx.stats.tier} insights={overview.insights} wording={wording} />}
       <div className="flex flex-col gap-6">
         <HeroTabs slug={ctx.hero.slug} query={query} />
         <div id="hero-tab" key={query.tab + query.lane} className="animate-awaken">

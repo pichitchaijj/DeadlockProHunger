@@ -1,7 +1,6 @@
 import { MIN_EFFECT, type Insight } from '@/lib/analytics/insights'
-import { SAMPLE_TIER_LABEL, sampleTier, type SampleTier } from '@/lib/analytics/sampleTier'
+import { sampleTier, type SampleTier } from '@/lib/analytics/sampleTier'
 import { wilsonInterval, type Interval } from '@/lib/analytics/wilson'
-import { formatInteger, formatPercent } from '@/lib/format'
 import type { ItemSlot, ItemSort } from './query'
 
 /*
@@ -126,13 +125,16 @@ export function purchasePhases(nodes: Array<{ column: number; wins: number; matc
   })
 }
 
-export const STANDOUT_RULE =
-  'A phase is named only when it has 200+ purchases, its 95% interval sits entirely above every other phase’s, it leads the next phase by at least 1 point, and it also leads by at least 1 point after the net-worth adjustment.'
+/*
+ * STANDOUT_RULE: a phase is named only when it has 200+ purchases, its 95% interval sits entirely above every
+ * other phase's, it leads the next phase by at least 1 point, and it also leads by at least 1 point after the
+ * net-worth adjustment. (Worded in the catalog: items.phases.noneDescription and insights.kinds.purchaseTiming.rule.)
+ */
 
 export type Standout = { phase: PhaseRow; gap: number; adjustedGap: number }
 
 /**
- * The purchase phase with the highest win rate, only when the data separates it (STANDOUT_RULE).
+ * The purchase phase with the highest win rate, only when the data separates it (STANDOUT_RULE above).
  * The adjusted check means a lead that disappears once net worth is accounted for isn't reported.
  */
 export function standoutPhase(phases: PhaseRow[]): Standout | null {
@@ -146,29 +148,27 @@ export function standoutPhase(phases: PhaseRow[]): Standout | null {
   return { phase: top, gap, adjustedGap }
 }
 
-const points = (delta: number) => `${(delta * 100).toFixed(1)}pp`
-
-/** The standout phase as an Insight (rendered with InsightCard: statement, then "Why?" with metrics and rule). */
+/**
+ * The standout phase as an Insight fact (rendered with InsightCard via lib/analytics/insightText: statement,
+ * then "Why?" with every phase's numbers and the rule). The sample is the smallest non-Low phase.
+ */
 export function purchaseTimingInsight(itemName: string, standout: Standout, phases: PhaseRow[], scope: string): Insight {
   const { phase, gap, adjustedGap } = standout
   const stats = phase.stats!
   const smallest = Math.min(...phases.flatMap((p) => (p.stats && p.stats.sample !== 'low' ? [p.stats.matches] : [])))
-  const sample = sampleTier(smallest)
   return {
     id: `purchase-timing-${phase.key}`,
     kind: 'purchase-timing',
     tone: 'neutral',
-    title: 'Purchase timing',
-    value: `${phase.label} (${phase.range})`,
-    statement: `${itemName} bought at ${phase.range} has a ${formatPercent(stats.winRate)} win rate: ${points(gap)} higher than the next purchase phase, and ${points(adjustedGap)} higher after the net-worth adjustment.`,
-    metrics: phases.flatMap((p) =>
-      p.stats ? [{ label: `${p.label} (${p.range})`, value: `${formatPercent(p.stats.winRate)} raw · ${formatPercent(p.stats.adjustedWinRate)} adjusted · ${formatInteger(p.stats.matches)} purchases` }] : [],
-    ),
-    rule: STANDOUT_RULE,
-    context: `${scope} · smallest phase ${formatInteger(smallest)} purchases (${SAMPLE_TIER_LABEL[sample]})`,
+    item: itemName,
+    phase: phase.key,
+    winRate: stats.winRate,
+    gap,
+    adjustedGap,
+    phases: phases.flatMap((p) => (p.stats ? [{ key: p.key, winRate: p.stats.winRate, adjustedWinRate: p.stats.adjustedWinRate, matches: p.stats.matches }] : [])),
+    scope,
     sampleSize: smallest,
-    sample,
-    caveat: 'Observational: players who buy at different times are in different games (lead, net worth, match length). The adjustment re-weights for net worth only; this is not a causal estimate.',
+    sample: sampleTier(smallest),
   }
 }
 

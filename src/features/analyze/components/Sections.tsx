@@ -12,6 +12,7 @@ import { TrendBadge } from '@/components/data/TrendBadge'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
 import { Filter } from '@/components/ui/Filter'
 import { DataNotice } from '@/components/data/DataState'
+import { getInsightWording } from '@/components/data/insightWording'
 import { attempt } from '@/lib/deadlock/errors'
 import { SAMPLE_TIER_THRESHOLDS } from '@/lib/analytics/sampleTier'
 import { cx } from '@/lib/cx'
@@ -32,7 +33,7 @@ import { analyzeHref, type AnalyzeQuery } from '../query'
 /*
  * Analyze sections, worded from the Analyze catalog (analyze.*). The parts shared with Hero Detail get
  * the Heroes catalog's labels (partLabels), so both pages read the same. Hero, build and rank names,
- * roles and every number are data. The insight grid is the Insight Engine's and stays English for now.
+ * roles and every number are data. The insight grid is worded by the Insight Engine (getInsightWording).
  */
 
 /** No space between sentences after a CJK full stop. */
@@ -137,9 +138,9 @@ export function HeroSummary({ ctx, query }: { ctx: HeroContext; query: AnalyzeQu
 
 export async function InsightsSection({ ctx }: { ctx: HeroContext }) {
   // A loader that fails takes down its own section only, with the classified reason (same as Hero Detail tabs).
-  const result = await attempt('[analyze] insights failed', getOverviewData(ctx))
+  const [result, wording] = await Promise.all([attempt('[analyze] insights failed', getOverviewData(ctx)), getInsightWording()])
   if (!result.ok) return <DataNotice error={result.kind} what="Insights" />
-  return <InsightGrid heroName={ctx.hero.name} tier={ctx.stats?.tier ?? null} insights={result.value.insights} />
+  return <InsightGrid heroName={ctx.hero.name} tier={ctx.stats?.tier ?? null} insights={result.value.insights} wording={wording} />
 }
 
 // ── Trends ───────────────────────────────────────────────────────────

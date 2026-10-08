@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { nonDescriptiveTerms } from '@/lib/analytics/insights'
+import { english } from './helpers/insightEnglish'
 import {
   filterAndSort,
   heroBreakdown,
@@ -109,10 +110,25 @@ describe('purchase phases and the standout rule', () => {
   it('words the insight descriptively, with its rule and caveat', () => {
     const phases = purchasePhases([phase(0, 50_000, 100_000, 0.5), phase(3, 5_600, 10_000, 0.54)])
     const insight = purchaseTimingInsight('Rapid Rounds', standoutPhase(phases)!, phases, 'Last 7 days, All ranks')
-    expect(nonDescriptiveTerms(insight)).toEqual([])
-    expect(insight.statement).not.toMatch(/optimal|recommend/i)
+    const text = english(insight)
+    expect(nonDescriptiveTerms(text)).toEqual([])
+    expect(text.statement).not.toMatch(/optimal|recommend/i)
     expect(insight.sampleSize).toBe(10_000)
-    expect(insight.caveat).toMatch(/not a causal estimate/)
+    expect(text.caveat).toMatch(/not a causal estimate/)
+  })
+
+  it('keeps the standout as facts: phase, gaps, every phase with data, and the smallest sample', () => {
+    const phases = purchasePhases([phase(0, 50_000, 100_000, 0.5), phase(1, 26_000, 50_000, 0.505), phase(3, 5_600, 10_000, 0.54)])
+    const insight = purchaseTimingInsight('Rapid Rounds', standoutPhase(phases)!, phases, 'Last 7 days, All ranks')
+    expect(insight).toMatchObject({ id: 'purchase-timing-very-late', kind: 'purchase-timing', tone: 'neutral', item: 'Rapid Rounds', phase: 'very-late', winRate: 0.56, sampleSize: 10_000, sample: 'high' })
+    if (insight.kind !== 'purchase-timing') throw new Error('expected a purchase-timing insight')
+    expect(insight.gap).toBeCloseTo(0.04)
+    expect(insight.adjustedGap).toBeCloseTo(0.035)
+    expect(insight.phases).toEqual([
+      { key: 'early', winRate: 0.5, adjustedWinRate: 0.5, matches: 100_000 },
+      { key: 'mid', winRate: 0.52, adjustedWinRate: 0.505, matches: 50_000 },
+      { key: 'very-late', winRate: 0.56, adjustedWinRate: 0.54, matches: 10_000 },
+    ])
   })
 })
 

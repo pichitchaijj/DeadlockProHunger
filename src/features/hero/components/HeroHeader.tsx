@@ -12,6 +12,7 @@ import { Reveal } from '@/components/motion/Reveal'
 import { Filter } from '@/components/ui/Filter'
 import { ArrowRightIcon } from '@/components/ui/icons'
 import type { Insight } from '@/lib/analytics/insights'
+import type { InsightWording } from '@/components/data/insightWording'
 import { rankBandOptions } from '@/features/meta/rankFilter'
 import { cx } from '@/lib/cx'
 import { capitalize } from '@/features/meta/model'
@@ -107,32 +108,28 @@ function Stat({ label, children }: { label: string; children: ReactNode }) {
 /**
  * "What the data says": Insight Engine results. Each card states one measured result and opens
  * a "Why?" with its numbers and rule. With none passing their rules, the section says so.
+ * Shared by Hero Detail and Analyze; the caller passes the request's wording (getInsightWording).
  */
-export function InsightGrid({ heroName, tier, insights }: { heroName: string; tier: string | null; insights: Insight[] }) {
+export function InsightGrid({ heroName, tier, insights, wording }: { heroName: string; tier: string | null; insights: Insight[]; wording: InsightWording }) {
   const strong = tier === 'S' || tier === 'A'
   return (
     <section aria-labelledby="why-title" className="flex flex-col gap-4">
       <div>
         <h2 id="why-title" className="font-display text-display-m font-bold text-text uppercase">
-          {strong ? `Why is ${heroName} strong?` : `What the data says about ${heroName}`}
+          {wording.grid.title(heroName, strong)}
         </h2>
-        <p className="mt-1 max-w-3xl text-sm text-text-muted">
-          Measured results from public match data. Each shows only when it passes its rule; open “Why?” for the numbers behind it.
-          {strong ? ' They show where the wins come from, not why the hero is designed that way.' : ''}
-        </p>
+        <p className="mt-1 max-w-3xl text-sm text-text-muted">{wording.grid.intro(strong)}</p>
       </div>
       {insights.length > 0 ? (
         <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {insights.map((insight, i) => (
             <Reveal as="li" key={insight.id} index={i}>
-              <InsightCard insight={insight} />
+              <InsightCard insight={insight} text={wording.text(insight)} labels={wording.card} />
             </Reveal>
           ))}
         </ul>
       ) : (
-        <p className="rounded-md border border-border bg-surface p-4 text-sm text-text-muted">
-          No result clears its sample and confidence rules in this scope yet. Try a longer window or a broader rank band.
-        </p>
+        <p className="rounded-md border border-border bg-surface p-4 text-sm text-text-muted">{wording.grid.empty}</p>
       )}
     </section>
   )

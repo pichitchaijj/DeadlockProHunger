@@ -1,9 +1,8 @@
-import { formatInteger, formatPercent, formatPointDelta } from '@/lib/format'
 import type { Comparison } from './compare'
 import { HEROES_PER_MATCH } from './pickRate'
-import { SAMPLE_TIER_LABEL, sampleTier, type SampleTier } from './sampleTier'
+import { sampleTier, type SampleTier } from './sampleTier'
 import { trendBetween, type WinLoss } from './trend'
-import { wilsonInterval } from './wilson'
+import { wilsonInterval, type Interval } from './wilson'
 
 /*
  * Insight Engine v1: DATA → INSIGHT (docs/PRODUCT.md § "Why?" explanations).
@@ -16,6 +15,9 @@ import { wilsonInterval } from './wilson'
  *  4. Descriptive wording: it says what was measured, never why, and never what to do
  *     (checked by `nonDescriptiveTerms` in tests).
  * Templates are fixed sentences over real numbers; there is no free-form or LLM text.
+ *
+ * Generators return facts, not sentences: each insight carries its kind's numbers and names, and
+ * lib/analytics/insightText.ts words them from the catalog (insights.*) in the reader's language.
  */
 
 /** Smallest gap (1 percentage point) treated as a difference. Huge samples make tiny gaps "significant". */
@@ -40,71 +42,56 @@ export type InsightKind =
   | 'rank-popularity'
   | 'purchase-timing'
 
-export type InsightMetric = { label: string; value: string }
+/** A measured win/loss record with its rate (wins ÷ matches) and 95% interval. */
+export type Measured = WinLoss & { winRate: number; interval: Interval }
+/** A group in a rank or match-length split: `key` names it (length keys short/standard/long), `label` is its data label. */
+export type SplitGroup = { key: string; label: string; winRate: number; matches: number; sample: SampleTier }
+/** The item-flow purchase phases (features/items/model.ts PURCHASE_PHASES). */
+export type PurchasePhaseKey = 'early' | 'mid' | 'late' | 'very-late'
+type ItemWeek = { buyers: number; heroMatches: number }
 
-export type Insight = {
+/** What each kind measured: the numbers and names its wording needs, nothing pre-worded. */
+export type InsightFacts =
+  | { kind: 'rising' | 'falling'; subject: string; current: Measured; previous: Measured; delta: number }
+  | { kind: 'recent-shift'; subject: string; patch: string; before: Measured; after: Measured; delta: number; direction: 'rising' | 'falling' }
+  | { kind: 'strong-matchup' | 'weak-matchup' | 'strong-synergy'; subject: string; other: string; relation: 'lane' | 'any' | 'ally'; winRate: number; matches: number; interval: Interval }
+  | { kind: 'popular-build'; subject: string; build: string; buildMatches: number; buildWinRate: number; share: number; total: number; builds: number }
+  | { kind: 'high-performing-build'; subject: string; build: string; buildRecord: Measured; heroWinRate: number }
+  | { kind: 'item-trend'; subject: string; item: string; current: ItemWeek & { share: number }; previous: ItemWeek & { share: number }; delta: number }
+  | { kind: 'rank-performance' | 'length-performance'; subject: string; best: SplitGroup; worst: SplitGroup; groups: SplitGroup[] }
+  | { kind: 'rank-popularity'; subject: string; band: string; pick: number; overall: number; bandHeroMatches: number; bandMatches: number; heroAll: number; matchesAll: number; ratio: number }
+  | { kind: 'purchase-timing'; item: string; phase: PurchasePhaseKey; winRate: number; gap: number; adjustedGap: number; phases: Array<{ key: PurchasePhaseKey; winRate: number; adjustedWinRate: number; matches: number }> }
+
+export type Insight = InsightFacts & {
   id: string
-  kind: InsightKind
   tone: 'positive' | 'negative' | 'neutral'
-  /** Short eyebrow, e.g. "Rising". */
-  title: string
-  /** The headline value, e.g. "+2.4pp" or "vs Haze". */
-  value: string
-  /** One descriptive sentence over the metrics. */
-  statement: string
-  /** The numbers the statement rests on (shown by "Why?"). */
-  metrics: InsightMetric[]
-  /** The rule this insight passed, in plain words. */
-  rule: string
-  /** Scope and sample note, e.g. "Last 30 days, All ranks · 12,400 matches (High sample)". */
-  context: string
+  /** The scope label the numbers come from (shared scope text, e.g. "Last 30 days, All ranks"). */
+  scope: string
   /** Smallest sample behind the insight. */
   sampleSize: number
   sample: SampleTier
-  /** Extra caveat, e.g. that a before/after comparison is timing only. */
-  caveat?: string
 }
 
-type Base = Pick<Insight, 'id' | 'kind' | 'tone' | 'title' | 'value' | 'statement' | 'metrics' | 'rule' | 'caveat'>
-
-function make(base: Base, scope: string, sampleSize: number): Insight {
-  const sample = sampleTier(sampleSize)
-  return { ...base, context: `${scope} · ${formatInteger(sampleSize)} matches (${SAMPLE_TIER_LABEL[sample]})`, sampleSize, sample }
+function make(base: { id: string; tone: Insight['tone'] }, facts: InsightFacts, scope: string, sampleSize: number): Insight {
+  return { ...base, ...facts, scope, sampleSize, sample: sampleTier(sampleSize) }
 }
 
-const rate = (w: WinLoss) => w.wins / w.matches
-const describe = (w: WinLoss) => `${formatPercent(rate(w))} of ${formatInteger(w.matches)}`
-const range = (w: WinLoss) => {
-  const i = wilsonInterval(w.wins, w.matches)
-  return `${formatPercent(i.low)}–${formatPercent(i.high)}`
-}
-const percentagePoints = (delta: number) => `${Math.abs(delta * 100).toFixed(1)} percentage points`
+const measured = (w: WinLoss): Measured => ({ wins: w.wins, matches: w.matches, winRate: w.wins / w.matches, interval: wilsonInterval(w.wins, w.matches) })
 const reliable = (...samples: number[]) => samples.every((n) => sampleTier(n) !== 'low')
 
 // ── Win-rate change over time ────────────────────────────────────────
 
-type ShiftInput = { subject: string; current: WinLoss; previous: WinLoss; currentLabel: string; previousLabel: string; scope: string }
+/** `current` is the last 7 days, `previous` the 7 days before (the only windows Hero Detail compares). */
+type ShiftInput = { subject: string; current: WinLoss; previous: WinLoss; scope: string }
 
 /** Rising / falling: two consecutive windows whose 95% intervals don't overlap, with a gap ≥ MIN_EFFECT. */
-export function winRateShift({ subject, current, previous, currentLabel, previousLabel, scope }: ShiftInput): Insight | null {
+export function winRateShift({ subject, current, previous, scope }: ShiftInput): Insight | null {
   const trend = trendBetween(current, previous)
   if (!trend || trend.direction === 'stable' || Math.abs(trend.delta) < MIN_EFFECT) return null
   const up = trend.direction === 'rising'
   return make(
-    {
-      id: trend.direction,
-      kind: trend.direction,
-      tone: up ? 'positive' : 'negative',
-      title: up ? 'Rising' : 'Falling',
-      value: formatPointDelta(trend.delta),
-      statement: `${subject}’s win rate ${up ? 'increased' : 'decreased'} ${percentagePoints(trend.delta)}, from ${formatPercent(rate(previous))} in ${previousLabel.toLowerCase()} to ${formatPercent(rate(current))} in ${currentLabel.toLowerCase()}.`,
-      metrics: [
-        { label: currentLabel, value: `${describe(current)} matches won (95% interval ${range(current)})` },
-        { label: previousLabel, value: `${describe(previous)} matches won (95% interval ${range(previous)})` },
-        { label: 'Change', value: formatPointDelta(trend.delta) },
-      ],
-      rule: 'Both windows have at least 200 matches, their 95% intervals don’t overlap, and the change is at least 1 percentage point.',
-    },
+    { id: trend.direction, tone: up ? 'positive' : 'negative' },
+    { kind: trend.direction, subject, current: measured(current), previous: measured(previous), delta: trend.delta },
     scope,
     Math.min(current.matches, previous.matches),
   )
@@ -116,22 +103,9 @@ type PatchShiftInput = { subject: string; patch: string; before: WinLoss; after:
 export function patchShift({ subject, patch, before, after, scope }: PatchShiftInput): Insight | null {
   const trend = trendBetween(after, before)
   if (!trend || trend.direction === 'stable' || Math.abs(trend.delta) < MIN_EFFECT) return null
-  const up = trend.direction === 'rising'
   return make(
-    {
-      id: 'recent-shift',
-      kind: 'recent-shift',
-      tone: 'neutral',
-      title: 'Recent shift',
-      value: formatPointDelta(trend.delta),
-      statement: `${subject}’s win rate was ${percentagePoints(trend.delta)} ${up ? 'higher' : 'lower'} in the days after the “${patch}” update (${formatPercent(rate(after))}) than in the 7 days before (${formatPercent(rate(before))}).`,
-      metrics: [
-        { label: 'After the patch', value: `${describe(after)} matches won (95% interval ${range(after)})` },
-        { label: '7 days before', value: `${describe(before)} matches won (95% interval ${range(before)})` },
-      ],
-      rule: 'Both periods have at least 200 matches, their 95% intervals don’t overlap, and the change is at least 1 percentage point.',
-      caveat: 'This shows timing only. Other changes in the same days (player mix, other heroes) can move a win rate too.',
-    },
+    { id: 'recent-shift', tone: 'neutral' },
+    { kind: 'recent-shift', subject, patch, before: measured(before), after: measured(after), delta: trend.delta, direction: trend.direction },
     scope,
     Math.min(before.matches, after.matches),
   )
@@ -149,32 +123,14 @@ export function pairing({ subject, other, wins, matches, relation, scope }: Pair
   const positive = interval.low > 0.5 && wr - 0.5 >= MIN_EFFECT
   const negative = interval.high < 0.5 && 0.5 - wr >= MIN_EFFECT
   if (!positive && !negative) return null
-  const games = relation === 'lane' ? 'lane matchups' : 'matches'
-  const metrics = [
-    { label: relation === 'ally' ? `With ${other}` : `Against ${other}`, value: `${formatPercent(wr)} won over ${formatInteger(matches)} ${games}` },
-    { label: '95% interval', value: `${formatPercent(interval.low)}–${formatPercent(interval.high)}` },
-  ]
-  const rule = `At least 200 ${games}, a 95% interval entirely ${positive ? 'above' : 'below'} 50%, and a gap of at least 1 percentage point.`
+  const facts = { subject, other, relation, winRate: wr, matches, interval }
   if (relation === 'ally') {
     if (!positive) return null
-    return make(
-      { id: 'strong-synergy', kind: 'strong-synergy', tone: 'positive', title: 'Positive pairing', value: other, statement: `${subject} won ${formatPercent(wr)} of ${formatInteger(matches)} matches with ${other} on the same team in the selected dataset.`, metrics, rule },
-      scope,
-      matches,
-    )
+    return make({ id: 'strong-synergy', tone: 'positive' }, { kind: 'strong-synergy', ...facts }, scope, matches)
   }
-  const where = relation === 'lane' ? ' in lane' : ''
   return make(
-    {
-      id: positive ? 'strong-matchup' : 'weak-matchup',
-      kind: positive ? 'strong-matchup' : 'weak-matchup',
-      tone: positive ? 'positive' : 'negative',
-      title: positive ? 'Positive matchup' : 'Negative matchup',
-      value: `vs ${other}`,
-      statement: `Shows a ${positive ? 'positive' : 'negative'} matchup against ${other}${where} in the selected dataset: ${formatPercent(wr)} won over ${formatInteger(matches)} ${games}.`,
-      metrics,
-      rule,
-    },
+    { id: positive ? 'strong-matchup' : 'weak-matchup', tone: positive ? 'positive' : 'negative' },
+    { kind: positive ? 'strong-matchup' : 'weak-matchup', ...facts },
     scope,
     matches,
   )
@@ -192,21 +148,8 @@ export function popularBuild({ subject, builds, scope }: { subject: string; buil
   const total = tracked.reduce((n, b) => n + b.matches, 0)
   const share = top.matches / total
   return make(
-    {
-      id: 'popular-build',
-      kind: 'popular-build',
-      tone: 'neutral',
-      title: 'Most-selected build',
-      value: top.name,
-      statement: `“${top.name}” was selected at game start in ${formatInteger(top.matches)} ${subject} matches, ${formatPercent(share)} of matches using a tracked build.`,
-      metrics: [
-        { label: 'Matches with this build', value: formatInteger(top.matches) },
-        { label: 'Matches with any tracked build', value: `${formatInteger(total)} (${tracked.length} builds)` },
-        { label: 'Its win rate', value: `${describe(top)} matches won` },
-      ],
-      rule: 'The tracked build selected in the most matches, with at least 200 of them.',
-      caveat: 'Tracked builds are the most-favorited published builds; matches using other builds aren’t counted.',
-    },
+    { id: 'popular-build', tone: 'neutral' },
+    { kind: 'popular-build', subject, build: top.name, buildMatches: top.matches, buildWinRate: top.wins / top.matches, share, total, builds: tracked.length },
     scope,
     top.matches,
   )
@@ -222,20 +165,8 @@ export function highPerformingBuild({ subject, heroWinRate, builds, scope }: { s
   const top = candidates[0]
   if (!top) return null
   return make(
-    {
-      id: 'high-performing-build',
-      kind: 'high-performing-build',
-      tone: 'positive',
-      title: 'High-performing build',
-      value: top.name,
-      statement: `Matches where “${top.name}” was selected were won ${formatPercent(top.wins / top.matches)} of the time, above ${subject}’s ${formatPercent(heroWinRate)} overall.`,
-      metrics: [
-        { label: 'With this build', value: `${describe(top)} matches won (95% interval ${formatPercent(top.interval.low)}–${formatPercent(top.interval.high)})` },
-        { label: `${subject} overall`, value: formatPercent(heroWinRate) },
-      ],
-      rule: 'At least 200 matches, and the build’s 95% interval sits entirely above the hero’s win rate by at least 1 percentage point.',
-      caveat: 'Players choose their build, so this compares groups of matches; it doesn’t isolate the build’s effect.',
-    },
+    { id: 'high-performing-build', tone: 'positive' },
+    { kind: 'high-performing-build', subject, build: top.name, buildRecord: { wins: top.wins, matches: top.matches, winRate: top.wins / top.matches, interval: top.interval }, heroWinRate },
     scope,
     top.matches,
   )
@@ -243,11 +174,11 @@ export function highPerformingBuild({ subject, heroWinRate, builds, scope }: { s
 
 // ── Items ────────────────────────────────────────────────────────────
 
-type ItemWeek = { buyers: number; heroMatches: number }
-type ItemTrendInput = { subject: string; items: Array<{ name: string; current: ItemWeek; previous: ItemWeek }>; currentLabel: string; previousLabel: string; scope: string }
+/** `current` is the last 7 days, `previous` the 7 days before (same windows as winRateShift). */
+type ItemTrendInput = { subject: string; items: Array<{ name: string; current: ItemWeek; previous: ItemWeek }>; scope: string }
 
 /** Unusual item trend: the largest buy-rate change whose intervals separate and that moved ≥ ITEM_TREND_MIN_SHIFT. */
-export function itemTrend({ subject, items, currentLabel, previousLabel, scope }: ItemTrendInput): Insight | null {
+export function itemTrend({ subject, items, scope }: ItemTrendInput): Insight | null {
   const shifts = items
     .filter((i) => reliable(i.current.heroMatches, i.previous.heroMatches, i.current.buyers, i.previous.buyers))
     .map((i) => {
@@ -260,23 +191,10 @@ export function itemTrend({ subject, items, currentLabel, previousLabel, scope }
     .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
   const top = shifts[0]
   if (!top) return null
-  const up = top.delta > 0
-  const share = (w: ItemWeek) => formatPercent(w.buyers / w.heroMatches)
+  const week = (w: ItemWeek) => ({ ...w, share: w.buyers / w.heroMatches })
   return make(
-    {
-      id: 'item-trend',
-      kind: 'item-trend',
-      tone: 'neutral',
-      title: up ? 'Item bought more' : 'Item bought less',
-      value: top.name,
-      statement: `${top.name} was bought in ${share(top.current)} of ${subject} matches in ${currentLabel.toLowerCase()}, ${up ? 'up' : 'down'} from ${share(top.previous)} in ${previousLabel.toLowerCase()}.`,
-      metrics: [
-        { label: currentLabel, value: `${formatInteger(top.current.buyers)} of ${formatInteger(top.current.heroMatches)} matches` },
-        { label: previousLabel, value: `${formatInteger(top.previous.buyers)} of ${formatInteger(top.previous.heroMatches)} matches` },
-        { label: 'Change', value: formatPointDelta(top.delta) },
-      ],
-      rule: 'Both windows have at least 200 hero matches and 200 buyers, the buy-rate 95% intervals don’t overlap, and the change is at least 3 percentage points.',
-    },
+    { id: 'item-trend', tone: 'neutral' },
+    { kind: 'item-trend', subject, item: top.name, current: week(top.current), previous: week(top.previous), delta: top.delta },
     scope,
     Math.min(top.current.heroMatches, top.previous.heroMatches),
   )
@@ -284,28 +202,19 @@ export function itemTrend({ subject, items, currentLabel, previousLabel, scope }
 
 // ── Rank-specific ────────────────────────────────────────────────────
 
-const SPLITS = {
-  rank: { kind: 'rank-performance', title: 'By rank', groups: 'Rank bands', in: (l: string) => l, caveat: 'Only matches with an average rank are counted.' },
-  length: { kind: 'length-performance', title: 'By match length', groups: 'Match-length groups', in: (l: string) => l.toLowerCase(), caveat: undefined },
-} as const
+const SPLITS = { rank: 'rank-performance', length: 'length-performance' } as const
+
+/** A split group as a fact; the win rate is wins ÷ matches as recorded (the wording shows it as is). */
+const splitGroup = (g: Comparison['groups'][number]): SplitGroup => ({ key: g.key, label: g.label, winRate: g.wins / g.matches, matches: g.matches, sample: g.sample })
 
 /** Rank-specific (or match-length) performance: the highest and lowest groups' intervals don't overlap. */
 export function splitPerformance({ subject, by, comparison, scope }: { subject: string; by: keyof typeof SPLITS; comparison: Comparison; scope: string }): Insight | null {
   const { best, worst, clear } = comparison
   if (!clear || !best || !worst || best.winRate - worst.winRate < MIN_EFFECT) return null
-  const split = SPLITS[by]
+  const kind = SPLITS[by]
   return make(
-    {
-      id: split.kind,
-      kind: split.kind,
-      tone: 'neutral',
-      title: split.title,
-      value: best.label,
-      statement: `${subject}’s win rate is highest in ${split.in(best.label)} (${formatPercent(best.winRate)}) and lowest in ${split.in(worst.label)} (${formatPercent(worst.winRate)}).`,
-      metrics: comparison.groups.map((g) => ({ label: g.label, value: `${describe(g)} matches won${g.sample === 'low' ? ' (Low sample, not compared)' : ''}` })),
-      rule: `${split.groups} with at least 200 matches; the highest group’s 95% interval sits entirely above the lowest group’s.`,
-      caveat: split.caveat,
-    },
+    { id: kind, tone: 'neutral' },
+    { kind, subject, best: { ...splitGroup(best), winRate: best.winRate }, worst: { ...splitGroup(worst), winRate: worst.winRate }, groups: comparison.groups.map(splitGroup) },
     scope,
     Math.min(best.matches, worst.matches),
   )
@@ -330,20 +239,18 @@ export function rankPopularity({ subject, bands, scope }: { subject: string; ban
     .sort((a, b) => b.pick / overall - a.pick / overall)[0]
   if (!top) return null
   return make(
+    { id: 'rank-popularity', tone: 'neutral' },
     {
-      id: 'rank-popularity',
       kind: 'rank-popularity',
-      tone: 'neutral',
-      title: 'Pick rate by rank',
-      value: top.label,
-      statement: `Frequently picked by ${top.label} players: in ${formatPercent(top.pick)} of ${top.label} matches, vs ${formatPercent(overall)} across all ranks.`,
-      metrics: [
-        { label: `${top.label} pick rate`, value: `${formatInteger(top.heroMatches)} of ~${formatInteger(top.matches)} matches` },
-        { label: 'All ranks', value: `${formatInteger(heroAll)} of ~${formatInteger(Math.round(matchesAll))} matches` },
-        { label: 'Ratio', value: `${(top.pick / overall).toFixed(1)}×` },
-      ],
-      rule: 'At least 200 matches in the band, a pick rate at least 1.5× the all-rank rate, and non-overlapping 95% intervals. Match counts are estimated as hero picks ÷ 12.',
-      caveat: `${subject} is popular there; popularity alone says nothing about results.`,
+      subject,
+      band: top.label,
+      pick: top.pick,
+      overall,
+      bandHeroMatches: top.heroMatches,
+      bandMatches: top.matches,
+      heroAll,
+      matchesAll: Math.round(matchesAll),
+      ratio: top.pick / overall,
     },
     scope,
     top.heroMatches,
@@ -359,14 +266,15 @@ export function rankInsights(list: Array<Insight | null>): Insight[] {
   return list.filter((i): i is Insight => i !== null).sort((a, b) => PRIORITY.indexOf(a.kind) - PRIORITY.indexOf(b.kind))
 }
 
-/** Words that state a cause, a judgment or an instruction. Insight text must contain none of them. */
+/** Words that state a cause, a judgment or an instruction. Insight text (English) must contain none of them. */
 const NON_DESCRIPTIVE = [/\bbroken\b/i, /\bOP\b/, /\boverpowered\b/i, /\bshould\b/i, /\bmust\b/i, /\bcaus(e|es|ed|ing)\b/i, /\bbecause\b/i, /\bleads? to\b/i, /\bbest\b/i, /\bworst\b/i, /\bstrongest\b/i, /\bweakest\b/i, /\bguarantee/i, /\beveryone\b/i]
 
 /**
  * The non-descriptive terms in an insight's own wording (empty when clean). Quoted names are
- * skipped: a build an author called "Best Haze" is a name, not our claim.
+ * skipped: a build an author called "Best Haze" is a name, not our claim. Checks the English
+ * wording (insightText with the English catalog).
  */
-export function nonDescriptiveTerms(insight: Pick<Insight, 'statement' | 'title'>): string[] {
+export function nonDescriptiveTerms(insight: { title: string; statement: string }): string[] {
   const text = `${insight.title} ${insight.statement}`.replace(/“[^”]*”/g, '')
   return NON_DESCRIPTIVE.flatMap((re) => text.match(re)?.[0] ?? [])
 }

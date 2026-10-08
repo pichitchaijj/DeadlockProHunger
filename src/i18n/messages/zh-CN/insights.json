@@ -1,0 +1,113 @@
+{
+  "card": {
+    "why": "原因",
+    "hide": "收起说明",
+    "rule": "规则："
+  },
+  "grid": {
+    "titleStrong": "{hero} 为什么强势？",
+    "title": "数据中的 {hero}",
+    "intro": "基于公开比赛数据的测量结果。每项只在通过其规则时显示；展开“原因”可查看背后的数字。{strong, select, yes {这些只说明胜利来自哪里，而不说明英雄为何这样设计。} other {}}",
+    "empty": "在此范围内还没有结果通过样本和置信度规则。请尝试更长的时间范围或更宽的段位区间。"
+  },
+  "context": {
+    "matches": "{scope} · {count} 场比赛（{sample}）",
+    "phases": "{scope} · 最小阶段 {count} 次购买（{sample}）"
+  },
+  "weeks": {
+    "current": "最近 7 天",
+    "previous": "之前的 7 天"
+  },
+  "metric": {
+    "range": "{low}–{high}",
+    "won": "{count} 场比赛中胜 {rate}",
+    "wonLow": "{count} 场比赛中胜 {rate}（样本少，未参与比较）",
+    "wonInterval": "{count} 场比赛中胜 {rate}（95% 区间 {range}）",
+    "change": "变化",
+    "interval": "95% 区间"
+  },
+  "kinds": {
+    "shift": {
+      "rising": "上升",
+      "falling": "下降",
+      "statement": "{subject} 的胜率{direction, select, rising {上升} other {下降}}了 {points} 个百分点，从之前 7 天的 {previous} 变为最近 7 天的 {current}。",
+      "rule": "两个时段都至少有 200 场比赛，95% 区间不重叠，且变化至少 1 个百分点。"
+    },
+    "patch": {
+      "title": "近期变化",
+      "statement": "{subject} 在「{patch}」更新后的几天里胜率（{after}）比之前 7 天（{before}）{direction, select, rising {高} other {低}} {points} 个百分点。",
+      "after": "版本更新后",
+      "before": "之前 7 天",
+      "rule": "两个时段都至少有 200 场比赛，95% 区间不重叠，且变化至少 1 个百分点。",
+      "caveat": "这只说明时间上的对应。同一时期的其他变化（玩家构成、其他英雄）也可能影响胜率。"
+    },
+    "pairing": {
+      "positiveTitle": "有利对位",
+      "negativeTitle": "不利对位",
+      "synergyTitle": "良好组合",
+      "versus": "对阵 {other}",
+      "matchupStatement": "在所选数据集中，对阵 {other} 的{relation, select, lane {对线} other {}}表现{positive, select, yes {有利} other {不利}}：{count} {relation, select, lane {次对线} other {场比赛}}中胜 {rate}。",
+      "synergyStatement": "在所选数据集中，{subject} 与 {other} 同队的 {count} 场比赛中胜 {rate}。",
+      "with": "与 {other} 同队",
+      "against": "对阵 {other}",
+      "result": "{count} {relation, select, lane {次对线} other {场比赛}}中胜 {rate}",
+      "rule": "至少 200 {relation, select, lane {次对线} other {场比赛}}，95% 区间完全{positive, select, yes {高于} other {低于}} 50%，且差距至少 1 个百分点。"
+    },
+    "popularBuild": {
+      "title": "最常选择的出装",
+      "statement": "「{build}」在 {subject} 的 {count} 场比赛中于开局时被选择，占使用追踪出装比赛的 {share}。",
+      "buildMatches": "使用此出装的比赛",
+      "trackedMatches": "使用任一追踪出装的比赛",
+      "trackedValue": "{total}（{builds} 个出装）",
+      "winRate": "其胜率",
+      "rule": "被选择场次最多的追踪出装，且至少有 200 场。",
+      "caveat": "追踪出装是收藏最多的已发布出装；使用其他出装的比赛不计入。"
+    },
+    "highBuild": {
+      "title": "高表现出装",
+      "statement": "选择「{build}」的比赛胜率为 {rate}，高于 {subject} 总体的 {heroRate}。",
+      "with": "此出装",
+      "overall": "{subject} 总体",
+      "rule": "至少 200 场比赛，且出装的 95% 区间完全高于英雄胜率至少 1 个百分点。",
+      "caveat": "出装由玩家自行选择，因此这是比赛群体之间的比较，并未分离出装本身的效果。"
+    },
+    "itemTrend": {
+      "more": "购买增多的物品",
+      "less": "购买减少的物品",
+      "statement": "最近 7 天，{item} 在 {subject} 比赛中的购买率为 {current}，较之前 7 天的 {previous} {direction, select, up {上升} other {下降}}。",
+      "bought": "{matches} 场比赛中 {buyers} 场",
+      "rule": "两个时段的英雄场次和购买者都至少 200，购买率的 95% 区间不重叠，且变化至少 3 个百分点。"
+    },
+    "split": {
+      "rankTitle": "按段位",
+      "lengthTitle": "按比赛时长",
+      "statement": "{subject} 的胜率在{best}最高（{bestRate}），在{worst}最低（{worstRate}）。",
+      "lengthIn": {
+        "short": "25 分钟以内的比赛中",
+        "standard": "25–35 分钟的比赛中",
+        "long": "35 分钟以上的比赛中"
+      },
+      "rule": "至少 200 场比赛的{by, select, rank {段位区间} other {比赛时长分组}}中，最高组的 95% 区间完全高于最低组。",
+      "rankCaveat": "只计入有平均段位的比赛。"
+    },
+    "rankPopularity": {
+      "title": "按段位的选取率",
+      "statement": "常被 {band} 玩家选择：在 {band} 比赛中占 {pick}，所有段位为 {overall}。",
+      "bandPick": "{band} 选取率",
+      "allRanks": "所有段位",
+      "estimate": "约 {total} 场中 {count} 场",
+      "ratio": "倍数",
+      "ratioValue": "{ratio}×",
+      "rule": "该段位至少 200 场比赛，选取率至少为所有段位的 1.5 倍，且 95% 区间不重叠。比赛场数按英雄选取数 ÷ 12 估算。",
+      "caveat": "{subject} 在该段位受欢迎；但热度本身并不说明结果。"
+    },
+    "purchaseTiming": {
+      "title": "购买时机",
+      "phase": "{label}（{range}）",
+      "statement": "在 {range} 购买的 {item} 胜率为 {rate}：比下一个购买阶段高 {gap}pp，经净资产调整后仍高 {adjusted}pp。",
+      "metric": "原始 {rate} · 调整后 {adjusted} · {count} 次购买",
+      "rule": "只有当某阶段购买 200+ 次、95% 区间完全高于其他所有阶段、领先下一阶段至少 1 个百分点，且经净资产调整后仍领先至少 1 个百分点时，才会标出该阶段。",
+      "caveat": "这是观察数据：不同时间购买的玩家处于不同的对局状况（领先程度、净资产、比赛时长）。调整只对净资产重新加权，并非因果估计。"
+    }
+  }
+}

@@ -6,6 +6,8 @@ import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { DataNotice } from '@/components/data/DataState'
 import { InsightCard } from '@/components/data/InsightCard'
+import { getInsightWording, type InsightWording } from '@/components/data/insightWording'
+import type { Insight } from '@/lib/analytics/insights'
 import { ScopeLine } from '@/components/data/ScopeLine'
 import { ItemIcon } from '@/components/game-assets/ItemIcon'
 import { PageContainer } from '@/components/layout/PageContainer'
@@ -153,7 +155,7 @@ async function Performance({ item, query, ctx }: { item: ItemRef; query: ItemSco
 }
 
 async function Timing({ item, query, ctx }: { item: ItemRef; query: ItemScopeQuery; ctx: ItemContext }) {
-  const [load, { t, tryAgain }] = await Promise.all([attempt('[item] timing failed', getItemTiming(item, ctx)), sectionText()])
+  const [load, { t, tryAgain }, wording] = await Promise.all([attempt('[item] timing failed', getItemTiming(item, ctx)), sectionText(), getInsightWording()])
   if (!load.ok) return <DataNotice error={load.kind} what="Purchase timing" action={retry(itemHref(item.slug, query), tryAgain)} />
   const { points, typical, phases, standout } = load.value
   if (points.length === 0 && phases.every((p) => p.stats === null)) {
@@ -176,8 +178,8 @@ async function Timing({ item, query, ctx }: { item: ItemRef; query: ItemScopeQue
         <p className="text-caption text-text-muted">{t('detail.phaseNote')}</p>
       </div>
 
-      {/* The standout insight is an Insight Engine result (shared InsightCard), which stays English for now, like Hero detail's insights. */}
-      {standout ? <InsightCard insight={purchaseTimingInsight(item.name, standout, phases, scopeText)} className="max-w-2xl" /> : <NoStandout />}
+      {/* The standout phase is an Insight Engine result: facts from the model, worded for the request's language. */}
+      {standout ? <StandoutCard insight={purchaseTimingInsight(item.name, standout, phases, scopeText)} wording={wording} /> : <NoStandout />}
     </div>
   )
 }
@@ -189,4 +191,8 @@ async function Heroes({ item, query, ctx }: { item: ItemRef; query: ItemScopeQue
     return <EmptyState title={t('detail.noHeroesTitle')} description={t('detail.noHeroesDescription', { item: item.name, count: min })} />
   }
   return <ItemHeroes rows={load.value.slice(0, HERO_LIMIT)} query={query} itemSlug={item.slug} />
+}
+
+function StandoutCard({ insight, wording }: { insight: Insight; wording: InsightWording }) {
+  return <InsightCard insight={insight} text={wording.text(insight)} labels={wording.card} className="max-w-2xl" />
 }

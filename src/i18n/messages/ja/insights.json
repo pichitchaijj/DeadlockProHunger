@@ -1,0 +1,113 @@
+{
+  "card": {
+    "why": "理由",
+    "hide": "説明を閉じる",
+    "rule": "ルール："
+  },
+  "grid": {
+    "titleStrong": "{hero} が強いのはなぜ？",
+    "title": "データから見る {hero}",
+    "intro": "公開試合データから測定した結果です。各項目はルールを満たした場合にのみ表示されます。「理由」を開くと根拠となる数値を確認できます。{strong, select, yes {勝利がどこから来ているかを示すもので、ヒーローがなぜそう設計されているかを示すものではありません。} other {}}",
+    "empty": "この範囲では、サンプルと信頼度のルールを満たす結果はまだありません。期間を長くするか、ランク帯を広げてください。"
+  },
+  "context": {
+    "matches": "{scope} · {count} 試合（{sample}）",
+    "phases": "{scope} · 最小フェーズ {count} 回購入（{sample}）"
+  },
+  "weeks": {
+    "current": "直近 7 日間",
+    "previous": "その前の 7 日間"
+  },
+  "metric": {
+    "range": "{low}–{high}",
+    "won": "{count} 試合中 {rate} 勝利",
+    "wonLow": "{count} 試合中 {rate} 勝利（サンプル少のため比較対象外）",
+    "wonInterval": "{count} 試合中 {rate} 勝利（95% 区間 {range}）",
+    "change": "変化",
+    "interval": "95% 区間"
+  },
+  "kinds": {
+    "shift": {
+      "rising": "上昇",
+      "falling": "下降",
+      "statement": "{subject} の勝率は {points} ポイント{direction, select, rising {上昇} other {下降}}し、その前の 7 日間の {previous} から直近 7 日間の {current} になりました。",
+      "rule": "両期間とも 200 試合以上あり、95% 区間が重ならず、変化が 1 ポイント以上。"
+    },
+    "patch": {
+      "title": "最近の変化",
+      "statement": "{subject} の勝率は「{patch}」アップデート後の期間（{after}）が、その前の 7 日間（{before}）より {points} ポイント{direction, select, rising {高く} other {低く}}なっています。",
+      "after": "パッチ後",
+      "before": "7 日前まで",
+      "rule": "両期間とも 200 試合以上あり、95% 区間が重ならず、変化が 1 ポイント以上。",
+      "caveat": "これは時期を示すだけです。同じ時期の他の変化（プレイヤー層、他のヒーロー）も勝率を動かすことがあります。"
+    },
+    "pairing": {
+      "positiveTitle": "有利な対面",
+      "negativeTitle": "不利な対面",
+      "synergyTitle": "好相性の組み合わせ",
+      "versus": "vs {other}",
+      "matchupStatement": "選択したデータセットで {other} との{relation, select, lane {レーン} other {}}対面は{positive, select, yes {有利} other {不利}}です：{count} {relation, select, lane {回のレーン対面} other {試合}}で {rate} 勝利。",
+      "synergyStatement": "選択したデータセットで、{subject} は {other} と同じチームの {count} 試合中 {rate} 勝利しました。",
+      "with": "{other} と一緒",
+      "against": "{other} に対して",
+      "result": "{count} {relation, select, lane {回のレーン対面} other {試合}}で {rate} 勝利",
+      "rule": "200 {relation, select, lane {回以上のレーン対面} other {試合以上}}、95% 区間が 50% より完全に{positive, select, yes {上} other {下}}にあり、差が 1 ポイント以上。"
+    },
+    "popularBuild": {
+      "title": "最も選ばれたビルド",
+      "statement": "「{build}」は {subject} の {count} 試合でゲーム開始時に選ばれました。追跡ビルドを使った試合の {share} です。",
+      "buildMatches": "このビルドの試合数",
+      "trackedMatches": "追跡ビルドを使った試合数",
+      "trackedValue": "{total}（{builds} ビルド）",
+      "winRate": "このビルドの勝率",
+      "rule": "最も多くの試合で選ばれた追跡ビルドで、200 試合以上あるもの。",
+      "caveat": "追跡ビルドは最もお気に入りされた公開ビルドです。他のビルドを使った試合は数えていません。"
+    },
+    "highBuild": {
+      "title": "成績の高いビルド",
+      "statement": "「{build}」が選ばれた試合の勝率は {rate} で、{subject} 全体の {heroRate} を上回りました。",
+      "with": "このビルド",
+      "overall": "{subject} 全体",
+      "rule": "200 試合以上あり、ビルドの 95% 区間がヒーローの勝率より 1 ポイント以上完全に上にある。",
+      "caveat": "ビルドはプレイヤーが選ぶため、これは試合のグループを比べたもので、ビルド自体の効果を切り分けたものではありません。"
+    },
+    "itemTrend": {
+      "more": "購入が増えたアイテム",
+      "less": "購入が減ったアイテム",
+      "statement": "{item} は直近 7 日間の {subject} の試合の {current} で購入され、その前の 7 日間の {previous} から{direction, select, up {増加} other {減少}}しました。",
+      "bought": "{matches} 試合中 {buyers}",
+      "rule": "両期間ともヒーロー試合数と購入者数が 200 以上、購入率の 95% 区間が重ならず、変化が 3 ポイント以上。"
+    },
+    "split": {
+      "rankTitle": "ランク別",
+      "lengthTitle": "試合時間別",
+      "statement": "{subject} の勝率は {best} で最も高く（{bestRate}）、{worst} で最も低い（{worstRate}）です。",
+      "lengthIn": {
+        "short": "25 分未満の試合",
+        "standard": "25–35 分の試合",
+        "long": "35 分超の試合"
+      },
+      "rule": "200 試合以上の{by, select, rank {ランク帯} other {試合時間グループ}}で、最も高いグループの 95% 区間が最も低いグループより完全に上にある。",
+      "rankCaveat": "平均ランクのある試合のみを数えています。"
+    },
+    "rankPopularity": {
+      "title": "ランク別ピック率",
+      "statement": "{band} のプレイヤーによく選ばれています：{band} の試合の {pick}、全ランクでは {overall}。",
+      "bandPick": "{band} のピック率",
+      "allRanks": "全ランク",
+      "estimate": "約 {total} 試合中 {count}",
+      "ratio": "比率",
+      "ratioValue": "{ratio}×",
+      "rule": "ランク帯に 200 試合以上、ピック率が全ランクの 1.5 倍以上、95% 区間が重ならない。試合数はヒーローのピック数 ÷ 12 で推定。",
+      "caveat": "{subject} はそこで人気がありますが、人気だけでは結果について何もわかりません。"
+    },
+    "purchaseTiming": {
+      "title": "購入タイミング",
+      "phase": "{label}（{range}）",
+      "statement": "{range} に購入された {item} の勝率は {rate}：次の購入フェーズより {gap}pp 高く、純資産調整後も {adjusted}pp 高くなっています。",
+      "metric": "生 {rate} · 調整後 {adjusted} · {count} 回購入",
+      "rule": "購入が 200 回以上あり、95% 区間が他のすべてのフェーズより完全に上にあり、次のフェーズを 1 ポイント以上上回り、純資産調整後も 1 ポイント以上上回る場合にのみフェーズを示します。",
+      "caveat": "観察データです。異なる時期に購入するプレイヤーは状況の異なる試合にいます（リード、純資産、試合時間）。調整は純資産のみを再重み付けしており、因果的な推定ではありません。"
+    }
+  }
+}

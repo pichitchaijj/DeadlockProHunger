@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { english } from './helpers/insightEnglish'
 import { compareGroups } from '@/lib/analytics/compare'
 import {
   abilityOpenings,
@@ -147,7 +148,7 @@ describe('heroInsights', () => {
   it('emits only insights whose rules pass, ordered by what changed first', () => {
     const insights = heroInsights({ ...base, weeks: { current: { wins: 5_520, matches: 10_000 }, previous: { wins: 5_280, matches: 10_000 } } })
     expect(insights.map((i) => i.kind)).toEqual(['rising', 'length-performance'])
-    expect(insights[1].value).toBe('Over 35 min')
+    expect(english(insights[1]).value).toBe('Over 35 min')
   })
 
   it('drops a patch shift that restates the weekly change, keeps one that does not', () => {

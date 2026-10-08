@@ -306,12 +306,11 @@ export type HeroInsightInput = {
 
 /** Every Insight Engine result for a hero, most informative first. Each appears only if its rule passes. */
 export function heroInsights(i: HeroInsightInput): Insight[] {
-  const weeks = { currentLabel: 'The last 7 days', previousLabel: 'The 7 days before' }
   const tracked = i.builds.flatMap((b) => (b.stats ? [{ name: b.name, wins: b.stats.wins, matches: b.stats.matches }] : []))
   const best = i.matchups.best[0]
   const worst = i.matchups.worst[0]
   const partner = i.synergies[0]
-  const weekly = i.weeks ? winRateShift({ subject: i.name, ...i.weeks, ...weeks, scope: i.weekScope }) : null
+  const weekly = i.weeks ? winRateShift({ subject: i.name, ...i.weeks, scope: i.weekScope }) : null
   const patch = i.patch?.before && i.patch.after ? patchShift({ subject: i.name, patch: i.patch.title, before: i.patch.before, after: i.patch.after, scope: i.weekScope }) : null
   // A patch inside the two compared weeks mostly restates the weekly change; keep it only if it adds something.
   const rate = (w: WinLossPair) => w.wins / w.matches
@@ -326,7 +325,7 @@ export function heroInsights(i: HeroInsightInput): Insight[] {
     highPerformingBuild({ subject: i.name, heroWinRate: i.winRate, builds: tracked, scope: i.scope }),
     only('strong-matchup', best && pairing({ subject: i.name, other: best.name, wins: best.wins, matches: best.matches, relation: 'lane', scope: i.scope })),
     only('weak-matchup', worst && pairing({ subject: i.name, other: worst.name, wins: worst.wins, matches: worst.matches, relation: 'lane', scope: i.scope })),
-    itemTrend({ subject: i.name, items: i.items, ...weeks, scope: i.weekScope }),
+    itemTrend({ subject: i.name, items: i.items, scope: i.weekScope }),
     partner ? pairing({ subject: i.name, other: partner.name, wins: partner.wins, matches: partner.matches, relation: 'ally', scope: i.scope }) : null,
     popularBuild({ subject: i.name, builds: tracked, scope: i.scope }),
   ])
