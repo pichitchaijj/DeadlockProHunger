@@ -1,0 +1,176 @@
+{
+  "meta": {
+    "listTitle": "出装",
+    "listDescription": "附实测胜率的 Deadlock 出装：版本出装、顶尖段位玩家的出装和社区热门出装。",
+    "detailTitle": "出装",
+    "detailDescription": "Deadlock 的 {hero} 出装：实测胜率、物品购买时间、购买顺序和技能顺序。"
+  },
+  "list": {
+    "eyebrow": "出装",
+    "title": "出装",
+    "description": "胜率只统计开局时选择了该出装的比赛。只有数据满足规则时才会显示标签。",
+    "categoriesNav": "出装分类",
+    "categories": {
+      "meta": {
+        "label": "版本出装",
+        "definition": "已追踪比赛达 200 场以上的出装，按其胜率区间高出英雄自身胜率的幅度排序。"
+      },
+      "pro": {
+        "label": "高手出装",
+        "definition": "当前段位为 {rankA} 或 {rankB} 的作者的出装（以其最近一场排位赛的段位为准）。"
+      },
+      "community": {
+        "label": "社区出装",
+        "definition": "本周收藏最多的出装。"
+      }
+    },
+    "hero": "英雄",
+    "allHeroes": "全部英雄",
+    "window": "补丁 / 时间（用于胜率）",
+    "rank": "段位（比赛平均）",
+    "windows": {
+      "patch": "当前补丁",
+      "7d": "7 天",
+      "30d": "30 天"
+    },
+    "howLabeled": "出装标签说明",
+    "labelRule": "<term>{label}</term>：{rule}。",
+    "selectionNote": "胜率统计开局时选择该出装的比赛；比赛中途更换出装不会被追踪。",
+    "unknownHero": "未知英雄",
+    "noMatchTitle": "没有符合条件的出装",
+    "noMatchMeta": "此范围内没有已追踪比赛达 200 场以上的出装。请尝试 30 天或全部段位。",
+    "noMatchPro": "此处收藏最多的 {count} 个出装中，没有一个来自当前段位为 {rankA} 或 {rankB} 的作者。",
+    "noMatchCommunity": "未找到出装。",
+    "loading": "正在加载出装"
+  },
+  "card": {
+    "authorUnknown": "作者未知",
+    "matches": "场次",
+    "noMatches": "此范围内没有已追踪的比赛",
+    "favoritesPerWeek": "{count} 收藏/周"
+  },
+  "labels": {
+    "aria": "出装标签",
+    "bestPerforming": {
+      "text": "已追踪中表现最佳",
+      "rule": "胜率区间高于该英雄所有其他已追踪出装"
+    },
+    "highPerforming": {
+      "text": "表现优异",
+      "rule": "胜率区间整体高于英雄自身胜率"
+    },
+    "frequentlyUsed": {
+      "text": "常用",
+      "rule": "该英雄被选择最多的前 3 个已追踪出装之一"
+    },
+    "popular": {
+      "text": "热门",
+      "rule": "本周收藏最多的前 10 个出装之一"
+    },
+    "highConfidence": {
+      "text": "高可信度",
+      "rule": "已追踪比赛超过 1,000 场"
+    }
+  },
+  "patch": {
+    "current": "本补丁已更新",
+    "older": "自当前补丁以来未更新",
+    "updated": "已更新"
+  },
+  "detail": {
+    "fallbackTitle": "出装 {id}",
+    "version": "版本 {version}",
+    "statWinRate": "胜率（出装）",
+    "statMatches": "已追踪比赛",
+    "statVsHero": "对比 {hero} 整体",
+    "window": "补丁 / 时间",
+    "whyTitle": "为什么是这套出装？",
+    "whyDescription": "支持（或不支持）这套出装的实测依据。只列事实，不包含数据无法支撑的推荐。",
+    "rankScope": "段位范围",
+    "rankScopeText": "{scope}。更改上方筛选条件，可查看同一出装在其他段位区间或时间范围的表现。",
+    "phasesTitle": "前期 · 核心 · 后期",
+    "phasesDescription": "按该英雄玩家实际平均购买每件物品的时间划分，而非作者设定的分区名称。",
+    "authorLayout": "作者的分区（{count} 个分区）",
+    "abilityTitle": "技能顺序",
+    "abilityDescription": "作者的规划：● 解锁，I–III 升级等级。读取自出装的数据结构。",
+    "noPlan": "这套出装没有技能规划。",
+    "openingComparison": "对比：实际比赛中最常见的前 {count} 次升级（占已追踪顺序的 {share}，胜率 {winRate}）。",
+    "performanceTitle": "出装表现",
+    "performanceDescription": "开局时选择了这套出装的比赛。",
+    "noPerformance": "此范围内这套出装没有已追踪的比赛，因此无法衡量其表现。请尝试 30 天或全部段位。",
+    "trackedBuilds": "此范围内有 {count} 个 {hero} 出装有已追踪的比赛。比赛中途更换出装不会被追踪。",
+    "timingTitle": "物品购买时间",
+    "timingDescription": "此范围内所有 {hero} 玩家购买这套出装中物品的平均时间。",
+    "flowTitle": "物品购买顺序",
+    "flowDescription": "这套出装的物品在该英雄典型购买顺序中的位置。",
+    "noFlow": "此范围内没有这套出装物品的购买顺序数据。"
+  },
+  "why": {
+    "popularity": "热度",
+    "winRate": "胜率",
+    "sampleSize": "样本量",
+    "timing": "时间",
+    "itemFlow": "物品顺序",
+    "popularityText": "本周收藏 {favorites}。",
+    "popularityRankText": "本周收藏 {favorites}，在列出的 {total} 个 {hero} 出装中排第 {rank}。",
+    "noMatchesText": "没有开局选择这套出装的已追踪比赛（{scope}）。目前还无法衡量其表现。",
+    "sampleText": "已追踪比赛 {matches} 场（{scope}）；样本{sample, select, low {少} moderate {中等} other {充足}}。此范围内有 {tracked} 个 {hero} 出装有已追踪的比赛。",
+    "winRateText": "开局选择时胜率 {winRate}，对比 {hero} 整体 {delta}。{comparison}",
+    "compareLow": "比赛太少，无法可靠比较。",
+    "compareAbove": "其 95% 区间（{low}–{high}）整体高于英雄的 {heroRate}。",
+    "compareBelow": "其 95% 区间（{low}–{high}）整体低于英雄的 {heroRate}。",
+    "compareOverlap": "其 95% 区间（{low}–{high}）包含英雄的 {heroRate}：没有明显差异。",
+    "timingText": "{total} 件物品中有 {timed} 件有 {hero} 的购买时间数据；其中 {core} 件落在 10–25 分钟的核心时段。最晚的 {item} 平均在约 {time} 购买。",
+    "flowText": "有购买顺序数据的 {total} 件物品中，有 {above} 件的财富调整胜率高于 {hero} 的基准 {baseline}。调整后的数值仍是观察数据。"
+  },
+  "phases": {
+    "early": "前期",
+    "earlyNote": "平均在 10 分钟前购买",
+    "core": "核心",
+    "coreNote": "10–25 分钟",
+    "late": "后期",
+    "lateNote": "25 分钟后",
+    "items": "{phase}物品",
+    "noItems": "此时段内没有这套出装的物品。",
+    "untimed": "视情况或很少购买（该英雄的购买次数不足以计算时间）："
+  },
+  "plan": {
+    "region": "技能规划",
+    "caption": "技能规划：{steps}",
+    "step": "{n}. {action} {ability}",
+    "unlock": "解锁",
+    "upgrade": "升级 {level}",
+    "abilityFallback": "技能",
+    "ability": "技能",
+    "unknownAbility": "未知技能"
+  },
+  "timing": {
+    "empty": "此范围内没有这套出装物品的时间数据。",
+    "region": "物品购买时间",
+    "caption": "该英雄购买这套出装中物品的平均时间和购买率",
+    "item": "物品",
+    "avgBuyTime": "平均购买时间",
+    "boughtIn": "购买比例",
+    "ofMatches": "{rate} 的比赛"
+  },
+  "flow": {
+    "columns": {
+      "0": "0–10 分钟",
+      "1": "10–20 分钟",
+      "2": "20–30 分钟",
+      "3": "30 分钟以上"
+    },
+    "adjustedTitle": "财富调整胜率",
+    "aboveAverage": "，高于英雄平均水平",
+    "nextTitle": "这套出装中常见的后续购买",
+    "then": "然后",
+    "players": "· {count} 名玩家",
+    "explanation": "调整胜率将每次购买重新加权到相同的净资产构成，把物品的作用与购买者的领先优势区分开（由数据源计算）。它仍是观察数据，而非对照实验。",
+    "baseline": "该英雄的基准：{rate}。"
+  },
+  "performance": {
+    "thisBuild": "这套出装",
+    "heroOverall": "{hero} 整体",
+    "scale": "刻度 {scale}，中线 50%。浅色须线 = 这套出装的 95% 区间。"
+  }
+}

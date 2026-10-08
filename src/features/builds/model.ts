@@ -1,6 +1,5 @@
 import { sampleTier, type SampleTier } from '@/lib/analytics/sampleTier'
 import { wilsonInterval, type Interval } from '@/lib/analytics/wilson'
-import { formatDuration, formatInteger, formatPercent, formatPointDelta } from '@/lib/format'
 import type { ShopItemRef } from '@/features/hero/model'
 
 /*
@@ -161,47 +160,44 @@ export function flowForBuild(
 
 // ── Why this build? ──────────────────────────────────────────────────
 
-export type BuildFact = { label: string; text: string }
+/**
+ * One measured fact about the build, as data: the Build page words it in the active locale
+ * (builds.why). `comparison` is the interval rule: 'low' = too few matches to compare, 'above' /
+ * 'below' = the 95% interval is entirely above / below the hero's win rate, 'overlap' = it includes it.
+ */
+export type BuildFact =
+  | { kind: 'popularity'; favorites: number; rank: number | null; of: number }
+  | { kind: 'no-matches' }
+  | { kind: 'sample'; matches: number; sample: SampleTier; tracked: number }
+  | { kind: 'win-rate'; winRate: number; heroWinRate: number; interval: Interval; comparison: 'low' | 'above' | 'below' | 'overlap' }
+  | { kind: 'timing'; timed: number; total: number; core: number; last: TimedItem }
+  | { kind: 'flow'; above: number; total: number; baseline: number }
 
 type WhyInput = {
   stats: BuildStats | null
-  heroName: string
   heroWinRate: number | null
-  heroMatches: number | null
   trackedCount: number
   weeklyFavorites: number | null
   favoritesRank: number | null
   favoritesOf: number
   phases: ReturnType<typeof phaseItems>
   flow: ReturnType<typeof flowForBuild> | null
-  scopeText: string
 }
 
-/** Facts supporting (or not) this build. Every line is a measured number; none is a recommendation. */
+/** Facts supporting (or not) this build. Every fact is a measured number; none is a recommendation. */
 export function buildWhyFacts(input: WhyInput): BuildFact[] {
   const facts: BuildFact[] = []
-  if (input.weeklyFavorites) {
-    facts.push({
-      label: 'Popularity',
-      text: `${formatInteger(input.weeklyFavorites)} favorites this week${input.favoritesRank ? `, ${input.favoritesRank} of ${input.favoritesOf} ${input.heroName} builds listed` : ''}.`,
-    })
-  }
+  if (input.weeklyFavorites) facts.push({ kind: 'popularity', favorites: input.weeklyFavorites, rank: input.favoritesRank, of: input.favoritesOf })
 
   const s = input.stats
   if (!s) {
-    facts.push({ label: 'Win rate', text: `No tracked matches with this build selected at game start (${input.scopeText}). Its performance can’t be measured yet.` })
+    facts.push({ kind: 'no-matches' })
   } else {
-    facts.push({ label: 'Sample size', text: `${formatInteger(s.matches)} tracked matches (${input.scopeText}); ${s.sample} sample. ${input.trackedCount} ${input.heroName} builds have tracked matches in this scope.` })
+    facts.push({ kind: 'sample', matches: s.matches, sample: s.sample, tracked: input.trackedCount })
     if (input.heroWinRate !== null) {
-      const vs =
-        s.sample === 'low'
-          ? 'Too few matches to compare reliably.'
-          : s.interval.low > input.heroWinRate
-            ? `Its 95% interval (${formatPercent(s.interval.low)}–${formatPercent(s.interval.high)}) is entirely above the hero’s ${formatPercent(input.heroWinRate)}.`
-            : s.interval.high < input.heroWinRate
-              ? `Its 95% interval (${formatPercent(s.interval.low)}–${formatPercent(s.interval.high)}) is entirely below the hero’s ${formatPercent(input.heroWinRate)}.`
-              : `Its 95% interval (${formatPercent(s.interval.low)}–${formatPercent(s.interval.high)}) includes the hero’s ${formatPercent(input.heroWinRate)}: no clear difference.`
-      facts.push({ label: 'Win rate', text: `${formatPercent(s.winRate)} when selected at game start, ${formatPointDelta(s.winRate - input.heroWinRate)} vs ${input.heroName} overall. ${vs}` })
+      const comparison =
+        s.sample === 'low' ? 'low' : s.interval.low > input.heroWinRate ? 'above' : s.interval.high < input.heroWinRate ? 'below' : 'overlap'
+      facts.push({ kind: 'win-rate', winRate: s.winRate, heroWinRate: input.heroWinRate, interval: s.interval, comparison })
     }
   }
 
@@ -209,18 +205,12 @@ export function buildWhyFacts(input: WhyInput): BuildFact[] {
   const timedCount = input.phases.phases.reduce((n, p) => n + p.items.length, 0)
   if (timedCount > 0) {
     const last = input.phases.phases.flatMap((p) => p.items).at(-1)!
-    facts.push({
-      label: 'Timing',
-      text: `${timedCount} of ${timedCount + input.phases.untimed.length} items have purchase-time data for ${input.heroName}; ${core.length} land in the 10–25 min core window. The latest, ${last.name}, is bought around ${formatDuration(last.avgBuyTimeS!)} on average.`,
-    })
+    facts.push({ kind: 'timing', timed: timedCount, total: timedCount + input.phases.untimed.length, core: core.length, last })
   }
 
   if (input.flow && input.flow.items.length > 0 && input.flow.baselineWinRate !== null) {
     const above = input.flow.items.filter((i) => i.adjustedWinRate > input.flow!.baselineWinRate!).length
-    facts.push({
-      label: 'Item flow',
-      text: `${above} of ${input.flow.items.length} items with flow data have a wealth-adjusted win rate above the ${formatPercent(input.flow.baselineWinRate)} baseline for ${input.heroName}. Adjusted rates are still observational.`,
-    })
+    facts.push({ kind: 'flow', above, total: input.flow.items.length, baseline: input.flow.baselineWinRate })
   }
   return facts
 }

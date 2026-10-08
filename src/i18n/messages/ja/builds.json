@@ -1,0 +1,176 @@
+{
+  "meta": {
+    "listTitle": "ビルド",
+    "listDescription": "実測の勝率つき Deadlock ビルド：メタビルド、上位ランクのプレイヤーによるビルド、コミュニティの人気ビルド。",
+    "detailTitle": "ビルド",
+    "detailDescription": "Deadlock の {hero} ビルド：実測の勝率、アイテムの購入タイミング、購入の流れ、アビリティ順。"
+  },
+  "list": {
+    "eyebrow": "ビルド",
+    "title": "ビルド",
+    "description": "勝率は、ゲーム開始時にそのビルドが選択された試合を数えています。ラベルはデータが条件を満たした場合にのみ表示されます。",
+    "categoriesNav": "ビルドのカテゴリー",
+    "categories": {
+      "meta": {
+        "label": "メタビルド",
+        "definition": "追跡済み試合が 200 以上のビルド。勝率の区間がヒーロー自身の勝率をどれだけ上回るかの順に並べています。"
+      },
+      "pro": {
+        "label": "プロビルド",
+        "definition": "現在 {rankA} または {rankB} の作成者によるビルド（直近のランク戦時点のランク）。"
+      },
+      "community": {
+        "label": "コミュニティビルド",
+        "definition": "今週もっともお気に入り登録されたビルド。"
+      }
+    },
+    "hero": "ヒーロー",
+    "allHeroes": "すべてのヒーロー",
+    "window": "パッチ / 期間（勝率用）",
+    "rank": "ランク（試合平均）",
+    "windows": {
+      "patch": "現在のパッチ",
+      "7d": "7 日間",
+      "30d": "30 日間"
+    },
+    "howLabeled": "ビルドのラベルの付け方",
+    "labelRule": "<term>{label}</term>：{rule}。",
+    "selectionNote": "勝率は、ゲーム開始時にビルドが選択された試合を数えています。試合中のビルド切り替えは追跡されません。",
+    "unknownHero": "不明なヒーロー",
+    "noMatchTitle": "該当するビルドはありません",
+    "noMatchMeta": "この範囲で追跡済み試合が 200 以上のビルドはありません。30 日間またはすべてのランクをお試しください。",
+    "noMatchPro": "ここにある人気上位 {count} 件のビルドに、現在 {rankA} または {rankB} の作成者によるものはありません。",
+    "noMatchCommunity": "ビルドが見つかりません。",
+    "loading": "ビルドを読み込み中"
+  },
+  "card": {
+    "authorUnknown": "作成者不明",
+    "matches": "試合数",
+    "noMatches": "この範囲で追跡済みの試合はありません",
+    "favoritesPerWeek": "お気に入り {count}/週"
+  },
+  "labels": {
+    "aria": "ビルドのラベル",
+    "bestPerforming": {
+      "text": "追跡中で最高の成績",
+      "rule": "勝率の区間が、このヒーローの他のすべての追跡済みビルドを上回る"
+    },
+    "highPerforming": {
+      "text": "高成績",
+      "rule": "勝率の区間全体がヒーロー自身の勝率を上回る"
+    },
+    "frequentlyUsed": {
+      "text": "よく使われる",
+      "rule": "このヒーローで最も選択されている追跡済みビルド上位 3 件のひとつ"
+    },
+    "popular": {
+      "text": "人気",
+      "rule": "今週もっともお気に入り登録されたビルド上位 10 件のひとつ"
+    },
+    "highConfidence": {
+      "text": "高信頼",
+      "rule": "追跡済み試合が 1,000 を超える"
+    }
+  },
+  "patch": {
+    "current": "このパッチで更新",
+    "older": "現在のパッチ以降は未更新",
+    "updated": "更新"
+  },
+  "detail": {
+    "fallbackTitle": "ビルド {id}",
+    "version": "バージョン {version}",
+    "statWinRate": "勝率（ビルド）",
+    "statMatches": "追跡済み試合",
+    "statVsHero": "{hero} 全体との差",
+    "window": "パッチ / 期間",
+    "whyTitle": "このビルドの根拠",
+    "whyDescription": "このビルドを支持する（またはしない）測定結果です。事実のみで、データが裏付けない推奨は含みません。",
+    "rankScope": "ランクの範囲",
+    "rankScopeText": "{scope}。上のフィルターを変えると、同じビルドを別のランク帯や期間で確認できます。",
+    "phasesTitle": "序盤 · コア · 終盤",
+    "phasesDescription": "作成者のセクション名ではなく、このヒーローのプレイヤーが各アイテムを実際に購入する平均時間で分けています。",
+    "authorLayout": "作成者の構成（{count} セクション）",
+    "abilityTitle": "アビリティ順",
+    "abilityDescription": "作成者の計画：● 解放、I–III 強化レベル。ビルドのデータ構造から読み取っています。",
+    "noPlan": "このビルドにはアビリティの計画がありません。",
+    "openingComparison": "比較用：実際の試合で最も多い最初の {count} 回のアップグレード（追跡済みの順序の {share}、勝率 {winRate}）。",
+    "performanceTitle": "ビルドの成績",
+    "performanceDescription": "ゲーム開始時にこのビルドが選択された試合。",
+    "noPerformance": "この範囲でこのビルドの追跡済み試合がないため、成績を測定できません。30 日間またはすべてのランクをお試しください。",
+    "trackedBuilds": "この範囲で追跡済み試合のある {hero} のビルドは {count} 件です。試合中のビルド切り替えは追跡されません。",
+    "timingTitle": "アイテムの購入タイミング",
+    "timingDescription": "この範囲のすべての {hero} プレイヤーにおける、このビルドのアイテムの平均購入時間。",
+    "flowTitle": "アイテムの購入の流れ",
+    "flowDescription": "このヒーローの典型的な購入の流れの中で、このビルドのアイテムがどこに位置するか。",
+    "noFlow": "この範囲では、このビルドのアイテムの購入の流れのデータはありません。"
+  },
+  "why": {
+    "popularity": "人気",
+    "winRate": "勝率",
+    "sampleSize": "サンプルサイズ",
+    "timing": "タイミング",
+    "itemFlow": "アイテムの流れ",
+    "popularityText": "今週のお気に入り {favorites}。",
+    "popularityRankText": "今週のお気に入り {favorites}、掲載中の {hero} ビルド {total} 件中 {rank} 位。",
+    "noMatchesText": "ゲーム開始時にこのビルドが選択された追跡済み試合はありません（{scope}）。成績はまだ測定できません。",
+    "sampleText": "追跡済み試合 {matches}（{scope}）、サンプル{sample, select, low {少} moderate {中} other {多}}。この範囲で追跡済み試合のある {hero} のビルドは {tracked} 件です。",
+    "winRateText": "ゲーム開始時に選択した場合 {winRate}、{hero} 全体との差 {delta}。{comparison}",
+    "compareLow": "試合数が少なすぎて、信頼できる比較はできません。",
+    "compareAbove": "95% 区間（{low}–{high}）全体がヒーローの {heroRate} を上回っています。",
+    "compareBelow": "95% 区間（{low}–{high}）全体がヒーローの {heroRate} を下回っています。",
+    "compareOverlap": "95% 区間（{low}–{high}）はヒーローの {heroRate} を含みます：明確な差はありません。",
+    "timingText": "{total} 個中 {timed} 個のアイテムに {hero} の購入時間データがあり、{core} 個が 10–25 分のコア時間帯に入ります。最後の {item} は平均で約 {time} に購入されます。",
+    "flowText": "購入の流れのデータがある {total} 個中 {above} 個のアイテムで、資産調整済み勝率が {hero} の基準値 {baseline} を上回っています。調整済みの値も観察データです。"
+  },
+  "phases": {
+    "early": "序盤",
+    "earlyNote": "平均 10 分前に購入",
+    "core": "コア",
+    "coreNote": "10–25 分",
+    "late": "終盤",
+    "lateNote": "25 分以降",
+    "items": "{phase}のアイテム",
+    "noItems": "この期間にこのビルドのアイテムはありません。",
+    "untimed": "状況に応じて、またはまれに購入（このヒーローでの購入が少なく時間を出せません）："
+  },
+  "plan": {
+    "region": "アビリティの計画",
+    "caption": "アビリティの計画：{steps}",
+    "step": "{n}. {action} {ability}",
+    "unlock": "解放",
+    "upgrade": "強化 {level}",
+    "abilityFallback": "アビリティ",
+    "ability": "アビリティ",
+    "unknownAbility": "不明なアビリティ"
+  },
+  "timing": {
+    "empty": "この範囲では、このビルドのアイテムのタイミングデータはありません。",
+    "region": "アイテムの購入タイミング",
+    "caption": "このヒーローにおける、このビルドのアイテムの平均購入時間と購入率",
+    "item": "アイテム",
+    "avgBuyTime": "平均購入時間",
+    "boughtIn": "購入率",
+    "ofMatches": "試合の {rate}"
+  },
+  "flow": {
+    "columns": {
+      "0": "0–10 分",
+      "1": "10–20 分",
+      "2": "20–30 分",
+      "3": "30 分以降"
+    },
+    "adjustedTitle": "資産調整済み勝率",
+    "aboveAverage": "、ヒーローの平均より上",
+    "nextTitle": "このビルド内でよく続けて購入されるアイテム",
+    "then": "次に",
+    "players": "· {count} 人",
+    "explanation": "調整済み勝率は、各購入を同じ純資産の構成に重み付けし直し、アイテムの効果を購入者のリードから切り分けたものです（データソースが算出）。それでも観察データであり、対照実験ではありません。",
+    "baseline": "このヒーローの基準値：{rate}。"
+  },
+  "performance": {
+    "thisBuild": "このビルド",
+    "heroOverall": "{hero} 全体",
+    "scale": "スケール {scale}、中心線 50%。薄いひげ = このビルドの 95% 区間。"
+  }
+}

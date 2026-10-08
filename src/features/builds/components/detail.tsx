@@ -1,3 +1,4 @@
+import { useLocale, useTranslations } from 'next-intl'
 import { ConfidenceBadge } from '@/components/data/ConfidenceBadge'
 import { AbilityIcon, ItemIcon } from '@/components/game-assets/ItemIcon'
 import { InView } from '@/components/motion/InView'
@@ -11,6 +12,11 @@ import { ScrollRegion } from '@/components/ui/ScrollRegion'
 const NUMERALS = ['', 'I', 'II', 'III']
 
 type AbilityMap = Map<number, { name: string; icon: string | null; kind: string | null }>
+
+/*
+ * ItemRow is shared with Compare and has no text of its own. The other parts here render only on the
+ * Build detail page, so they read the Builds catalog (builds.*) directly.
+ */
 
 /** Items assemble one after another (CSS, plays once when the section mounts). */
 export function ItemRow({ items, startIndex = 0, size = 40 }: { items: ShopItemRef[]; startIndex?: number; size?: number }) {
@@ -28,6 +34,10 @@ export function ItemRow({ items, startIndex = 0, size = 40 }: { items: ShopItemR
 
 /** Early / Core / Late by observed buy time, with names and timings as text. */
 export function PhaseColumns({ phases, untimed }: { phases: Array<{ key: string; label: string; note: string; items: TimedItem[] }>; untimed: TimedItem[] }) {
+  const t = useTranslations('builds.phases')
+  // Phase keys are the model's early/core/late; any other phase keeps its own label.
+  const text = (phase: { key: string; label: string; note: string }) =>
+    phase.key === 'early' || phase.key === 'core' || phase.key === 'late' ? { label: t(phase.key), note: t(`${phase.key}Note`) } : phase
   // Stagger continues across columns: precompute each column's first index.
   const starts = phases.map((_, i) => phases.slice(0, i).reduce((n, p) => n + p.items.length, 0))
   const untimedStart = phases.reduce((n, p) => n + p.items.length, 0)
@@ -36,14 +46,15 @@ export function PhaseColumns({ phases, untimed }: { phases: Array<{ key: string;
       <div className="grid gap-4 md:grid-cols-3">
         {phases.map((phase, p) => {
           const start = starts[p]
+          const { label, note } = text(phase)
           return (
-            <section key={phase.key} aria-label={`${phase.label} items`} className="flex flex-col gap-3 rounded-md border border-border bg-surface-sunken p-4">
+            <section key={phase.key} aria-label={t('items', { phase: label })} className="flex flex-col gap-3 rounded-md border border-border bg-surface-sunken p-4">
               <header>
-                <h4 className="font-display text-title font-bold text-text uppercase">{phase.label}</h4>
-                <p className="text-caption text-text-muted">{phase.note}</p>
+                <h4 className="font-display text-title font-bold text-text uppercase">{label}</h4>
+                <p className="text-caption text-text-muted">{note}</p>
               </header>
               {phase.items.length === 0 ? (
-                <p className="text-sm text-text-muted">No items from this build in this window.</p>
+                <p className="text-sm text-text-muted">{t('noItems')}</p>
               ) : (
                 <>
                   <ItemRow items={phase.items} startIndex={start} />
@@ -63,7 +74,7 @@ export function PhaseColumns({ phases, untimed }: { phases: Array<{ key: string;
       </div>
       {untimed.length > 0 && (
         <div className="flex flex-col gap-2">
-          <p className="text-caption text-text-muted">Situational or rarely bought (not enough purchases on this hero to time):</p>
+          <p className="text-caption text-text-muted">{t('untimed')}</p>
           <ItemRow items={untimed} startIndex={untimedStart} size={32} />
         </div>
       )}
@@ -73,16 +84,19 @@ export function PhaseColumns({ phases, untimed }: { phases: Array<{ key: string;
 
 /** Author's ability plan: rows = abilities, columns = steps; ● = unlock, I–III = upgrade level. */
 export function AbilityPlanGrid({ plan, abilities }: { plan: PlanStep[]; abilities: AbilityMap }) {
+  const t = useTranslations('builds.plan')
   const rows = [...new Set(plan.map((s) => s.abilityId))]
+  // Ability names are game data; only the fallbacks for a missing one are UI text.
+  const steps = plan
+    .map((s, i) => t('step', { n: i + 1, action: s.kind === 'unlock' ? t('unlock') : t('upgrade', { level: s.level }), ability: abilities.get(s.abilityId)?.name ?? t('abilityFallback') }))
+    .join(', ')
   return (
-    <ScrollRegion label="Ability plan">
+    <ScrollRegion label={t('region')}>
       <table className="border-separate border-spacing-1 font-ui text-sm">
-        <caption className="sr-only">
-          Ability plan: {plan.map((s, i) => `${i + 1}. ${s.kind === 'unlock' ? 'unlock' : `upgrade ${s.level}`} ${abilities.get(s.abilityId)?.name ?? 'ability'}`).join(', ')}
-        </caption>
+        <caption className="sr-only">{t('caption', { steps })}</caption>
         <thead>
           <tr>
-            <th scope="col" className="sr-only">Ability</th>
+            <th scope="col" className="sr-only">{t('ability')}</th>
             {plan.map((_, i) => (
               <th key={i} scope="col" className="w-7 text-center text-caption font-normal text-text-muted tabular">
                 {i + 1}
@@ -97,8 +111,8 @@ export function AbilityPlanGrid({ plan, abilities }: { plan: PlanStep[]; abiliti
               <tr key={id}>
                 <th scope="row" className="pr-2 text-left font-normal">
                   <span className="flex items-center gap-2 whitespace-nowrap">
-                    <AbilityIcon name={ability?.name ?? 'Ability'} src={ability?.icon ?? null} size={28} decorative />
-                    <span className="text-text">{ability?.name ?? 'Unknown ability'}</span>
+                    <AbilityIcon name={ability?.name ?? t('ability')} src={ability?.icon ?? null} size={28} decorative />
+                    <span className="text-text">{ability?.name ?? t('unknownAbility')}</span>
                   </span>
                 </th>
                 {plan.map((step, i) =>
@@ -132,16 +146,17 @@ export function AbilityPlanGrid({ plan, abilities }: { plan: PlanStep[]; abiliti
 
 /** Item timing table: every timed item in buy order. */
 export function TimingTable({ items }: { items: TimedItem[] }) {
-  if (items.length === 0) return <p className="text-sm text-text-muted">No timing data for this build’s items in this scope.</p>
+  const t = useTranslations('builds.timing')
+  if (items.length === 0) return <p className="text-sm text-text-muted">{t('empty')}</p>
   return (
-    <ScrollRegion label="Item timing" className="rounded-md border border-border">
+    <ScrollRegion label={t('region')} className="rounded-md border border-border">
       <table className="w-full font-ui text-sm">
-        <caption className="sr-only">Average purchase time and purchase rate for this build’s items on this hero</caption>
+        <caption className="sr-only">{t('caption')}</caption>
         <thead className="bg-surface text-eyebrow">
           <tr>
-            <th scope="col" className="px-3 py-2 text-left">Item</th>
-            <th scope="col" className="px-3 py-2 text-right">Avg. buy time</th>
-            <th scope="col" className="px-3 py-2 text-right">Bought in</th>
+            <th scope="col" className="px-3 py-2 text-left">{t('item')}</th>
+            <th scope="col" className="px-3 py-2 text-right">{t('avgBuyTime')}</th>
+            <th scope="col" className="px-3 py-2 text-right">{t('boughtIn')}</th>
           </tr>
         </thead>
         <tbody>
@@ -154,7 +169,7 @@ export function TimingTable({ items }: { items: TimedItem[] }) {
                 </span>
               </td>
               <td className="px-3 py-2 text-right text-text tabular">{formatDuration(item.avgBuyTimeS!)}</td>
-              <td className="px-3 py-2 text-right text-text-muted tabular">{item.buyRate !== null ? `${formatPercent(item.buyRate, 0)} of matches` : '—'}</td>
+              <td className="px-3 py-2 text-right text-text-muted tabular">{item.buyRate !== null ? t('ofMatches', { rate: formatPercent(item.buyRate, 0) }) : '—'}</td>
             </tr>
           ))}
         </tbody>
@@ -164,15 +179,20 @@ export function TimingTable({ items }: { items: TimedItem[] }) {
 }
 
 /** Item flow: build items placed in the phase column they're most often bought in, with adjusted win rate. */
+const FLOW_COLUMN_KEYS = ['0', '1', '2', '3'] as const
+
 export function FlowView({ flow }: { flow: { items: FlowItem[]; transitions: Array<{ from: ShopItemRef; to: ShopItemRef; matches: number }>; baselineWinRate: number | null } }) {
+  const t = useTranslations('builds.flow')
+  const locale = useLocale()
   return (
     <div className="flex flex-col gap-5">
       <ol className="grid gap-3 md:grid-cols-4">
         {FLOW_COLUMN_LABELS.map((label, column) => {
           const items = flow.items.filter((i) => i.column === column)
+          const key = FLOW_COLUMN_KEYS[column]
           return (
             <li key={label} className="flex flex-col gap-2 rounded-md border border-border bg-surface-sunken p-3">
-              <span className="text-eyebrow">{label}</span>
+              <span className="text-eyebrow">{key ? t(`columns.${key}`) : label}</span>
               {items.length === 0 ? (
                 <span className="text-caption text-text-muted">—</span>
               ) : (
@@ -184,10 +204,10 @@ export function FlowView({ flow }: { flow: { items: FlowItem[]; transitions: Arr
                         <ItemIcon name={item.name ?? 'Item'} src={item.icon} slot={item.slot} tier={item.tier} size={28} decorative />
                         <span className="min-w-0 flex-1 truncate text-caption text-text">{item.name}</span>
                         {/* Above the hero's baseline: an arrow and words, not only the color. */}
-                        <span className={cx('text-caption tabular', above ? 'text-positive' : 'text-text-muted')} title="Wealth-adjusted win rate">
+                        <span className={cx('text-caption tabular', above ? 'text-positive' : 'text-text-muted')} title={t('adjustedTitle')}>
                           {above && <span aria-hidden="true">▲ </span>}
                           {formatPercent(item.adjustedWinRate)}
-                          {above && <span className="sr-only">, above the hero’s average</span>}
+                          {above && <span className="sr-only">{t('aboveAverage')}</span>}
                         </span>
                       </li>
                     )
@@ -200,25 +220,25 @@ export function FlowView({ flow }: { flow: { items: FlowItem[]; transitions: Arr
       </ol>
       {flow.transitions.length > 0 && (
         <div>
-          <h4 className="mb-2 text-eyebrow">Common next purchases within this build</h4>
+          <h4 className="mb-2 text-eyebrow">{t('nextTitle')}</h4>
           <ol className="flex flex-col gap-1.5">
-            {flow.transitions.map((t) => (
-              <li key={`${t.from.id}-${t.to.id}`} className="flex flex-wrap items-center gap-2 text-sm">
-                <ItemIcon name={t.from.name ?? 'Item'} src={t.from.icon} slot={t.from.slot} tier={t.from.tier} size={24} decorative />
-                <span className="text-text">{t.from.name}</span>
+            {flow.transitions.map((edge) => (
+              <li key={`${edge.from.id}-${edge.to.id}`} className="flex flex-wrap items-center gap-2 text-sm">
+                <ItemIcon name={edge.from.name ?? 'Item'} src={edge.from.icon} slot={edge.from.slot} tier={edge.from.tier} size={24} decorative />
+                <span className="text-text">{edge.from.name}</span>
                 <span aria-hidden="true" className="text-text-muted">→</span>
-                <span className="sr-only">then</span>
-                <ItemIcon name={t.to.name ?? 'Item'} src={t.to.icon} slot={t.to.slot} tier={t.to.tier} size={24} decorative />
-                <span className="text-text">{t.to.name}</span>
-                <span className="text-caption text-text-muted tabular">· {formatInteger(t.matches)} players</span>
+                <span className="sr-only">{t('then')}</span>
+                <ItemIcon name={edge.to.name ?? 'Item'} src={edge.to.icon} slot={edge.to.slot} tier={edge.to.tier} size={24} decorative />
+                <span className="text-text">{edge.to.name}</span>
+                <span className="text-caption text-text-muted tabular">{t('players', { count: formatInteger(edge.matches, locale) })}</span>
               </li>
             ))}
           </ol>
         </div>
       )}
       <p className="text-caption text-text-muted">
-        Adjusted win rate re-weights each purchase to the same net-worth mix, separating the item from the buyer’s lead (computed by the data source). It is still observational, not a controlled test.
-        {flow.baselineWinRate !== null && ` Baseline for this hero: ${formatPercent(flow.baselineWinRate)}.`}
+        {t('explanation')}
+        {flow.baselineWinRate !== null && ` ${t('baseline', { rate: formatPercent(flow.baselineWinRate) })}`}
       </p>
     </div>
   )
@@ -226,11 +246,12 @@ export function FlowView({ flow }: { flow: { items: FlowItem[]; transitions: Arr
 
 /** Build vs hero win rate on a 50%-centered scale, with the build's 95% interval. */
 export function PerformanceCompare({ stats, heroWinRate, heroName }: { stats: BuildStats; heroWinRate: number | null; heroName: string }) {
+  const t = useTranslations('builds.performance')
   const domain = winRateDomain([stats.winRate, stats.interval.low, stats.interval.high, ...(heroWinRate !== null ? [heroWinRate] : [])])
   const toPct = (v: number) => toPercent(v, domain)
   const rows = [
-    { label: 'This build', value: stats.winRate, interval: stats.interval, primary: true },
-    ...(heroWinRate !== null ? [{ label: `${heroName} overall`, value: heroWinRate, interval: null, primary: false }] : []),
+    { label: t('thisBuild'), value: stats.winRate, interval: stats.interval, primary: true },
+    ...(heroWinRate !== null ? [{ label: t('heroOverall', { hero: heroName }), value: heroWinRate, interval: null, primary: false }] : []),
   ]
   return (
     <div className="flex flex-col gap-3">
@@ -254,7 +275,7 @@ export function PerformanceCompare({ stats, heroWinRate, heroName }: { stats: Bu
       </ul>
       <div className="flex flex-wrap items-center gap-2 text-caption text-text-muted">
         <ConfidenceBadge sampleSize={stats.matches} interval={stats.interval} />
-        Scale {domainLabel(domain)}, center line 50%. Light whisker = this build’s 95% interval.
+        {t('scale', { scale: domainLabel(domain) })}
       </div>
     </div>
   )

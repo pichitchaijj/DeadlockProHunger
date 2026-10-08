@@ -27,7 +27,8 @@ import {
 import { buildDetailHref, type BuildsQuery } from './query'
 import { heroIconUrl } from '@/lib/deadlock/heroImages'
 
-const PRO_MIN_TIER = 10 // Ascendant
+/** Lowest rank tier counted as "pro" (Ascendant); the Builds page names this tier and the next from the rank feed. */
+export const PRO_MIN_TIER = 10
 
 /** Serializable list row. */
 export type BuildRow = {
@@ -225,16 +226,13 @@ export async function getBuildDetail(heroSlug: string, buildId: number, query: P
     opening: abilityOpenings(orders, 1)[0] ?? null,
     why: buildWhyFacts({
       stats,
-      heroName: hero.name,
       heroWinRate,
-      heroMatches,
       trackedCount: heroBuildStats.length,
       weeklyFavorites: build.num_weekly_favorites || null,
       favoritesRank,
       favoritesOf: heroFavorites.length,
       phases,
       flow: flowView,
-      scopeText,
     }),
     statScope: c.statScope,
     scopeText,

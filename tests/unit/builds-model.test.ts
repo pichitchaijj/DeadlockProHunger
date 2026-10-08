@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { abilityPlan, flowForBuild, labelsFor, metaOrder, patchStatus, phaseItems, scoreBuild } from '@/features/builds/model'
+import { abilityPlan, buildWhyFacts, flowForBuild, labelsFor, metaOrder, patchStatus, phaseItems, scoreBuild } from '@/features/builds/model'
 
 /* Synthetic inputs only; none of these are real Deadlock statistics. */
 
@@ -105,5 +105,23 @@ describe('flowForBuild', () => {
     expect(f.items.map((i) => [i.name, i.column])).toEqual([['A', 0], ['B', 1]])
     expect(f.transitions.map((t) => `${t.from.name}>${t.to.name}`)).toEqual(['A>B'])
     expect(f.baselineWinRate).toBe(0.5)
+  })
+})
+
+describe('buildWhyFacts', () => {
+  const phases = phaseItems([...shop.values()], [{ item_id: 10, matches: 500, avg_buy_time_s: 300 }, { item_id: 20, matches: 200, avg_buy_time_s: 900 }], 1_000)
+  const base = { heroWinRate: 0.5, trackedCount: 4, weeklyFavorites: null, favoritesRank: null, favoritesOf: 0, phases, flow: null }
+
+  it('returns facts as data (no wording) with the interval rule applied', () => {
+    const facts = buildWhyFacts({ ...base, stats: scoreBuild(700, 1_000) })
+    expect(facts.map((f) => f.kind)).toEqual(['sample', 'win-rate', 'timing'])
+    expect(facts.find((f) => f.kind === 'win-rate')).toMatchObject({ comparison: 'above', heroWinRate: 0.5 })
+    expect(facts.find((f) => f.kind === 'timing')).toMatchObject({ timed: 2, total: 3, core: 1 })
+  })
+
+  it('says only "no matches" without stats, and "low" for a low sample', () => {
+    expect(buildWhyFacts({ ...base, stats: null }).map((f) => f.kind)).toEqual(['no-matches', 'timing'])
+    expect(buildWhyFacts({ ...base, stats: scoreBuild(30, 40) }).find((f) => f.kind === 'win-rate')).toMatchObject({ comparison: 'low' })
+    expect(buildWhyFacts({ ...base, stats: scoreBuild(500, 1_000) }).find((f) => f.kind === 'win-rate')).toMatchObject({ comparison: 'overlap' })
   })
 })

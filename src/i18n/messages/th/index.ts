@@ -1,4 +1,5 @@
 import type { Messages } from '../en'
+import builds from './builds.json'
 import cards from './cards.json'
 import commandPalette from './commandPalette.json'
 import common from './common.json'
@@ -13,4 +14,4 @@ import nav from './nav.json'
 import notFound from './notFound.json'
 
 /** Must match English key for key (`satisfies Messages`; tests also check placeholders). */
-export default { cards, commandPalette, common, data, errors, footer, header, heroes, home, languages, nav, notFound } satisfies Messages
+export default { builds, cards, commandPalette, common, data, errors, footer, header, heroes, home, languages, nav, notFound } satisfies Messages

@@ -1,0 +1,176 @@
+{
+  "meta": {
+    "listTitle": "Builds",
+    "listDescription": "Deadlock builds with measured win rates: meta builds, builds by top-ranked players, and community favorites.",
+    "detailTitle": "Build",
+    "detailDescription": "A {hero} build for Deadlock: measured win rate, item timing, item flow and ability order."
+  },
+  "list": {
+    "eyebrow": "Builds",
+    "title": "Builds",
+    "description": "Win rates count matches where a build was selected at game start. Labels only appear when the data meets their rule.",
+    "categoriesNav": "Build categories",
+    "categories": {
+      "meta": {
+        "label": "Meta builds",
+        "definition": "Builds with 200+ tracked matches, ordered by how far their win-rate interval sits above the hero’s own win rate."
+      },
+      "pro": {
+        "label": "Pro builds",
+        "definition": "Builds by authors currently ranked {rankA} or {rankB} (rank at their latest ranked match)."
+      },
+      "community": {
+        "label": "Community builds",
+        "definition": "This week’s most-favorited builds."
+      }
+    },
+    "hero": "Hero",
+    "allHeroes": "All heroes",
+    "window": "Patch / time (for win rates)",
+    "rank": "Rank (match average)",
+    "windows": {
+      "patch": "Current patch",
+      "7d": "7 days",
+      "30d": "30 days"
+    },
+    "howLabeled": "How builds are labeled",
+    "labelRule": "<term>{label}</term>: {rule}.",
+    "selectionNote": "Win rates count matches where the build was selected at game start; switching builds mid-match isn’t tracked.",
+    "unknownHero": "Unknown hero",
+    "noMatchTitle": "No builds match",
+    "noMatchMeta": "No build has 200+ tracked matches in this scope. Try 30 days or all ranks.",
+    "noMatchPro": "None of the {count} most-favorited builds here is by an author currently ranked {rankA} or {rankB}.",
+    "noMatchCommunity": "No builds found.",
+    "loading": "Loading builds"
+  },
+  "card": {
+    "authorUnknown": "Author unknown",
+    "matches": "Matches",
+    "noMatches": "No tracked matches in this scope",
+    "favoritesPerWeek": "{count} favorites/wk"
+  },
+  "labels": {
+    "aria": "Build labels",
+    "bestPerforming": {
+      "text": "Best-performing tracked",
+      "rule": "Win-rate interval above every other tracked build for this hero"
+    },
+    "highPerforming": {
+      "text": "High-performing",
+      "rule": "Win-rate interval entirely above the hero’s own win rate"
+    },
+    "frequentlyUsed": {
+      "text": "Frequently used",
+      "rule": "Among the 3 most-selected tracked builds for this hero"
+    },
+    "popular": {
+      "text": "Popular",
+      "rule": "Among the 10 most-favorited builds this week"
+    },
+    "highConfidence": {
+      "text": "High-confidence",
+      "rule": "More than 1,000 tracked matches"
+    }
+  },
+  "patch": {
+    "current": "Updated this patch",
+    "older": "Not updated since the current patch",
+    "updated": "Updated"
+  },
+  "detail": {
+    "fallbackTitle": "Build {id}",
+    "version": "version {version}",
+    "statWinRate": "Win rate (build)",
+    "statMatches": "Tracked matches",
+    "statVsHero": "vs {hero} overall",
+    "window": "Patch / time",
+    "whyTitle": "Why this build?",
+    "whyDescription": "The measured case for (or against) this build. Facts only; nothing here is a recommendation the data doesn’t support.",
+    "rankScope": "Rank scope",
+    "rankScopeText": "{scope}. Change the filters above to see the same build in another rank band or window.",
+    "phasesTitle": "Early · Core · Late",
+    "phasesDescription": "Placed by when players of this hero actually buy each item on average, not by the author’s section names.",
+    "authorLayout": "Author’s layout ({count} sections)",
+    "abilityTitle": "Ability order",
+    "abilityDescription": "The author’s plan: ● unlock, I–III upgrade level. Read from the build’s data structure.",
+    "noPlan": "This build has no ability plan.",
+    "openingComparison": "For comparison: the most common first {count} upgrades in real matches ({share} of tracked orders, {winRate} win rate).",
+    "performanceTitle": "Build performance",
+    "performanceDescription": "Matches where this build was selected at game start.",
+    "noPerformance": "No tracked matches for this build in this scope, so its performance can’t be measured. Try a 30-day window or all ranks.",
+    "trackedBuilds": "{count} {hero} builds have tracked matches in this scope. Switching builds mid-match isn’t tracked.",
+    "timingTitle": "Item timing",
+    "timingDescription": "Average purchase time for this build’s items across all {hero} players in this scope.",
+    "flowTitle": "Item flow",
+    "flowDescription": "Where this build’s items sit in the typical purchase flow for this hero.",
+    "noFlow": "No item-flow data for this build’s items in this scope."
+  },
+  "why": {
+    "popularity": "Popularity",
+    "winRate": "Win rate",
+    "sampleSize": "Sample size",
+    "timing": "Timing",
+    "itemFlow": "Item flow",
+    "popularityText": "{favorites} favorites this week.",
+    "popularityRankText": "{favorites} favorites this week, {rank} of {total} {hero} builds listed.",
+    "noMatchesText": "No tracked matches with this build selected at game start ({scope}). Its performance can’t be measured yet.",
+    "sampleText": "{matches} tracked matches ({scope}); {sample, select, low {low} moderate {moderate} other {high}} sample. {tracked} {hero} builds have tracked matches in this scope.",
+    "winRateText": "{winRate} when selected at game start, {delta} vs {hero} overall. {comparison}",
+    "compareLow": "Too few matches to compare reliably.",
+    "compareAbove": "Its 95% interval ({low}–{high}) is entirely above the hero’s {heroRate}.",
+    "compareBelow": "Its 95% interval ({low}–{high}) is entirely below the hero’s {heroRate}.",
+    "compareOverlap": "Its 95% interval ({low}–{high}) includes the hero’s {heroRate}: no clear difference.",
+    "timingText": "{timed} of {total} items have purchase-time data for {hero}; {core} land in the 10–25 min core window. The latest, {item}, is bought around {time} on average.",
+    "flowText": "{above} of {total} items with flow data have a wealth-adjusted win rate above the {baseline} baseline for {hero}. Adjusted rates are still observational."
+  },
+  "phases": {
+    "early": "Early",
+    "earlyNote": "bought before 10 min on average",
+    "core": "Core",
+    "coreNote": "10–25 min",
+    "late": "Late",
+    "lateNote": "after 25 min",
+    "items": "{phase} items",
+    "noItems": "No items from this build in this window.",
+    "untimed": "Situational or rarely bought (not enough purchases on this hero to time):"
+  },
+  "plan": {
+    "region": "Ability plan",
+    "caption": "Ability plan: {steps}",
+    "step": "{n}. {action} {ability}",
+    "unlock": "unlock",
+    "upgrade": "upgrade {level}",
+    "abilityFallback": "ability",
+    "ability": "Ability",
+    "unknownAbility": "Unknown ability"
+  },
+  "timing": {
+    "empty": "No timing data for this build’s items in this scope.",
+    "region": "Item timing",
+    "caption": "Average purchase time and purchase rate for this build’s items on this hero",
+    "item": "Item",
+    "avgBuyTime": "Avg. buy time",
+    "boughtIn": "Bought in",
+    "ofMatches": "{rate} of matches"
+  },
+  "flow": {
+    "columns": {
+      "0": "0–10 min",
+      "1": "10–20 min",
+      "2": "20–30 min",
+      "3": "30+ min"
+    },
+    "adjustedTitle": "Wealth-adjusted win rate",
+    "aboveAverage": ", above the hero’s average",
+    "nextTitle": "Common next purchases within this build",
+    "then": "then",
+    "players": "· {count} players",
+    "explanation": "Adjusted win rate re-weights each purchase to the same net-worth mix, separating the item from the buyer’s lead (computed by the data source). It is still observational, not a controlled test.",
+    "baseline": "Baseline for this hero: {rate}."
+  },
+  "performance": {
+    "thisBuild": "This build",
+    "heroOverall": "{hero} overall",
+    "scale": "Scale {scale}, center line 50%. Light whisker = this build’s 95% interval."
+  }
+}
