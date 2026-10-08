@@ -23,7 +23,7 @@ describe('leaderboard', () => {
     expect(rows.map((r) => [r.name, r.accountId, r.possibleAccounts])).toEqual([
       ['Solo', 10, 1],
       ['Ambiguous', null, 2],
-      ['Unnamed', null, 0],
+      [null, null, 0],
     ])
     expect(rows[0].badge).toBe(106)
     expect(rows[1].badge).toBeNull()

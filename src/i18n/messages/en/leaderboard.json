@@ -1,0 +1,77 @@
+{
+  "meta": {
+    "title": "Leaderboard",
+    "description": "Deadlock leaderboards by region, globally and per hero, plus performance boards from tracked matches."
+  },
+  "eyebrow": "Leaderboard",
+  "title": "Leaderboard",
+  "description": "Click a player to open their profile. A tinted row means their latest ranked match promoted or demoted them.",
+  "views": "Leaderboard views",
+  "ranked": "Ranked",
+  "performance": "Performance",
+  "loading": "Loading leaderboard",
+  "filters": {
+    "scope": "Scope",
+    "global": "Global",
+    "regions": {
+      "Europe": "Europe",
+      "NAmerica": "North America",
+      "SAmerica": "South America",
+      "Asia": "Asia",
+      "Oceania": "Oceania"
+    },
+    "role": "Role (first listed top hero)",
+    "allRoles": "All",
+    "currentRank": "Current rank",
+    "metric": "Metric",
+    "minMatches": "Minimum matches",
+    "minOption": "{count}+",
+    "window": "Window",
+    "days": "{count} days",
+    "matchRank": "Match rank"
+  },
+  "metrics": {
+    "winrate": "Win rate",
+    "avg_kills_per_match": "Kills per match",
+    "avg_assists_per_match": "Assists per match",
+    "avg_net_worth_per_match": "Souls per match",
+    "avg_player_damage_per_match": "Hero damage per match",
+    "avg_last_hits_per_match": "Last hits per match",
+    "matches": "Matches played",
+    "rank": "Rank progress"
+  },
+  "notes": {
+    "saved": "The live leaderboard didn’t respond, so this is the copy saved {time} UTC.",
+    "regional": "Valve’s leaderboard (updated hourly): {shown} of the top {top} entries shown.",
+    "regionalHero": "Valve’s {hero} leaderboard (updated hourly): {shown} of the top {top} entries shown.",
+    "ambiguous": "{count} entries match several possible accounts, so they aren’t linked and have no current rank.",
+    "global": "Global: players with {min}+ tracked matches in the last 30 days, ordered by rank progress from their ranked matches. Built from tracked match data, not Valve’s regional lists.",
+    "globalHero": "Global: players with {min}+ tracked matches on {hero} in the last 30 days, ordered by rank progress from their ranked matches. Built from tracked match data, not Valve’s regional lists.",
+    "performance": "Players with {min}+ tracked matches in the last {days} days. Built from tracked match data; all regions.",
+    "performanceHero": "Players with {min}+ tracked matches on {hero} in the last {days} days. Built from tracked match data; all regions.",
+    "winRateCaution": "Top win rates over few matches are often luck; check each player’s sample and interval."
+  },
+  "emptyTitle": "No players match",
+  "emptyDescription": "Try another scope, hero or filter.",
+  "pages": "Leaderboard pages",
+  "board": {
+    "topThree": "Top three",
+    "caption": "Leaderboard",
+    "player": "Player",
+    "matches": "Matches",
+    "currentRank": "Current rank",
+    "latestMatch": "Latest ranked match",
+    "topHeroes": "Top heroes",
+    "sample": "Sample",
+    "matchCount": "{count} matches",
+    "possibleAccounts": "{count} possible accounts, not linked",
+    "accountUnknown": "Account unknown",
+    "unnamed": "Unnamed"
+  },
+  "change": {
+    "title": "Latest ranked match {time}: {delta} rank progress{move, select, up {, promoted} down {, demoted} other {}}",
+    "promoted": "promoted",
+    "demoted": "demoted",
+    "srOnly": "rank progress in latest ranked match"
+  }
+}

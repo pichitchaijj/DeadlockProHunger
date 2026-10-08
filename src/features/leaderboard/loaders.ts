@@ -9,7 +9,7 @@ import { slugify } from '@/features/meta/model'
 import { resolveScope } from '@/features/meta/scope'
 import { filterLeaderboard, leaderboardRows, type HeroLite } from '@/features/players/model'
 import { rankFromBadge, type RankCatalog } from '@/lib/deadlock/rankAssets'
-import { rankChange, scoreboardRows, type BoardRow, type RankChange } from './model'
+import { rankChange, scoreboardRows, type BoardNote, type BoardRow, type RankChange } from './model'
 import type { LeaderboardQuery } from './query'
 import { heroIconUrl } from '@/lib/deadlock/heroImages'
 
@@ -51,7 +51,7 @@ export type BoardData = {
   page: number
   pages: number
   total: number
-  note: string
+  note: BoardNote
   heroes: HeroLite[]
   hero: HeroLite | null
   rankLabels: Record<RankBandId, string> | null
@@ -94,7 +94,7 @@ export async function getLeaderboardData(query: LeaderboardQuery): Promise<Board
       page,
       pages,
       total: filtered.length,
-      note: `${savedAt ? `The live leaderboard didn’t respond, so this is the copy saved ${(savedAt as Date).toUTCString().slice(5, 22)} UTC. ` : ''}Valve’s ${ctx.hero ? `${ctx.hero.name} ` : ''}leaderboard (updated hourly): ${filtered.length} of the top ${top.length} entries shown.${ambiguous ? ` ${ambiguous} entries match several possible accounts, so they aren’t linked and have no current rank.` : ''}`,
+      note: { kind: 'regional', savedAt: savedAt ? (savedAt as Date).getTime() : null, hero: ctx.hero?.name ?? null, shown: filtered.length, top: top.length, ambiguous },
       heroes,
       hero: ctx.hero,
       rankLabels: ctx.rankLabels,
@@ -133,8 +133,8 @@ export async function getLeaderboardData(query: LeaderboardQuery): Promise<Board
     pages,
     total: rows.length,
     note: ranked
-      ? `Global: players with ${minMatches}+ tracked matches${ctx.hero ? ` on ${ctx.hero.name}` : ''} in the last 30 days, ordered by rank progress from their ranked matches. Built from tracked match data, not Valve’s regional lists.`
-      : `Players with ${minMatches}+ tracked matches${ctx.hero ? ` on ${ctx.hero.name}` : ''} in the last ${query.window === '7d' ? '7' : '30'} days. Built from tracked match data; all regions.`,
+      ? { kind: 'global', minMatches, hero: ctx.hero?.name ?? null }
+      : { kind: 'performance', minMatches, hero: ctx.hero?.name ?? null, days: query.window === '7d' ? 7 : 30 },
     heroes,
     hero: ctx.hero,
     rankLabels: ctx.rankLabels,

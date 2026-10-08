@@ -25,9 +25,39 @@ export function rankChange(r: {
   }
 }
 
+/**
+ * The data-basis line under the filters, as facts. The page words it from the catalog (leaderboard.notes)
+ * with `boardNoteText`, so the hero name and counts stay data.
+ */
+export type BoardNote =
+  | { kind: 'regional'; savedAt: number | null; hero: string | null; shown: number; top: number; ambiguous: number }
+  | { kind: 'global'; minMatches: number; hero: string | null }
+  | { kind: 'performance'; minMatches: number; hero: string | null; days: 7 | 30 }
+
+type NoteTranslator = (key: string, values?: Record<string, string | number>) => string
+
+/** Sentences joined by `separator` (none after a CJK full stop); `t` reads leaderboard.notes, `savedTime` formats the snapshot time (UTC). */
+export function boardNoteText(note: BoardNote, t: NoteTranslator, savedTime: (ms: number) => string, winRateCaution = false, separator = ' '): string {
+  const parts: string[] = []
+  if (note.kind === 'regional') {
+    if (note.savedAt !== null) parts.push(t('saved', { time: savedTime(note.savedAt) }))
+    const counts = { shown: note.shown, top: note.top }
+    parts.push(note.hero ? t('regionalHero', { ...counts, hero: note.hero }) : t('regional', counts))
+    if (note.ambiguous) parts.push(t('ambiguous', { count: note.ambiguous }))
+  } else if (note.kind === 'global') {
+    parts.push(note.hero ? t('globalHero', { min: note.minMatches, hero: note.hero }) : t('global', { min: note.minMatches }))
+  } else {
+    const values = { min: note.minMatches, days: note.days }
+    parts.push(note.hero ? t('performanceHero', { ...values, hero: note.hero }) : t('performance', values))
+  }
+  if (winRateCaution) parts.push(t('winRateCaution'))
+  return parts.join(separator)
+}
+
 export type BoardRow = {
   position: number
-  name: string
+  /** Null when the source has no name (empty Steam names exist); the page shows a fallback. */
+  name: string | null
   accountId: number | null
   possibleAccounts: number
   topHeroes: HeroLite[]
@@ -52,7 +82,7 @@ export function scoreboardRows(
     const badge = r.badge || ctx.badges.get(r.account_id) || null
     return {
       position: r.rank + 1,
-      name: ctx.names.get(r.account_id)?.trim() || `Player ${r.account_id}`, // empty Steam names exist
+      name: ctx.names.get(r.account_id)?.trim() || null,
       accountId: r.account_id,
       possibleAccounts: 1,
       topHeroes: [],

@@ -1,0 +1,77 @@
+{
+  "meta": {
+    "title": "リーダーボード",
+    "description": "地域別・グローバル・ヒーロー別の Deadlock リーダーボードと、追跡試合に基づくパフォーマンスボード。"
+  },
+  "eyebrow": "リーダーボード",
+  "title": "リーダーボード",
+  "description": "プレイヤーをクリックするとプロフィールが開きます。色付きの行は、直近のランク戦で昇格または降格したことを示します。",
+  "views": "リーダーボードの表示",
+  "ranked": "ランク",
+  "performance": "パフォーマンス",
+  "loading": "リーダーボードを読み込み中",
+  "filters": {
+    "scope": "範囲",
+    "global": "グローバル",
+    "regions": {
+      "Europe": "ヨーロッパ",
+      "NAmerica": "北米",
+      "SAmerica": "南米",
+      "Asia": "アジア",
+      "Oceania": "オセアニア"
+    },
+    "role": "ロール（最初に記載されたトップヒーロー）",
+    "allRoles": "すべて",
+    "currentRank": "現在のランク",
+    "metric": "指標",
+    "minMatches": "最低試合数",
+    "minOption": "{count}+",
+    "window": "期間",
+    "days": "{count}日間",
+    "matchRank": "試合のランク"
+  },
+  "metrics": {
+    "winrate": "勝率",
+    "avg_kills_per_match": "1試合あたりのキル",
+    "avg_assists_per_match": "1試合あたりのアシスト",
+    "avg_net_worth_per_match": "1試合あたりのソウル",
+    "avg_player_damage_per_match": "1試合あたりのヒーローダメージ",
+    "avg_last_hits_per_match": "1試合あたりのラストヒット",
+    "matches": "プレイ試合数",
+    "rank": "ランク進行度"
+  },
+  "notes": {
+    "saved": "ライブのリーダーボードが応答しなかったため、{time} UTC に保存されたコピーを表示しています。",
+    "regional": "Valve のリーダーボード（1時間ごとに更新）：上位 {top} 件中 {shown} 件を表示。",
+    "regionalHero": "Valve の {hero} リーダーボード（1時間ごとに更新）：上位 {top} 件中 {shown} 件を表示。",
+    "ambiguous": "{count} 件のエントリーは複数のアカウント候補に一致するため、リンクされず現在のランクもありません。",
+    "global": "グローバル：過去30日間に追跡試合が {min} 試合以上あるプレイヤーを、ランク戦でのランク進行度順に表示。Valve の地域別リストではなく、追跡試合データから作成。",
+    "globalHero": "グローバル：過去30日間に {hero} での追跡試合が {min} 試合以上あるプレイヤーを、ランク戦でのランク進行度順に表示。Valve の地域別リストではなく、追跡試合データから作成。",
+    "performance": "過去 {days} 日間に追跡試合が {min} 試合以上あるプレイヤー。追跡試合データから作成、全地域。",
+    "performanceHero": "過去 {days} 日間に {hero} での追跡試合が {min} 試合以上あるプレイヤー。追跡試合データから作成、全地域。",
+    "winRateCaution": "少ない試合数での高い勝率は運によることが多いため、各プレイヤーのサンプルと区間を確認してください。"
+  },
+  "emptyTitle": "該当するプレイヤーがいません",
+  "emptyDescription": "範囲、ヒーロー、またはフィルターを変更してください。",
+  "pages": "リーダーボードのページ",
+  "board": {
+    "topThree": "トップ3",
+    "caption": "リーダーボード",
+    "player": "プレイヤー",
+    "matches": "試合数",
+    "currentRank": "現在のランク",
+    "latestMatch": "直近のランク戦",
+    "topHeroes": "よく使うヒーロー",
+    "sample": "サンプル",
+    "matchCount": "{count} 試合",
+    "possibleAccounts": "{count} 件のアカウント候補、未リンク",
+    "accountUnknown": "アカウント不明",
+    "unnamed": "名前なし"
+  },
+  "change": {
+    "title": "直近のランク戦 {time}：ランク進行度 {delta}{move, select, up {、昇格} down {、降格} other {}}",
+    "promoted": "昇格",
+    "demoted": "降格",
+    "srOnly": "直近のランク戦でのランク進行度"
+  }
+}

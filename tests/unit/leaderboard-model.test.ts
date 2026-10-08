@@ -39,7 +39,7 @@ describe('scoreboardRows', () => {
     )
     expect(rows.map((r) => [r.position, r.name, r.badge, r.rank?.name])).toEqual([
       [1, 'Ann', 116, 'T11'],
-      [2, 'Player 8', 95, 'T9'],
+      [2, null, 95, 'T9'],
     ])
     expect(rows[0].interval!.low).toBeLessThan(0.9)
     expect(rows[0].sample).toBe('moderate')

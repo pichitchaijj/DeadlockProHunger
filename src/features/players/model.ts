@@ -23,7 +23,8 @@ export function record(wins: number, matches: number): Record_ {
 
 export type LeaderboardRow = {
   position: number
-  name: string
+  /** Null when the entry has no name; the page shows a fallback. */
+  name: string | null
   /** Only set when the entry maps to exactly one account; otherwise identity is ambiguous. */
   accountId: number | null
   possibleAccounts: number
@@ -42,7 +43,7 @@ export function leaderboardRows(entries: RawEntry[], heroes: Map<number, HeroLit
     const topHeroes = (e.top_hero_ids ?? []).map((id) => heroes.get(id)).filter((h): h is HeroLite => Boolean(h))
     return {
       position: e.rank ?? i + 1,
-      name: e.account_name?.trim() || 'Unnamed',
+      name: e.account_name?.trim() || null,
       accountId,
       possibleAccounts: ids.length,
       topHeroes,

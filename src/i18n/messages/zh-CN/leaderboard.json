@@ -1,0 +1,77 @@
+{
+  "meta": {
+    "title": "排行榜",
+    "description": "按地区、全球和英雄划分的 Deadlock 排行榜，以及基于追踪比赛的表现榜。"
+  },
+  "eyebrow": "排行榜",
+  "title": "排行榜",
+  "description": "点击玩家可打开其资料页。带底色的行表示其最近一场排位赛使其晋级或降级。",
+  "views": "排行榜视图",
+  "ranked": "排位",
+  "performance": "表现",
+  "loading": "正在加载排行榜",
+  "filters": {
+    "scope": "范围",
+    "global": "全球",
+    "regions": {
+      "Europe": "欧洲",
+      "NAmerica": "北美",
+      "SAmerica": "南美",
+      "Asia": "亚洲",
+      "Oceania": "大洋洲"
+    },
+    "role": "定位（列出的首位常用英雄）",
+    "allRoles": "全部",
+    "currentRank": "当前段位",
+    "metric": "指标",
+    "minMatches": "最少比赛场数",
+    "minOption": "{count}+",
+    "window": "时间范围",
+    "days": "{count} 天",
+    "matchRank": "比赛段位"
+  },
+  "metrics": {
+    "winrate": "胜率",
+    "avg_kills_per_match": "场均击杀",
+    "avg_assists_per_match": "场均助攻",
+    "avg_net_worth_per_match": "场均魂",
+    "avg_player_damage_per_match": "场均英雄伤害",
+    "avg_last_hits_per_match": "场均补刀",
+    "matches": "比赛场数",
+    "rank": "段位进度"
+  },
+  "notes": {
+    "saved": "实时排行榜未响应，因此显示的是 {time} UTC 保存的副本。",
+    "regional": "Valve 排行榜（每小时更新）：显示前 {top} 名中的 {shown} 名。",
+    "regionalHero": "Valve {hero} 排行榜（每小时更新）：显示前 {top} 名中的 {shown} 名。",
+    "ambiguous": "{count} 个条目匹配多个可能的账号，因此未关联，也没有当前段位。",
+    "global": "全球：最近 30 天内有 {min}+ 场追踪比赛的玩家，按排位赛中的段位进度排序。基于追踪比赛数据，而非 Valve 的地区榜单。",
+    "globalHero": "全球：最近 30 天内使用 {hero} 有 {min}+ 场追踪比赛的玩家，按排位赛中的段位进度排序。基于追踪比赛数据，而非 Valve 的地区榜单。",
+    "performance": "最近 {days} 天内有 {min}+ 场追踪比赛的玩家。基于追踪比赛数据；所有地区。",
+    "performanceHero": "最近 {days} 天内使用 {hero} 有 {min}+ 场追踪比赛的玩家。基于追踪比赛数据；所有地区。",
+    "winRateCaution": "少量比赛得出的高胜率往往是运气所致；请查看每位玩家的样本和区间。"
+  },
+  "emptyTitle": "没有匹配的玩家",
+  "emptyDescription": "请尝试其他范围、英雄或筛选条件。",
+  "pages": "排行榜分页",
+  "board": {
+    "topThree": "前三名",
+    "caption": "排行榜",
+    "player": "玩家",
+    "matches": "比赛",
+    "currentRank": "当前段位",
+    "latestMatch": "最近一场排位赛",
+    "topHeroes": "常用英雄",
+    "sample": "样本",
+    "matchCount": "{count} 场比赛",
+    "possibleAccounts": "{count} 个可能的账号，未关联",
+    "accountUnknown": "账号未知",
+    "unnamed": "未命名"
+  },
+  "change": {
+    "title": "最近一场排位赛 {time}：段位进度 {delta}{move, select, up {，晋级} down {，降级} other {}}",
+    "promoted": "晋级",
+    "demoted": "降级",
+    "srOnly": "最近一场排位赛的段位进度"
+  }
+}
