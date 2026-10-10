@@ -5,6 +5,7 @@ import cards from './cards.json'
 import commandPalette from './commandPalette.json'
 import compare from './compare.json'
 import common from './common.json'
+import community from './community.json'
 import data from './data.json'
 import draft from './draft.json'
 import errors from './errors.json'
@@ -24,7 +25,7 @@ import patch from './patch.json'
 import players from './players.json'
 import scope from './scope.json'
 
-const messages = { analyze, builds, cards, commandPalette, common, compare, data, draft, errors, footer, header, heroes, home, insights, items, languages, leaderboard, matches, meta, nav, notFound, patch, players, scope }
+const messages = { analyze, builds, cards, commandPalette, common, community, compare, data, draft, errors, footer, header, heroes, home, insights, items, languages, leaderboard, matches, meta, nav, notFound, patch, players, scope }
 
 export type Messages = typeof messages
 export default messages

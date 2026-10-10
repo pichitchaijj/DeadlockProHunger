@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "title": "社区",
+    "description": "关于 Deadlockprohunger：由谁打造、如何反馈或参与贡献、项目路线图以及数据来源。"
+  },
+  "eyebrow": "Deadlockprohunger",
+  "title": "社区",
+  "intro": "Deadlockprohunger 是面向 Deadlock 玩家的非官方粉丝项目。本页介绍由谁打造、数据来自哪里，以及你可以如何帮忙。",
+  "onThisPage": "本页内容",
+  "about": {
+    "title": "关于项目",
+    "body": "Deadlockprohunger 是社区驱动的 Deadlock 数据分析平台，提供英雄、出装、物品、比赛和玩家统计，每项数据都标明时间范围、段位范围和样本量。",
+    "unofficial": "这是一个非官方粉丝项目，与 Valve 无任何关联，也未获得 Valve 认可。Deadlock 及相关商标归 Valve Corporation 所有。"
+  },
+  "contributors": {
+    "title": "贡献者",
+    "body": "Deadlockprohunger 目前由项目所有者开发和维护。所有向代码仓库贡献代码的人都会列在 GitHub 的贡献者页面上，该页面由 GitHub 自动更新。",
+    "link": "在 GitHub 上查看贡献者",
+    "credit": "游戏数据来自独立项目 <source>deadlock-api.com</source>。Deadlock 游戏本身由 Valve 开发。"
+  },
+  "feedback": {
+    "title": "社区反馈",
+    "body": "对本站的反馈请通过项目代码仓库的 GitHub Issues 提交。本站没有自己的反馈表单。",
+    "issues": "打开 GitHub Issues",
+    "account": "提交 issue 需要一个免费的 GitHub 账号。",
+    "discordTitle": "Deadlock 官方 Discord",
+    "discordBody": "Deadlock 官方社区 Discord 由 Valve 运营，并不是本项目自己的社区服务器。关于 Deadlockprohunger 的反馈请通过 GitHub Issues 提交。",
+    "discordLink": "加入 Deadlock 官方 Discord"
+  },
+  "roadmap": {
+    "title": "项目路线图",
+    "body": "路线图与代码放在同一个仓库中，即 docs/ROADMAP.md，因此只有一个权威来源，其中包含每个阶段的状态表。",
+    "link": "在 GitHub 上阅读路线图",
+    "builtTitle": "现已上线",
+    "builtNote": "本站目前可以使用的板块。"
+  },
+  "data": {
+    "title": "数据与透明度",
+    "source": "游戏数据来自 <source>deadlock-api.com</source>，这是由独立项目运营的公开 Deadlock API。本站在服务器端获取数据并进行缓存。",
+    "rulesTitle": "数据的呈现方式",
+    "rules": {
+      "context": "每项统计都标明时间范围、段位范围和样本量。",
+      "sample": "样本量小的数据会标记为低样本，绝不作为确定结论呈现。",
+      "intervals": "胜率附带 95% 置信区间，只有区间不重叠时才会指出差异。",
+      "wording": "洞察只描述数据显示的事实，不推断原因，每条洞察都附有说明规则的“为什么？”注释。"
+    },
+    "docsLink": "在 GitHub 上阅读数据文档"
+  },
+  "contribute": {
+    "title": "参与贡献的方式",
+    "intro": "每个入口都会新建一个带标题前缀的 GitHub issue，便于送达正确的位置。请先查看已有的 issue。",
+    "byInvitation": "目前仅限受邀",
+    "paths": {
+      "bug": {
+        "title": "报告错误",
+        "body": "网站上有坏掉、错误或令人困惑的地方吗？请说明所在页面、预期结果和实际情况。",
+        "action": "报告错误"
+      },
+      "feature": {
+        "title": "建议功能",
+        "body": "有能帮助你做决定的页面、筛选或工具的想法吗？告诉我们你想解答的问题。",
+        "action": "建议功能"
+      },
+      "data": {
+        "title": "报告数据问题",
+        "body": "有看起来错误或过时的数字吗？请附上页面链接、使用的筛选条件以及你预期的数值。",
+        "action": "报告数据问题"
+      },
+      "design": {
+        "title": "参与设计",
+        "body": "关于布局、可读性、无障碍或移动端的建议，如有截图或草图也欢迎附上。",
+        "action": "分享设计想法"
+      },
+      "docs": {
+        "title": "改进文档",
+        "body": "项目文档或页面说明中有不清楚的地方吗？请指出位置并建议更好的表述。",
+        "action": "建议修改文档"
+      },
+      "code": {
+        "title": "贡献代码",
+        "body": "代码仓库目前还没有开源许可证，因此无法在明确的条款下接受外部代码贡献。在此之前，代码贡献仅限受邀。欢迎阅读代码，也欢迎开 issue 讨论你的想法。",
+        "action": "查看代码仓库"
+      }
+    }
+  }
+}

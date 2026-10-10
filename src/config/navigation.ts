@@ -38,7 +38,7 @@ export const secondaryNav: NavItem[] = [
   { id: 'items', label: 'Items', href: '/items', description: 'Item performance and timings', phase: 'mvp', built: true },
   { id: 'patch', label: 'Patch', href: '/patch', description: 'Patch notes, what changed and before / after stats', phase: 'mvp', built: true },
   { id: 'tools', label: 'Tools', href: '/tools', description: 'Utilities for players', phase: 'later', built: false },
-  { id: 'community', label: 'Community', href: '/community', description: 'Projects and contributors', phase: 'later', built: false },
+  { id: 'community', label: 'Community', href: '/community', description: 'Projects and contributors', phase: 'mvp', built: true },
 ]
 
 /** Home matches exactly; sections also match their sub-routes (/heroes/abrams). */

@@ -131,25 +131,25 @@ describe('item page metadata status (real loaders)', () => {
 describe('sitemap item selection (real loaders and sitemap)', () => {
   const itemUrls = (urls: string[]) => urls.filter((u) => /\/items\/[^/]+$/.test(u))
 
-  it('lists only items with stats: 1,160 URLs = (13 static + 41 heroes + 156 items + 22 patches) × 5 locales', async () => {
+  it('lists only items with stats: 1,165 URLs = (14 static + 41 heroes + 156 items + 22 patches) × 5 locales', async () => {
     const slugs = await sitemapItemSlugs()
     expect(slugs).toHaveLength(156)
     expect(slugs.some((s) => s.startsWith('brawl-item'))).toBe(false)
     expect(slugs).not.toContain('not-in-shop')
     const urls = (await sitemap()).map((e) => e.url)
-    expect(urls).toHaveLength((13 + 41 + 156 + 22) * 5)
-    expect(urls).toHaveLength(1160)
+    expect(urls).toHaveLength((14 + 41 + 156 + 22) * 5)
+    expect(urls).toHaveLength(1165)
     expect(itemUrls(urls)).toHaveLength(156 * 5)
     expect(urls.some((u) => u.includes('/items/brawl-item'))).toBe(false)
     expect(new Set(urls).size).toBe(urls.length)
   })
 
-  it('keeps every catalog item when the stats call fails: 1,245 URLs = (13 + 41 + 173 + 22) × 5', async () => {
+  it('keeps every catalog item when the stats call fails: 1,250 URLs = (14 + 41 + 173 + 22) × 5', async () => {
     for (const error of TRANSIENT) {
       failStats(error)
       expect(await sitemapItemSlugs(), error.message).toHaveLength(173)
       const urls = (await sitemap()).map((e) => e.url)
-      expect(urls, error.message).toHaveLength(1245)
+      expect(urls, error.message).toHaveLength(1250)
       expect(itemUrls(urls)).toHaveLength(173 * 5)
     }
   })
@@ -158,15 +158,15 @@ describe('sitemap item selection (real loaders and sitemap)', () => {
     routes.set('/v1/analytics/item-stats', () => [])
     expect(await itemsWithStats()).toBeNull()
     expect(await sitemapItemSlugs()).toHaveLength(173)
-    expect((await sitemap()).length).toBe(1245)
+    expect((await sitemap()).length).toBe(1250)
   })
 
-  it('drops items (not the rest) when the catalog itself fails: (13 + 41 + 22) × 5', async () => {
+  it('drops items (not the rest) when the catalog itself fails: (14 + 41 + 22) × 5', async () => {
     routes.set('/v1/assets/items/by-type/upgrade', () => {
       throw apiError(503)
     })
     const urls = (await sitemap()).map((e) => e.url)
-    expect(urls).toHaveLength((13 + 41 + 22) * 5)
+    expect(urls).toHaveLength((14 + 41 + 22) * 5)
     expect(itemUrls(urls)).toHaveLength(0)
   })
 
@@ -177,5 +177,7 @@ describe('sitemap item selection (real loaders and sitemap)', () => {
     expect(urls).toContain(`${ORIGIN}/zh-CN/patch/2026-01-01`)
     expect(urls).toContain(`${ORIGIN}/ko/items/normal-item-1`)
     expect(urls).toContain(`${ORIGIN}/items`)
+    expect(urls).toContain(`${ORIGIN}/community`)
+    expect(urls).toContain(`${ORIGIN}/th/community`)
   })
 })

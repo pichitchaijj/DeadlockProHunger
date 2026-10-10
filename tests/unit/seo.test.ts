@@ -80,7 +80,8 @@ describe('sitemap', () => {
   it('leaves out noindex, internal, API and unbounded detail routes', () => {
     for (const path of paths) expect(path).not.toMatch(/^\/(design|api|players\/|matches\/|builds\/)/)
     expect(STATIC_PATHS).not.toContain('/design')
-    expect(STATIC_PATHS).toEqual(expect.arrayContaining(['/', '/heroes', '/items', '/patch', '/patch/compare', '/players', '/leaderboard']))
+    expect(STATIC_PATHS).toEqual(expect.arrayContaining(['/', '/heroes', '/items', '/patch', '/patch/compare', '/players', '/leaderboard', '/community']))
+    expect(STATIC_PATHS).toHaveLength(14)
   })
 
   it('has one entry per path and locale, each with the full alternate set', () => {

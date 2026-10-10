@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "title": "커뮤니티",
+    "description": "Deadlockprohunger 소개: 누가 만드는지, 피드백이나 기여 방법, 프로젝트 로드맵, 데이터 출처."
+  },
+  "eyebrow": "Deadlockprohunger",
+  "title": "커뮤니티",
+  "intro": "Deadlockprohunger는 Deadlock 플레이어를 위한 비공식 팬 프로젝트입니다. 이 페이지에서는 누가 만드는지, 데이터가 어디서 오는지, 어떻게 도울 수 있는지 설명합니다.",
+  "onThisPage": "이 페이지의 내용",
+  "about": {
+    "title": "프로젝트 소개",
+    "body": "Deadlockprohunger는 Deadlock 커뮤니티 분석 허브입니다. 영웅, 빌드, 아이템, 매치, 플레이어 통계를 기간, 랭크 범위, 표본 크기와 함께 보여 줍니다.",
+    "unofficial": "비공식 팬 프로젝트입니다. Valve와 제휴 관계가 없으며 Valve의 승인을 받지 않았습니다. Deadlock 및 관련 상표는 Valve Corporation의 자산입니다."
+  },
+  "contributors": {
+    "title": "기여자",
+    "body": "Deadlockprohunger는 현재 프로젝트 소유자가 만들고 관리합니다. 저장소에 코드를 기여한 모든 사람은 GitHub 기여자 페이지에 표시되며, GitHub가 자동으로 최신 상태로 유지합니다.",
+    "link": "GitHub에서 기여자 보기",
+    "credit": "게임 데이터는 별도 프로젝트인 <source>deadlock-api.com</source>에서 제공합니다. Deadlock 게임 자체는 Valve가 만들었습니다."
+  },
+  "feedback": {
+    "title": "커뮤니티 피드백",
+    "body": "이 사이트에 대한 피드백은 프로젝트 저장소의 GitHub Issues로 받습니다. 사이트 자체 피드백 양식은 없습니다.",
+    "issues": "GitHub Issues 열기",
+    "account": "이슈를 만들려면 무료 GitHub 계정이 필요합니다.",
+    "discordTitle": "Deadlock 공식 Discord",
+    "discordBody": "Deadlock 공식 커뮤니티 Discord는 Valve가 운영합니다. 이 프로젝트의 커뮤니티 서버가 아니므로, Deadlockprohunger에 대한 피드백은 GitHub Issues로 보내 주세요.",
+    "discordLink": "Deadlock 공식 Discord 참여하기"
+  },
+  "roadmap": {
+    "title": "프로젝트 로드맵",
+    "body": "로드맵은 코드와 같은 저장소의 docs/ROADMAP.md에 있어 정보의 출처가 하나뿐입니다. 모든 단계의 상태 표가 들어 있습니다.",
+    "link": "GitHub에서 로드맵 읽기",
+    "builtTitle": "지금 이용 가능",
+    "builtNote": "현재 이 사이트에서 이용할 수 있는 섹션입니다."
+  },
+  "data": {
+    "title": "데이터와 투명성",
+    "source": "게임 데이터는 별도 프로젝트가 운영하는 공개 Deadlock API인 <source>deadlock-api.com</source>에서 가져옵니다. 이 사이트는 서버에서 데이터를 요청하고 캐시합니다.",
+    "rulesTitle": "수치를 보여 주는 방식",
+    "rules": {
+      "context": "모든 통계에 기간, 랭크 범위, 표본 크기를 표시합니다.",
+      "sample": "표본이 작으면 낮은 표본으로 표시하며, 강한 결론으로 제시하지 않습니다.",
+      "intervals": "승률에는 95% 신뢰 구간을 함께 표시하고, 구간이 겹치지 않을 때만 차이로 언급합니다.",
+      "wording": "인사이트는 데이터가 보여 주는 사실만 설명하고 원인은 단정하지 않으며, 각 인사이트에는 규칙을 설명하는 “왜?” 설명이 있습니다."
+    },
+    "docsLink": "GitHub에서 데이터 문서 읽기"
+  },
+  "contribute": {
+    "title": "기여하는 방법",
+    "intro": "각 항목은 제목 접두어가 붙은 새 GitHub 이슈를 열어 알맞은 곳으로 전달됩니다. 먼저 기존 이슈를 확인해 주세요.",
+    "byInvitation": "현재 초대제",
+    "paths": {
+      "bug": {
+        "title": "버그 신고",
+        "body": "사이트에서 고장 났거나, 틀렸거나, 헷갈리는 부분이 있나요? 페이지, 기대한 동작, 실제로 일어난 일을 적어 주세요.",
+        "action": "버그 신고하기"
+      },
+      "feature": {
+        "title": "기능 제안",
+        "body": "결정에 도움이 될 페이지, 필터, 도구 아이디어가 있나요? 답을 얻고 싶은 질문을 알려 주세요.",
+        "action": "기능 제안하기"
+      },
+      "data": {
+        "title": "데이터 문제 신고",
+        "body": "틀렸거나 오래된 것 같은 수치가 있나요? 페이지 링크, 사용한 필터, 예상한 값을 함께 적어 주세요.",
+        "action": "데이터 문제 신고하기"
+      },
+      "design": {
+        "title": "디자인 기여",
+        "body": "레이아웃, 가독성, 접근성, 모바일 화면에 대한 제안을 보내 주세요. 스크린샷이나 스케치가 있으면 함께 첨부해 주세요.",
+        "action": "디자인 아이디어 공유하기"
+      },
+      "docs": {
+        "title": "문서 개선",
+        "body": "프로젝트 문서나 페이지 설명 중 불분명한 부분이 있나요? 해당 부분을 알려 주고 더 나은 표현을 제안해 주세요.",
+        "action": "문서 수정 제안하기"
+      },
+      "code": {
+        "title": "코드 기여",
+        "body": "저장소에는 아직 오픈소스 라이선스가 없어 외부 코드 기여를 명확한 조건으로 받을 수 없습니다. 그때까지 코드 기여는 초대제로 운영됩니다. 코드를 살펴보거나 이슈를 열어 아이디어를 논의하는 것은 언제든 환영합니다.",
+        "action": "저장소 보기"
+      }
+    }
+  }
+}

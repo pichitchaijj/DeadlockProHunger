@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "title": "Community",
+    "description": "About Deadlockprohunger: who builds it, how to give feedback or contribute, the project roadmap and where the data comes from."
+  },
+  "eyebrow": "Deadlockprohunger",
+  "title": "Community",
+  "intro": "Deadlockprohunger is an unofficial fan project for Deadlock players. This page explains who makes it, where the data comes from and how you can help.",
+  "onThisPage": "On this page",
+  "about": {
+    "title": "About the project",
+    "body": "Deadlockprohunger is a community analytics hub for Deadlock: hero, build, item, match and player statistics, each shown with its time range, rank scope and sample size.",
+    "unofficial": "It is an unofficial fan project. It is not affiliated with or endorsed by Valve. Deadlock and related marks are property of Valve Corporation."
+  },
+  "contributors": {
+    "title": "Contributors",
+    "body": "Deadlockprohunger is currently built and maintained by its project owner. Everyone who contributes code to the repository is listed on its GitHub contributors page, which GitHub keeps up to date.",
+    "link": "View contributors on GitHub",
+    "credit": "Game data comes from <source>deadlock-api.com</source>, a separate project. Deadlock itself is made by Valve."
+  },
+  "feedback": {
+    "title": "Community feedback",
+    "body": "Feedback about this site goes through GitHub Issues on the project repository. This site has no feedback form of its own.",
+    "issues": "Open GitHub Issues",
+    "account": "Opening an issue needs a free GitHub account.",
+    "discordTitle": "Official Deadlock Discord",
+    "discordBody": "The official Deadlock community Discord is operated by Valve. It is not this project’s own community server, so please send feedback about Deadlockprohunger through GitHub Issues.",
+    "discordLink": "Join the official Deadlock Discord"
+  },
+  "roadmap": {
+    "title": "Project roadmap",
+    "body": "The roadmap lives in the repository as docs/ROADMAP.md, next to the code, so there is a single source of truth. It has a status table for every phase.",
+    "link": "Read the roadmap on GitHub",
+    "builtTitle": "Available now",
+    "builtNote": "Sections you can use on this site today."
+  },
+  "data": {
+    "title": "Data & transparency",
+    "source": "Game data comes from <source>deadlock-api.com</source>, a public Deadlock API run by a separate project. This site requests it on the server and caches it.",
+    "rulesTitle": "How numbers are shown",
+    "rules": {
+      "context": "Every statistic shows its time range, rank scope and sample size.",
+      "sample": "Small samples are marked as low samples and are never presented as strong conclusions.",
+      "intervals": "Win rates come with a 95% confidence interval, and a difference is only called out when the intervals are separated.",
+      "wording": "Insights describe what the data shows, not why it happens, and each one has a “Why?” note with its rule."
+    },
+    "docsLink": "Read the data documentation on GitHub"
+  },
+  "contribute": {
+    "title": "Ways to contribute",
+    "intro": "Each path opens a new GitHub issue with a title prefix, so it reaches the right place. Please check existing issues first.",
+    "byInvitation": "Currently by invitation",
+    "paths": {
+      "bug": {
+        "title": "Report a bug",
+        "body": "Something broken, wrong or confusing on the site? Describe the page, what you expected and what happened.",
+        "action": "Report a bug"
+      },
+      "feature": {
+        "title": "Suggest a feature",
+        "body": "An idea for a page, filter or tool that would help you decide? Tell us the question you want answered.",
+        "action": "Suggest a feature"
+      },
+      "data": {
+        "title": "Report data issues",
+        "body": "A number that looks wrong or out of date? Include the page link, the filters you used and what you expected.",
+        "action": "Report a data issue"
+      },
+      "design": {
+        "title": "Contribute design",
+        "body": "Layout, readability, accessibility or mobile suggestions, with screenshots or sketches if you have them.",
+        "action": "Share a design idea"
+      },
+      "docs": {
+        "title": "Improve documentation",
+        "body": "Something unclear in the project docs or an on-page explanation? Point to it and suggest better wording.",
+        "action": "Suggest a docs change"
+      },
+      "code": {
+        "title": "Contribute code",
+        "body": "The repository doesn’t have an open-source license yet, so outside code contributions can’t be accepted under clear terms. Until then, code contributions are by invitation. You’re welcome to read the code and open an issue to discuss an idea.",
+        "action": "View the repository"
+      }
+    }
+  }
+}
