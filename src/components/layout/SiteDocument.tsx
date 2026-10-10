@@ -45,16 +45,19 @@ const ui = Inter({
 })
 
 /**
- * Site-wide metadata defaults in the active locale (the Home catalog's title and description), and the
- * production origin as `metadataBase` when SITE_URL is set (src/i18n/seo.ts).
+ * Site-wide metadata defaults in the active locale (the Home catalog's title and description), the
+ * production origin as `metadataBase` when SITE_URL is set (src/i18n/seo.ts), and the Google Search Console
+ * ownership tag when GOOGLE_SITE_VERIFICATION is set (server-side; .env.example).
  */
 export async function getSiteMetadata(): Promise<Metadata> {
   const t = await getTranslations('home.meta')
   const base = siteUrl()
+  const google = process.env.GOOGLE_SITE_VERIFICATION?.trim()
   return {
     ...(base && { metadataBase: base }),
     title: { default: t('title'), template: 'Deadlockprohunger — %s' },
     description: t('description'),
+    ...(google && { verification: { google } }),
   }
 }
 
