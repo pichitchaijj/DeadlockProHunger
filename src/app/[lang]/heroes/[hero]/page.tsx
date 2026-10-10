@@ -9,44 +9,51 @@ import { LoadingState } from '@/components/ui/States'
 import { getInsightWording } from '@/components/data/insightWording'
 import { HeroHeader, HeroTabs, InsightGrid } from '@/features/hero/components/HeroHeader'
 import { AbilitiesTab, BuildsTab, MatchesTab, MatchupsTab, OverviewTab, TrendsTab } from '@/features/hero/components/tabs'
-import { getHeroContext, getOverviewData, type HeroContext } from '@/features/hero/loaders'
+import { getOverviewData, heroLoadStatus, loadHeroContext, type HeroContext } from '@/features/hero/loaders'
+import { heroIndexing, heroMetaText, type HeroMetaTranslate } from '@/features/hero/seo'
 import { heroHref, parseHeroQuery, type HeroQuery } from '@/features/hero/query'
 import { DataNotice } from '@/components/data/DataState'
-import { attempt, classifyError } from '@/lib/deadlock/errors'
+import { attempt } from '@/lib/deadlock/errors'
 import { OG_LOCALE } from '@/i18n/config'
-import { pageAlternates } from '@/i18n/seo'
 
 type Params = Promise<{ hero: string }>
 type SearchParams = Promise<Record<string, string | string[] | undefined>>
 
-export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const { hero } = await params
-  const name = hero
-    .split('-')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ')
-  const [t, locale] = await Promise.all([getTranslations('heroes.meta'), getLocale()])
-  const description = t('detailDescription', { hero: name })
-  return { title: name, description, alternates: pageAlternates(`/heroes/${hero}`, locale), openGraph: { title: name, description, locale: OG_LOCALE[locale], type: 'website' } }
+/**
+ * The API hero name from the shared, request-cached context (no extra fetch), never rebuilt from the slug.
+ * Indexable, with canonical and hreflang, only when the hero page renders.
+ */
+export async function generateMetadata({ params, searchParams }: { params: Params; searchParams: SearchParams }): Promise<Metadata> {
+  const { hero: slug } = await params
+  const query = parseHeroQuery(await searchParams)
+  const [load, t, detailT, locale] = await Promise.all([
+    loadHeroContext(slug, query.window, query.rank),
+    getTranslations('heroes.meta'),
+    getTranslations('heroes.detail'),
+    getLocale(),
+  ])
+  const ctx = load.ok ? load.value : null
+  if (!ctx) return { title: detailT('hero'), ...heroIndexing(null, locale, heroLoadStatus(load)) }
+
+  const tr: HeroMetaTranslate = (key, values) => t(key as 'detailTitle', values)
+  const { title, description } = heroMetaText(tr, ctx.hero.name)
+  return { title, description, ...heroIndexing(`/heroes/${ctx.hero.slug}`, locale, 'ok'), openGraph: { title, description, locale: OG_LOCALE[locale], type: 'website' } }
 }
 
 export default async function HeroPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   const { hero: slug } = await params
   const query = parseHeroQuery(await searchParams)
 
-  const t = await getTranslations()
-  let ctx: HeroContext | null
-  try {
-    ctx = await getHeroContext(slug, query)
-  } catch (error) {
-    console.error('[hero] context failed', error)
+  const [t, load] = await Promise.all([getTranslations(), loadHeroContext(slug, query.window, query.rank)])
+  if (!load.ok) {
     return (
       <PageContainer>
         <h1 className="sr-only">{t('heroes.detail.hero')}</h1>
-        <DataNotice error={classifyError(error)} what="Hero data" action={<ButtonLink href={heroHref(slug, query)} variant="secondary" size="sm">{t('common.tryAgain')}</ButtonLink>} />
+        <DataNotice error={load.kind} what="Hero data" action={<ButtonLink href={heroHref(slug, query)} variant="secondary" size="sm">{t('common.tryAgain')}</ButtonLink>} />
       </PageContainer>
     )
   }
+  const ctx = load.value
   if (!ctx) notFound()
 
   return (

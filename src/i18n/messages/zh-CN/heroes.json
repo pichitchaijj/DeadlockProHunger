@@ -2,6 +2,7 @@
   "meta": {
     "listTitle": "英雄",
     "listDescription": "快速查找任意 Deadlock 英雄：搜索、按定位和难度筛选，并比较胜率、选取率和趋势。",
+    "detailTitle": "{hero}：Deadlock 数据、出装与对位",
     "detailDescription": "Deadlock 中的 {hero}：基于比赛数据的胜率、选取率、对位、出装和技能加点顺序。"
   },
   "list": {

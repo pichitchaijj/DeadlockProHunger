@@ -2,6 +2,7 @@
   "meta": {
     "listTitle": "ヒーロー",
     "listDescription": "Deadlock のヒーローをすばやく検索。ロールや難易度で絞り込み、勝率・ピック率・トレンドを比較できます。",
+    "detailTitle": "{hero}：Deadlock の統計・ビルド・マッチアップ",
     "detailDescription": "Deadlock の {hero}：試合データに基づく勝率・ピック率・マッチアップ・ビルド・アビリティ順。"
   },
   "list": {

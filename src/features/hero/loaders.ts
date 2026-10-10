@@ -15,6 +15,7 @@ import {
   getShopItems,
   getTopBuilds,
 } from '@/lib/deadlock/heroEndpoints'
+import { attempt } from '@/lib/deadlock/errors'
 import { getMetaPageData } from '@/features/meta/loaders'
 import { slugify, type MetaHero } from '@/features/meta/model'
 import { DEFAULT_QUERY } from '@/features/meta/query'
@@ -35,7 +36,8 @@ import {
   type HeroRef,
   type ShopItemRef,
 } from './model'
-import type { HeroQuery } from './query'
+import { DEFAULT_HERO_QUERY, type HeroQuery } from './query'
+import type { HeroLoadStatus } from './seo'
 import { heroIconUrl, heroCardUrl } from '@/lib/deadlock/heroImages'
 
 const DAY = 86_400
@@ -80,6 +82,23 @@ export const getHeroContext = cache(async (slug: string, query: HeroQuery): Prom
     heroCount: meta.model.heroes.length,
   }
 })
+
+/**
+ * getHeroContext once per request for the hero page and its metadata (which decides indexing,
+ * features/hero/seo.ts), with the failure kept as a value. Keyed on primitives: getHeroContext's query is an
+ * object (React cache keys objects by identity) and it reads only the window and rank.
+ */
+export const loadHeroContext = cache((slug: string, window: HeroQuery['window'], rank: HeroQuery['rank']) =>
+  attempt('[hero] context failed', getHeroContext(slug, { ...DEFAULT_HERO_QUERY, window, rank })),
+)
+
+export type HeroContextLoad = Awaited<ReturnType<typeof loadHeroContext>>
+
+/** The outcome of a load: null = confirmed missing (the hero list loaded without this slug); thrown = failed. */
+export function heroLoadStatus(load: HeroContextLoad): HeroLoadStatus {
+  if (!load.ok) return 'failed'
+  return load.value === null ? 'missing' : 'ok'
+}
 
 export const shopMap = cache(async () => new Map<number, ShopItemRef>((await getShopItems()).map((i) => [i.id, i])))
 

@@ -2,6 +2,7 @@
   "meta": {
     "listTitle": "Heroes",
     "listDescription": "Find any Deadlock hero fast: search, filter by role and complexity, and compare win rate, pick rate and trend.",
+    "detailTitle": "{hero}: Deadlock stats, builds & matchups",
     "detailDescription": "{hero} in Deadlock: win rate, pick rate, matchups, builds and ability order, from match data."
   },
   "list": {

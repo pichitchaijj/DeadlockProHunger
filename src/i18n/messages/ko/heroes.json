@@ -2,6 +2,7 @@
   "meta": {
     "listTitle": "영웅",
     "listDescription": "Deadlock 영웅을 빠르게 찾아보세요. 역할과 난이도로 필터링하고 승률, 픽률, 추세를 비교할 수 있습니다.",
+    "detailTitle": "{hero}: Deadlock 통계, 빌드, 상성",
     "detailDescription": "Deadlock의 {hero}: 매치 데이터 기반 승률, 픽률, 상성, 빌드, 능력 순서."
   },
   "list": {
