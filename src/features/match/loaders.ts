@@ -1,4 +1,5 @@
 import 'server-only'
+import { cache } from 'react'
 import { getSteamNames } from '@/lib/deadlock/buildEndpoints'
 import { getActiveHeroes } from '@/lib/deadlock/endpoints'
 import { getMatchDetail, parseStoredMatchDetail } from '@/lib/deadlock/matchDetail'
@@ -9,6 +10,7 @@ import { rankFromBadge, type RankDisplay } from '@/lib/deadlock/rankAssets'
 import { slugify } from '@/features/meta/model'
 import { resolveScope } from '@/features/meta/scope'
 import { buildMatchView, type HeroLite, type MatchView } from './model'
+import type { MatchLoadStatus } from './seo'
 import { heroIconUrl } from '@/lib/deadlock/heroImages'
 
 export type MatchPage = {
@@ -44,3 +46,21 @@ export async function getMatchPage(matchId: number): Promise<MatchPage | null> {
     rank: [rankFromBadge(ranks, view.averageBadge[0]), rankFromBadge(ranks, view.averageBadge[1])],
   }
 }
+
+export type MatchLoad =
+  | { status: Extract<MatchLoadStatus, 'ok'>; data: MatchPage }
+  | { status: Extract<MatchLoadStatus, 'not-available'> }
+  | { status: Extract<MatchLoadStatus, 'failed'>; error: unknown }
+
+/**
+ * getMatchPage once per request (React cache), as an outcome instead of a throw: the page and its
+ * metadata (which decides indexing, features/match/seo.ts) share one load.
+ */
+export const loadMatchPage = cache(async (matchId: number): Promise<MatchLoad> => {
+  try {
+    const data = await getMatchPage(matchId)
+    return data ? { status: 'ok', data } : { status: 'not-available' }
+  } catch (error) {
+    return { status: 'failed', error }
+  }
+})

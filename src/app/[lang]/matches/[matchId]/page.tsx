@@ -17,11 +17,11 @@ import {
   TeamComparison,
 } from '@/features/match/components/sections'
 import { TeamGraph } from '@/features/match/components/TeamGraph'
-import { getMatchPage } from '@/features/match/loaders'
+import { loadMatchPage } from '@/features/match/loaders'
+import { matchIndexing, parseMatchId } from '@/features/match/seo'
 import { eventText } from '@/features/match/text'
 import { DataNotice } from '@/components/data/DataState'
 import { OG_LOCALE } from '@/i18n/config'
-import { pageAlternates } from '@/i18n/seo'
 import { WithClientMessages } from '@/i18n/WithClientMessages'
 import { classifyError } from '@/lib/deadlock/errors'
 
@@ -32,7 +32,10 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const [t, locale] = await Promise.all([getTranslations('matches.meta'), getLocale()])
   const title = t('detailTitle', { id: matchId })
   const description = t('detailDescription', { id: matchId })
-  return { title, description, alternates: pageAlternates(`/matches/${matchId}`, locale), openGraph: { title, description, locale: OG_LOCALE[locale], type: 'website' } }
+  // Indexable with canonical + hreflang only when the match loads (shared, request-cached load).
+  const id = parseMatchId(matchId)
+  const indexing = id === null ? { robots: { index: false } } : matchIndexing(id, locale, (await loadMatchPage(id)).status)
+  return { title, description, ...indexing, openGraph: { title, description, locale: OG_LOCALE[locale], type: 'website' } }
 }
 
 const SECTIONS = ['story', 'teams', 'players', 'lineup', 'timeline', 'builds', 'performance', 'graphs', 'events', 'advanced'] as const
@@ -41,24 +44,20 @@ const SECTIONS = ['story', 'teams', 'players', 'lineup', 'timeline', 'builds', '
 const TIMELINE_MESSAGES = ['matches.common', 'matches.timeline', 'matches.events.anItem'] as const
 
 export default async function MatchPage({ params }: { params: Params }) {
-  const { matchId: rawId } = await params
-  const matchId = Number(rawId)
-  if (!/^\d{1,12}$/.test(rawId) || !Number.isSafeInteger(matchId)) notFound()
-  const [t, common] = await Promise.all([getTranslations('matches'), getTranslations('common')])
+  const matchId = parseMatchId((await params).matchId)
+  if (matchId === null) notFound()
+  const [t, common, load] = await Promise.all([getTranslations('matches'), getTranslations('common'), loadMatchPage(matchId)])
 
-  let data: Awaited<ReturnType<typeof getMatchPage>>
-  try {
-    data = await getMatchPage(matchId)
-  } catch (error) {
-    console.error('[match] load failed', error)
+  if (load.status === 'failed') {
+    console.error('[match] load failed', load.error)
     return (
       <PageContainer>
         <h1 className="sr-only">{t('explorer.match', { id: matchId })}</h1>
-        <DataNotice error={classifyError(error)} what={`Match ${matchId}`} action={<ButtonLink href={`/matches/${matchId}`} variant="secondary" size="sm">{common('tryAgain')}</ButtonLink>} />
+        <DataNotice error={classifyError(load.error)} what={`Match ${matchId}`} action={<ButtonLink href={`/matches/${matchId}`} variant="secondary" size="sm">{common('tryAgain')}</ButtonLink>} />
       </PageContainer>
     )
   }
-  if (!data) {
+  if (load.status === 'not-available') {
     return (
       <PageContainer>
         <h1 className="sr-only">{t('explorer.match', { id: matchId })}</h1>
@@ -71,6 +70,7 @@ export default async function MatchPage({ params }: { params: Params }) {
     )
   }
 
+  const { data } = load
   const { view } = data
   // Event sentences are worded here, in the page's locale; hero and item names inside them are match data.
   const events = view.events.map((e) => ({ ...e, text: eventText(t, e.detail) }))
