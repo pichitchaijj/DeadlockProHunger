@@ -2,8 +2,11 @@
   "meta": {
     "listTitle": "บิลด์",
     "listDescription": "บิลด์ Deadlock พร้อมอัตราชนะที่วัดจริง: บิลด์เมตา บิลด์จากผู้เล่นแรงก์สูงสุด และบิลด์ยอดนิยมของคอมมูนิตี้",
-    "detailTitle": "บิลด์",
-    "detailDescription": "บิลด์ของ {hero} สำหรับ Deadlock: อัตราชนะที่วัดจริง จังหวะการซื้อไอเท็ม ลำดับการซื้อไอเท็ม และลำดับสกิล"
+    "detailTitle": "{build} · บิลด์ {hero}",
+    "detailTitleByAuthor": "{build} · บิลด์ {hero} โดย {author}",
+    "detailDescription": "{build} บิลด์ของ {hero} สำหรับ Deadlock: อัตราชนะที่วัดจริง จังหวะการซื้อไอเท็ม ลำดับการซื้อไอเท็ม และลำดับสกิล",
+    "detailDescriptionByAuthor": "{build} บิลด์ของ {hero} โดย {author} สำหรับ Deadlock: อัตราชนะที่วัดจริง จังหวะการซื้อไอเท็ม ลำดับการซื้อไอเท็ม และลำดับสกิล",
+    "untitledBuild": "บิลด์ไม่มีชื่อ #{id}"
   },
   "list": {
     "eyebrow": "บิลด์",

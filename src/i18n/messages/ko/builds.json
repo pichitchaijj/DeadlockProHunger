@@ -2,8 +2,11 @@
   "meta": {
     "listTitle": "빌드",
     "listDescription": "실측 승률이 있는 Deadlock 빌드: 메타 빌드, 최상위 랭크 플레이어의 빌드, 커뮤니티 인기 빌드.",
-    "detailTitle": "빌드",
-    "detailDescription": "Deadlock {hero} 빌드: 실측 승률, 아이템 구매 시점, 아이템 구매 흐름, 능력 순서."
+    "detailTitle": "{build} · {hero} 빌드",
+    "detailTitleByAuthor": "{build} · {hero} 빌드 (작성자 {author})",
+    "detailDescription": "{build}: Deadlock {hero} 빌드. 실측 승률, 아이템 구매 시점, 아이템 구매 흐름, 능력 순서.",
+    "detailDescriptionByAuthor": "{build}: {author}의 Deadlock {hero} 빌드. 실측 승률, 아이템 구매 시점, 아이템 구매 흐름, 능력 순서.",
+    "untitledBuild": "제목 없는 빌드 #{id}"
   },
   "list": {
     "eyebrow": "빌드",

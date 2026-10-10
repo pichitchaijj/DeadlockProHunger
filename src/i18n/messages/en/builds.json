@@ -2,8 +2,11 @@
   "meta": {
     "listTitle": "Builds",
     "listDescription": "Deadlock builds with measured win rates: meta builds, builds by top-ranked players, and community favorites.",
-    "detailTitle": "Build",
-    "detailDescription": "A {hero} build for Deadlock: measured win rate, item timing, item flow and ability order."
+    "detailTitle": "{build} · {hero} build",
+    "detailTitleByAuthor": "{build} · {hero} build by {author}",
+    "detailDescription": "{build}, a {hero} build for Deadlock: measured win rate, item timing, item flow and ability order.",
+    "detailDescriptionByAuthor": "{build}, a {hero} build by {author} for Deadlock: measured win rate, item timing, item flow and ability order.",
+    "untitledBuild": "Untitled build #{id}"
   },
   "list": {
     "eyebrow": "Builds",

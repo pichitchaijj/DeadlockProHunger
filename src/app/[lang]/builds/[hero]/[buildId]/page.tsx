@@ -3,7 +3,6 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import { notFound, redirect } from 'next/navigation'
 import { Link } from '@/i18n/navigation'
 import { OG_LOCALE, type Locale } from '@/i18n/config'
-import { pageAlternates } from '@/i18n/seo'
 import { localePath } from '@/i18n/server'
 import type { ReactNode } from 'react'
 import { ScopeLine } from '@/components/data/ScopeLine'
@@ -18,7 +17,8 @@ import { cx } from '@/lib/cx'
 import { formatDuration, formatInteger, formatPercent, formatPointDelta } from '@/lib/format'
 import { BuildLabels, buildLabelText, PatchNote, patchLabels } from '@/features/builds/components/BuildListCard'
 import { AbilityPlanGrid, FlowView, ItemRow, PerformanceCompare, PhaseColumns, TimingTable } from '@/features/builds/components/detail'
-import { getBuildDetail } from '@/features/builds/loaders'
+import { buildLoadStatus, loadBuildDetail } from '@/features/builds/loaders'
+import { buildIndexing, buildMetaText, type BuildMetaTranslate } from '@/features/builds/seo'
 import type { BuildFact } from '@/features/builds/model'
 import { buildDetailHref, buildsHref, DEFAULT_BUILDS_QUERY, parseBuildsQuery } from '@/features/builds/query'
 import { AbilitySequence, Panel, type AbilityLabels } from '@/features/hero/components/parts'
@@ -26,23 +26,32 @@ import { ABILITY_PREFIX } from '@/features/hero/model'
 import { rankBandOptions } from '@/features/meta/rankFilter'
 import { resolveScope } from '@/features/meta/scope'
 import { DataNotice } from '@/components/data/DataState'
-import { attempt } from '@/lib/deadlock/errors'
 import { getScopeWording } from '@/components/data/scopeWording'
 
 type Params = Promise<{ hero: string; buildId: string }>
 type SearchParams = Promise<Record<string, string | string[] | undefined>>
 
-/** Title from the catalog; the hero name in the description comes from the URL slug (no extra fetch), as on Hero detail. */
-export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const { hero, buildId } = await params
-  const name = hero
-    .split('-')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ')
-  const [t, locale] = await Promise.all([getTranslations('builds.meta'), getLocale()])
-  const title = t('detailTitle')
-  const description = t('detailDescription', { hero: name })
-  return { title, description, alternates: pageAlternates(`/builds/${hero}/${buildId}`, locale), openGraph: { title, description, locale: OG_LOCALE[locale], type: 'website' } }
+/**
+ * Real build and hero names from the shared, request-cached load (no extra fetch): "{build} · {hero} build"
+ * (+ author when known). Indexable, with canonical and hreflang, only when the build page renders.
+ */
+export async function generateMetadata({ params, searchParams }: { params: Params; searchParams: SearchParams }): Promise<Metadata> {
+  const { hero, buildId: rawId } = await params
+  const query = parseBuildsQuery(await searchParams)
+  const buildId = Number(rawId)
+  const [t, detailT, locale] = await Promise.all([getTranslations('builds.meta'), getTranslations('builds.detail'), getLocale()])
+  const load = Number.isInteger(buildId) && buildId > 0 ? await loadBuildDetail(hero, buildId, query.window, query.rank) : null
+  const data = load?.ok && load.value?.kind === 'build' ? load.value : null
+  if (!data) return { title: detailT('fallbackTitle', { id: rawId }), ...buildIndexing(null, locale, load ? buildLoadStatus(load) : 'missing') }
+
+  const tr: BuildMetaTranslate = (key, values) => t(key as 'detailTitle', values)
+  const { title, description } = buildMetaText(tr, { buildId: data.build.id, name: data.build.name, hero: data.hero.name, author: data.build.authorName })
+  return {
+    title,
+    description,
+    ...buildIndexing(`/builds/${data.hero.slug}/${data.build.id}`, locale, 'ok'),
+    openGraph: { title, description, locale: OG_LOCALE[locale], type: 'website' },
+  }
 }
 
 const WINDOWS = ['patch', '7d', '30d'] as const
@@ -85,7 +94,7 @@ export default async function BuildDetailPage({ params, searchParams }: { params
   if (!Number.isInteger(buildId) || buildId <= 0) notFound()
 
   const [detail, scope, t, why, parts, cards, common, locale] = await Promise.all([
-    attempt('[build] detail failed', getBuildDetail(heroSlug, buildId, query)),
+    loadBuildDetail(heroSlug, buildId, query.window, query.rank),
     resolveScope({ window: query.window, rank: query.rank, mode: 'all' }).catch(() => null),
     getTranslations('builds'),
     getTranslations('builds.why'),

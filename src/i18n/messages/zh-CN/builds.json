@@ -2,8 +2,11 @@
   "meta": {
     "listTitle": "出装",
     "listDescription": "附实测胜率的 Deadlock 出装：版本出装、顶尖段位玩家的出装和社区热门出装。",
-    "detailTitle": "出装",
-    "detailDescription": "Deadlock 的 {hero} 出装：实测胜率、物品购买时间、购买顺序和技能顺序。"
+    "detailTitle": "{build} · {hero} 出装",
+    "detailTitleByAuthor": "{build} · {hero} 出装（作者 {author}）",
+    "detailDescription": "{build}：Deadlock 的 {hero} 出装。实测胜率、物品购买时间、购买顺序和技能顺序。",
+    "detailDescriptionByAuthor": "{build}：{author} 的 Deadlock {hero} 出装。实测胜率、物品购买时间、购买顺序和技能顺序。",
+    "untitledBuild": "未命名出装 #{id}"
   },
   "list": {
     "eyebrow": "出装",

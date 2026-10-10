@@ -2,8 +2,11 @@
   "meta": {
     "listTitle": "ビルド",
     "listDescription": "実測の勝率つき Deadlock ビルド：メタビルド、上位ランクのプレイヤーによるビルド、コミュニティの人気ビルド。",
-    "detailTitle": "ビルド",
-    "detailDescription": "Deadlock の {hero} ビルド：実測の勝率、アイテムの購入タイミング、購入の流れ、アビリティ順。"
+    "detailTitle": "{build} · {hero} ビルド",
+    "detailTitleByAuthor": "{build} · {hero} ビルド（作成：{author}）",
+    "detailDescription": "{build}：Deadlock の {hero} ビルド。実測の勝率、アイテムの購入タイミング、購入の流れ、アビリティ順。",
+    "detailDescriptionByAuthor": "{build}：{author} による Deadlock の {hero} ビルド。実測の勝率、アイテムの購入タイミング、購入の流れ、アビリティ順。",
+    "untitledBuild": "無題のビルド #{id}"
   },
   "list": {
     "eyebrow": "ビルド",

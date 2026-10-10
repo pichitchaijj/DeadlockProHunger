@@ -1,5 +1,6 @@
 import 'server-only'
-import { DataError } from '@/lib/deadlock/errors'
+import { cache } from 'react'
+import { attempt, DataError } from '@/lib/deadlock/errors'
 import type { StatScope } from '@/lib/analytics/scope'
 import { getActiveHeroes } from '@/lib/deadlock/endpoints'
 import { rankFromBadge, type RankDisplay } from '@/lib/deadlock/rankAssets'
@@ -25,6 +26,7 @@ import {
   type PatchStatus,
 } from './model'
 import { buildDetailHref, type BuildsQuery } from './query'
+import { UNTITLED_BUILD, type BuildLoadStatus } from './seo'
 import { heroIconUrl } from '@/lib/deadlock/heroImages'
 
 /** Lowest rank tier counted as "pro" (Ascendant); the Builds page names this tier and the next from the rank feed. */
@@ -202,7 +204,7 @@ export async function getBuildDetail(heroSlug: string, buildId: number, query: P
     hero,
     build: {
       id: buildId,
-      name: hb.name.trim() || 'Untitled build',
+      name: hb.name.trim() || UNTITLED_BUILD,
       description: hb.description?.trim() || null,
       version: hb.version ?? null,
       updatedAt,
@@ -237,4 +239,22 @@ export async function getBuildDetail(heroSlug: string, buildId: number, query: P
     /** The selected window and rank band (the page words it). */
     scopeRef: c.scope.selected,
   }
+}
+
+/**
+ * getBuildDetail once per request (React cache; primitive arguments, since objects key by identity), with
+ * the failure kept as a value: the page and its metadata (which decides indexing, features/builds/seo.ts)
+ * share one load and one outcome.
+ */
+export const loadBuildDetail = cache((heroSlug: string, buildId: number, window: BuildsQuery['window'], rank: BuildsQuery['rank']) =>
+  attempt('[build] detail failed', getBuildDetail(heroSlug, buildId, { window, rank })),
+)
+
+export type BuildDetailLoad = Awaited<ReturnType<typeof loadBuildDetail>>
+
+/** The outcome of a load: null = confirmed missing (no such build, or its hero isn't active); thrown = failed. */
+export function buildLoadStatus(load: BuildDetailLoad): BuildLoadStatus {
+  if (!load.ok) return 'failed'
+  if (load.value === null) return 'missing'
+  return load.value.kind === 'redirect' ? 'redirect' : 'ok'
 }
