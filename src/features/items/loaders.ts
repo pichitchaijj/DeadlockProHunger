@@ -1,6 +1,7 @@
 import 'server-only'
 import { cache } from 'react'
 import type { StatScope } from '@/lib/analytics/scope'
+import { attempt } from '@/lib/deadlock/errors'
 import { getActiveHeroes, getHeroTotals } from '@/lib/deadlock/endpoints'
 import { getShopItems } from '@/lib/deadlock/heroEndpoints'
 import { heroIconUrl } from '@/lib/deadlock/heroImages'
@@ -8,7 +9,8 @@ import { getItemPhases, getItemStatsByHero, getItemStatsByMinute, getItemTotals 
 import { slugify } from '@/features/meta/model'
 import { resolveScope, type ResolvedScope } from '@/features/meta/scope'
 import { heroBreakdown, itemRows, minuteSeries, purchasePhases, standoutPhase, typicalWindow, type HeroRef, type ItemRef, type ItemRow } from './model'
-import type { ItemScopeQuery } from './query'
+import { DEFAULT_ITEMS_QUERY, type ItemScopeQuery } from './query'
+import { indexableItems, type ItemsWithStats } from './seo'
 
 /*
  * Item pages. No data source of their own: the shared scope (features/meta/scope), the cached shop list,
@@ -48,6 +50,9 @@ export async function findItem(slug: string): Promise<ItemRef | null> {
   return null
 }
 
+/** findItem once per request for the item page and its metadata, with the failure kept as a value (logged once). */
+export const loadItem = cache((slug: string) => attempt('[item] catalog failed', findItem(slug)))
+
 export type ItemContext = {
   scope: ResolvedScope
   /** Null = every hero's players. */
@@ -82,6 +87,34 @@ export const itemTotals = cache(async (ctx: ItemContext): Promise<ItemRow[]> => 
   const [totals, items, denominator] = await Promise.all([getItemTotals(ctx.scope.statsQuery, ctx.hero?.id), itemCatalog(), playerMatches(ctx)])
   return itemRows(totals, items, denominator)
 })
+
+/**
+ * Ids of the items with Normal-mode stats in the Items list's default scope: exactly the list's rows (the same
+ * context and itemTotals, so the same cached calls). Null when that load fails, which never means "no stats",
+ * and when it returns no items at all (a data gap, not an answer: every real item has thousands of purchases).
+ */
+export const itemsWithStats = cache(async (): Promise<ItemsWithStats> => {
+  const load = await attempt(
+    '[items] default-scope stats failed',
+    (async () => {
+      const ctx = await getItemContext(DEFAULT_ITEMS_QUERY)
+      if (ctx === 'unknown-hero') throw new Error('The default item scope has no hero filter')
+      return itemTotals(ctx)
+    })(),
+  )
+  return load.ok && load.value.length > 0 ? new Set(load.value.map((r) => r.id)) : null
+})
+
+/**
+ * Item slugs for the sitemap, by name: items with stats, as on the Items list (features/items/seo.ts). The
+ * whole catalog when the stats load fails; none when the catalog itself fails.
+ */
+export async function sitemapItemSlugs(): Promise<string[]> {
+  const [catalog, withStats] = await Promise.all([itemCatalog().catch(() => null), itemsWithStats()])
+  if (!catalog) return []
+  const byName = [...catalog.values()].sort((a, b) => a.name.localeCompare(b.name))
+  return indexableItems(byName, withStats).map((item) => item.slug)
+}
 
 /** Headline numbers for one item; null when it has fewer purchases than the source's minimum in scope. */
 export async function getItemPerformance(item: ItemRef, ctx: ItemContext) {

@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { OG_LOCALE } from '@/i18n/config'
-import { pageAlternates } from '@/i18n/seo'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { DataNotice } from '@/components/data/DataState'
@@ -21,7 +20,8 @@ import { formatInteger } from '@/lib/format'
 import { HeroesSkeleton, ItemHeroes, ItemPerformance, NoStandout, PerformanceSkeleton, PurchasePhases, TimingSkeleton } from '@/features/items/components/detail'
 import { ItemFilters } from '@/features/items/components/ItemFilters'
 import { PurchaseTimingChart } from '@/features/items/components/PurchaseTimingChart'
-import { findItem, getItemContext, getItemHeroes, getItemPerformance, getItemTiming, heroOptions, type ItemContext } from '@/features/items/loaders'
+import { getItemContext, getItemHeroes, getItemPerformance, getItemTiming, heroOptions, itemsWithStats, loadItem, type ItemContext } from '@/features/items/loaders'
+import { itemIndexing, itemLoadStatus } from '@/features/items/seo'
 import { purchaseTimingInsight, type ItemRef } from '@/features/items/model'
 import { capitalize } from '@/features/meta/model'
 import { itemHref, itemsHref, parseItemScope, DEFAULT_ITEMS_QUERY, type ItemScopeQuery } from '@/features/items/query'
@@ -33,20 +33,26 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>
 /** How many heroes the "who buys it" list shows. */
 const HERO_LIMIT = 9
 
-/** The item name is game data (from the catalog); only the surrounding words are translated. */
+/**
+ * The item name is game data (from the catalog); only the surrounding words are translated. Indexable, with
+ * canonical and hreflang, unless the item is confirmed without Normal-mode stats, unknown, or the catalog
+ * failed (features/items/seo.ts). Loads are shared with the page and the Items list (request-cached).
+ */
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const [item, t, locale] = await Promise.all([findItem((await params).item).catch(() => null), getTranslations('items.meta'), getLocale()])
-  if (!item) return { title: t('fallbackTitle') }
+  const [itemLoad, withStats, t, locale] = await Promise.all([loadItem((await params).item), itemsWithStats(), getTranslations('items.meta'), getLocale()])
+  const item = itemLoad.ok ? itemLoad.value : null
+  const status = itemLoadStatus(itemLoad.ok ? { ok: true, item } : { ok: false }, withStats)
+  if (!item) return { title: t('fallbackTitle'), ...itemIndexing(null, locale, status) }
   const title = t('detailTitle', { item: item.name })
   const description = t('detailDescription', { item: item.name })
-  return { title, description, alternates: pageAlternates(`/items/${item.slug}`, locale), openGraph: { title, description, locale: OG_LOCALE[locale], type: 'website' } }
+  return { title, description, ...itemIndexing(`/items/${item.slug}`, locale, status), openGraph: { title, description, locale: OG_LOCALE[locale], type: 'website' } }
 }
 
 export default async function ItemPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   const [{ item: slug }, raw] = await Promise.all([params, searchParams])
   const query = parseItemScope(raw)
   const [itemLoad, t, builds, common, locale] = await Promise.all([
-    attempt('[item] catalog failed', findItem(slug)),
+    loadItem(slug),
     getTranslations('items'),
     getTranslations('builds.list'),
     getTranslations('common'),
