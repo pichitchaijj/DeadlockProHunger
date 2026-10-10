@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { getLocale, getTranslations } from 'next-intl/server'
-import { SiteDocument, siteMetadata, siteViewport } from '@/components/layout/SiteDocument'
+import { getSiteMetadata, SiteDocument, siteViewport } from '@/components/layout/SiteDocument'
 import NotFound from './[lang]/not-found'
 import './globals.css'
 
@@ -15,8 +15,8 @@ import './globals.css'
 export const viewport: Viewport = siteViewport
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations('notFound')
-  return { ...siteMetadata, title: `Deadlockprohunger — ${t('heading')}` }
+  const [site, t] = await Promise.all([getSiteMetadata(), getTranslations('notFound')])
+  return { ...site, title: `Deadlockprohunger — ${t('heading')}` }
 }
 
 export default async function GlobalNotFound() {

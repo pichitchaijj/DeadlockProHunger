@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { localePath } from '@/i18n/server'
 import { OG_LOCALE, type Locale } from '@/i18n/config'
+import { pageAlternates } from '@/i18n/seo'
 import { DataNotice } from '@/components/data/DataState'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { Reveal } from '@/components/motion/Reveal'
@@ -25,6 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t('listTitle'),
     description: t('listDescription'),
+    alternates: pageAlternates('/patch', locale),
     openGraph: { title: t('listTitle'), description: t('listDescription'), locale: OG_LOCALE[locale], type: 'website' },
   }
 }

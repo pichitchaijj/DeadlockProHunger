@@ -22,6 +22,7 @@ import { HomeSection } from '@/features/home/components/HomeSection'
 import { PatchSnapshotCard } from '@/features/home/components/PatchSnapshotCard'
 import { QuickEntry } from '@/features/home/components/QuickEntry'
 import { getMetaWhyWording } from '@/features/meta/wording'
+import { pageAlternates } from '@/i18n/seo'
 
 /** Re-render at most every 5 minutes; each section's data has its own server cache and freshness budget. */
 export const revalidate = 300
@@ -38,6 +39,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: { absolute: t('title') },
     description: t('description'),
+    alternates: pageAlternates('/', locale),
     openGraph: { title: t('title'), description: t('description'), siteName: 'Deadlockprohunger', locale: OG_LOCALE[locale], type: 'website' },
   }
 }

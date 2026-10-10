@@ -2,10 +2,10 @@ import type { Metadata, Viewport } from 'next'
 import { notFound } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { isLocale, locales } from '@/i18n/config'
-import { SiteDocument, siteMetadata, siteViewport } from '@/components/layout/SiteDocument'
+import { getSiteMetadata, SiteDocument, siteViewport } from '@/components/layout/SiteDocument'
 import '../globals.css'
 
-export const metadata: Metadata = siteMetadata
+export const generateMetadata = (): Promise<Metadata> => getSiteMetadata()
 export const viewport: Viewport = siteViewport
 
 /** One static shell per locale; pages that are static today (Home) stay static for each locale. */

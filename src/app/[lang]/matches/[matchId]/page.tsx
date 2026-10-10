@@ -21,6 +21,7 @@ import { getMatchPage } from '@/features/match/loaders'
 import { eventText } from '@/features/match/text'
 import { DataNotice } from '@/components/data/DataState'
 import { OG_LOCALE } from '@/i18n/config'
+import { pageAlternates } from '@/i18n/seo'
 import { WithClientMessages } from '@/i18n/WithClientMessages'
 import { classifyError } from '@/lib/deadlock/errors'
 
@@ -31,7 +32,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const [t, locale] = await Promise.all([getTranslations('matches.meta'), getLocale()])
   const title = t('detailTitle', { id: matchId })
   const description = t('detailDescription', { id: matchId })
-  return { title, description, openGraph: { title, description, locale: OG_LOCALE[locale], type: 'website' } }
+  return { title, description, alternates: pageAlternates(`/matches/${matchId}`, locale), openGraph: { title, description, locale: OG_LOCALE[locale], type: 'website' } }
 }
 
 const SECTIONS = ['story', 'teams', 'players', 'lineup', 'timeline', 'builds', 'performance', 'graphs', 'events', 'advanced'] as const

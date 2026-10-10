@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getLocale, getTranslations } from 'next-intl/server'
 import type { ReactNode } from 'react'
 import { OG_LOCALE } from '@/i18n/config'
+import { pageAlternates } from '@/i18n/seo'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { ButtonLink } from '@/components/ui/Button'
 import { Filter } from '@/components/ui/Filter'
@@ -22,6 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t('title'),
     description: t('description'),
+    alternates: pageAlternates('/draft', locale),
     openGraph: { title: t('title'), description: t('description'), locale: OG_LOCALE[locale], type: 'website' },
   }
 }

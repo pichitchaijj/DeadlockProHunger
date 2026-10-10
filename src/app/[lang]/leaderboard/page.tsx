@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { OG_LOCALE, type Locale } from '@/i18n/config'
+import { pageAlternates } from '@/i18n/seo'
 import { Suspense } from 'react'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { ButtonLink } from '@/components/ui/Button'
@@ -29,6 +30,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t('title'),
     description: t('description'),
+    alternates: pageAlternates('/leaderboard', locale),
     openGraph: { title: t('title'), description: t('description'), locale: OG_LOCALE[locale], type: 'website' },
   }
 }

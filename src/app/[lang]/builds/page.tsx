@@ -22,6 +22,7 @@ import { rankBandOptions } from '@/features/meta/rankFilter'
 import { resolveScope } from '@/features/meta/scope'
 import { DataNotice } from '@/components/data/DataState'
 import { OG_LOCALE } from '@/i18n/config'
+import { pageAlternates } from '@/i18n/seo'
 import { attempt } from '@/lib/deadlock/errors'
 import { getScopeWording } from '@/components/data/scopeWording'
 
@@ -30,6 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t('listTitle'),
     description: t('listDescription'),
+    alternates: pageAlternates('/builds', locale),
     openGraph: { title: t('listTitle'), description: t('listDescription'), locale: OG_LOCALE[locale], type: 'website' },
   }
 }

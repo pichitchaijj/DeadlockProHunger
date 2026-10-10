@@ -14,6 +14,7 @@ import { heroHref, parseHeroQuery, type HeroQuery } from '@/features/hero/query'
 import { DataNotice } from '@/components/data/DataState'
 import { attempt, classifyError } from '@/lib/deadlock/errors'
 import { OG_LOCALE } from '@/i18n/config'
+import { pageAlternates } from '@/i18n/seo'
 
 type Params = Promise<{ hero: string }>
 type SearchParams = Promise<Record<string, string | string[] | undefined>>
@@ -26,7 +27,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     .join(' ')
   const [t, locale] = await Promise.all([getTranslations('heroes.meta'), getLocale()])
   const description = t('detailDescription', { hero: name })
-  return { title: name, description, openGraph: { title: name, description, locale: OG_LOCALE[locale], type: 'website' } }
+  return { title: name, description, alternates: pageAlternates(`/heroes/${hero}`, locale), openGraph: { title: name, description, locale: OG_LOCALE[locale], type: 'website' } }
 }
 
 export default async function HeroPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {

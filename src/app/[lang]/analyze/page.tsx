@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import { useLocale, useTranslations } from 'next-intl'
 import { Suspense } from 'react'
 import { OG_LOCALE } from '@/i18n/config'
+import { pageAlternates } from '@/i18n/seo'
 import { WinRate } from '@/components/cards/WinRate'
 import { ConfidenceBadge } from '@/components/data/ConfidenceBadge'
 import { DataNotice } from '@/components/data/DataState'
@@ -28,6 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t('title'),
     description: t('description'),
+    alternates: pageAlternates('/analyze', locale),
     openGraph: { title: t('title'), description: t('description'), locale: OG_LOCALE[locale], type: 'website' },
   }
 }

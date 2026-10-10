@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from 'next'
 import { Barlow_Condensed, Inter } from 'next/font/google'
+import { getTranslations } from 'next-intl/server'
 import type { ReactNode } from 'react'
 import type { Locale } from '@/i18n/config'
+import { siteUrl } from '@/i18n/seo'
 import { IntlClientProvider } from '@/i18n/IntlClientProvider'
 import { clientMessages, loadMessages } from '@/i18n/messages'
 import { CommandPaletteProvider } from './command/CommandPaletteProvider'
@@ -42,13 +44,18 @@ const ui = Inter({
   display: 'swap',
 })
 
-export const siteMetadata: Metadata = {
-  title: {
-    default: 'Deadlockprohunger — Deadlock analytics & strategy',
-    template: 'Deadlockprohunger — %s',
-  },
-  description:
-    'Unofficial community analytics and strategy for Deadlock. Data, insight, decision, action.',
+/**
+ * Site-wide metadata defaults in the active locale (the Home catalog's title and description), and the
+ * production origin as `metadataBase` when SITE_URL is set (src/i18n/seo.ts).
+ */
+export async function getSiteMetadata(): Promise<Metadata> {
+  const t = await getTranslations('home.meta')
+  const base = siteUrl()
+  return {
+    ...(base && { metadataBase: base }),
+    title: { default: t('title'), template: 'Deadlockprohunger — %s' },
+    description: t('description'),
+  }
 }
 
 export const siteViewport: Viewport = {

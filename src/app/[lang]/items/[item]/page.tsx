@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { OG_LOCALE } from '@/i18n/config'
+import { pageAlternates } from '@/i18n/seo'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { DataNotice } from '@/components/data/DataState'
@@ -38,7 +39,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   if (!item) return { title: t('fallbackTitle') }
   const title = t('detailTitle', { item: item.name })
   const description = t('detailDescription', { item: item.name })
-  return { title, description, openGraph: { title, description, locale: OG_LOCALE[locale], type: 'website' } }
+  return { title, description, alternates: pageAlternates(`/items/${item.slug}`, locale), openGraph: { title, description, locale: OG_LOCALE[locale], type: 'website' } }
 }
 
 export default async function ItemPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {

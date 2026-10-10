@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { Suspense } from 'react'
 import { OG_LOCALE, type Locale } from '@/i18n/config'
+import { pageAlternates } from '@/i18n/seo'
 import { DataNotice } from '@/components/data/DataState'
 import { ScopeLine } from '@/components/data/ScopeLine'
 import { PageContainer } from '@/components/layout/PageContainer'
@@ -28,6 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t('compareTitle'),
     description: t('compareDescription'),
+    alternates: pageAlternates('/patch/compare', locale),
     openGraph: { title: t('compareTitle'), description: t('compareDescription'), locale: OG_LOCALE[locale], type: 'website' },
   }
 }

@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import { notFound, redirect } from 'next/navigation'
 import { Link } from '@/i18n/navigation'
 import { OG_LOCALE, type Locale } from '@/i18n/config'
+import { pageAlternates } from '@/i18n/seo'
 import { localePath } from '@/i18n/server'
 import type { ReactNode } from 'react'
 import { ScopeLine } from '@/components/data/ScopeLine'
@@ -33,7 +34,7 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>
 
 /** Title from the catalog; the hero name in the description comes from the URL slug (no extra fetch), as on Hero detail. */
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const { hero } = await params
+  const { hero, buildId } = await params
   const name = hero
     .split('-')
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
@@ -41,7 +42,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const [t, locale] = await Promise.all([getTranslations('builds.meta'), getLocale()])
   const title = t('detailTitle')
   const description = t('detailDescription', { hero: name })
-  return { title, description, openGraph: { title, description, locale: OG_LOCALE[locale], type: 'website' } }
+  return { title, description, alternates: pageAlternates(`/builds/${hero}/${buildId}`, locale), openGraph: { title, description, locale: OG_LOCALE[locale], type: 'website' } }
 }
 
 const WINDOWS = ['patch', '7d', '30d'] as const

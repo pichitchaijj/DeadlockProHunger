@@ -13,6 +13,7 @@ import { ChevronDownIcon } from '@/components/ui/icons'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { EmptyState } from '@/components/ui/States'
 import { OG_LOCALE, type Locale } from '@/i18n/config'
+import { pageAlternates } from '@/i18n/seo'
 import { SAMPLE_TIER_THRESHOLDS } from '@/lib/analytics/sampleTier'
 import { TIER_ORDER } from '@/lib/analytics/tiers'
 import { formatInteger, formatPercent } from '@/lib/format'
@@ -31,6 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t('title'),
     description: t('description'),
+    alternates: pageAlternates('/meta', locale),
     openGraph: { title: t('title'), description: t('description'), locale: OG_LOCALE[locale], type: 'website' },
   }
 }

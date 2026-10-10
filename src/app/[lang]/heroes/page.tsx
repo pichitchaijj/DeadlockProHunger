@@ -11,6 +11,7 @@ import { heroesHref, parseScope, parseView } from '@/features/heroes/query'
 import { DataNotice } from '@/components/data/DataState'
 import { WithClientMessages } from '@/i18n/WithClientMessages'
 import { OG_LOCALE } from '@/i18n/config'
+import { pageAlternates } from '@/i18n/seo'
 import { getScopeWording } from '@/components/data/scopeWording'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -18,6 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t('listTitle'),
     description: t('listDescription'),
+    alternates: pageAlternates('/heroes', locale),
     openGraph: { title: t('listTitle'), description: t('listDescription'), locale: OG_LOCALE[locale], type: 'website' },
   }
 }
