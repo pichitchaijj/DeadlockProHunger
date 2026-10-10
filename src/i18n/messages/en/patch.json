@@ -1,0 +1,211 @@
+{
+  "meta": {
+    "listTitle": "Patch",
+    "listDescription": "Deadlock patches: what changed in the game data, the official notes, and hero and item statistics before and after each patch.",
+    "detailTitle": "{title} · Patch",
+    "detailDescription": "What changed in the {date} Deadlock patch, and hero and item statistics before and after it.",
+    "compareTitle": "Compare patches",
+    "compareDescription": "Two Deadlock patches side by side: hero and item win rates in each patch’s first days, and every game-data change between them."
+  },
+  "untitled": "{date} update",
+  "option": "{id} · {title}",
+  "links": {
+    "forum": "Official changelog (forum)",
+    "steam": "Steam news",
+    "external": "{label} ↗"
+  },
+  "list": {
+    "eyebrow": "Patch",
+    "title": "Patch notes & what changed",
+    "description": "Every patch with its game-data changes, official notes, and what hero and item statistics did around it.",
+    "emptyTitle": "No patches found",
+    "emptyDescription": "The patch feed returned no dated patches.",
+    "latest": "Latest patch · {date}",
+    "whatChanged": "What changed",
+    "compareWithPrevious": "Compare with previous patch",
+    "compareTitle": "Compare two patches",
+    "patchA": "Patch A (older)",
+    "patchB": "Patch B (newer)",
+    "allTitle": "All patches",
+    "notesIncluded": "Notes included",
+    "notesLinked": "Link to notes",
+    "footnote": "Patches come from the official changelog and Steam update posts in the data feed ({count, plural, one {# patch} other {# patches}}). Every patch page compares the game data of the builds around its date.",
+    "countsUnknown": "Open for game-data changes and statistics.",
+    "counts": "{heroes, plural, one {# hero} other {# heroes}} · {abilities, plural, one {# ability} other {# abilities}} · {items, plural, one {# item} other {# items}} (official notes)"
+  },
+  "detail": {
+    "nav": "Patches",
+    "all": "← All patches",
+    "older": "‹ Older",
+    "newer": "Newer ›",
+    "eyebrow": "Patch · {date}",
+    "description": "What the game data changed, the official notes, and what hero and item statistics did around the patch.",
+    "picker": "Patch",
+    "unknownHero": "Unknown hero",
+    "unknownItem": "Unknown item",
+    "changed": {
+      "eyebrow": "Layer 1",
+      "title": "What changed",
+      "description": "Values come from the game files of the builds before and after the patch day; the official notes follow."
+    },
+    "impact": {
+      "eyebrow": "Layer 2",
+      "title": "Around the patch",
+      "description": "Statistics observed before and after the patch day. They show timing, not cause: player mix, other heroes and other changes move win rates too."
+    },
+    "loadingChanges": "Loading changes",
+    "loadingStats": "Loading statistics",
+    "how": {
+      "summary": "How this page works",
+      "gameData": "<b>Game data</b>: every value is read from the game files the data source parses per build. The “before” build is the last one before the patch day; the “after” build is the last one of the patch day (or before the next patch).",
+      "notes": "<b>Official notes</b>: shown when the feed carries them (Steam “Minor Update” posts). A before → after appears only when a line states “from X to Y”.",
+      "direction": "<b>Buff / nerf</b>: {rule}",
+      "stats": "<b>Before / after statistics</b>: the 7 days before the patch day (not before the previous patch) vs up to 7 days from it (not past the next patch). “Clear change”: {rule}"
+    }
+  },
+  "changes": {
+    "noDataTitle": "No change data for this patch",
+    "noDataDescription": "No game build is dated on this patch day, and the feed has no official notes for it. Use the official changelog link above.",
+    "build": "Game data: build {from} ({fromTime} UTC) → build {to} ({toTime} UTC).",
+    "noBuild": "No game build is dated on this patch day, so values can’t be compared from game data. The official notes below are the source.",
+    "heroes": "Heroes",
+    "noHeroes": "No hero values changed.",
+    "noHeroesFor": "No hero values changed for {hero}.",
+    "items": "Most changed items",
+    "noItems": "No shop item values changed.",
+    "noItemsFor": "No shop item values changed for {item}.",
+    "officialNotes": "Official notes",
+    "showNotes": "Show the official notes ({count, plural, one {# line} other {# lines}})",
+    "noNoteMatch": "No note lines match the hero or item filter.",
+    "notesLinkOnly": "The data feed only links to the notes for this patch. Use the official changelog link above.",
+    "summary": {
+      "heroes": "Heroes changed",
+      "abilities": "Abilities changed",
+      "items": "Items changed",
+      "values": "value changes · {source, select, notes {from the official notes} other {from game data}}"
+    },
+    "baseStats": "Base stats",
+    "gun": "Gun",
+    "unnamedHero": "Hero {id}",
+    "newHero": "New playable hero in this build.",
+    "removedHero": "No longer playable in this build.",
+    "itemTier": "Tier {tier}",
+    "winRate": "Win rate (before → after)",
+    "buyRate": "Buy rate (before → after)",
+    "notesGeneral": "Changes",
+    "broad": {
+      "summary": "Broad changes ({count}): the same value change on many entries",
+      "explanation": "A global rule or a change in how the game files store a value. Shown once here instead of on every ability or item.",
+      "entries": "on {count, plural, one {# entry} other {# entries}}"
+    }
+  },
+  "labels": {
+    "cost": "Cost",
+    "bullet_damage": "Bullet damage",
+    "bullets": "Bullets per shot",
+    "cycle_time": "Fire interval",
+    "clip_size": "Magazine size",
+    "reload_duration": "Reload time",
+    "damage_falloff_start_range": "Falloff start range",
+    "damage_falloff_end_range": "Falloff end range",
+    "crit_bonus_start": "Headshot multiplier"
+  },
+  "values": {
+    "souls": "{value} souls"
+  },
+  "impact": {
+    "range": "{from}–{to}",
+    "before": "Before ({range})",
+    "after": "After ({range})",
+    "period": "{id} ({range})",
+    "versus": "{a} vs {b}",
+    "noAfterTitle": "No days after the patch yet",
+    "noAfterDescription": "Statistics after the patch start with the patch day. Check back tomorrow.",
+    "early": "Only {count, plural, one {# day} other {# days}} after the patch so far (the latest day is incomplete). Treat changes as early signals.",
+    "mostImpacted": "Most impacted heroes",
+    "mostImpactedNote": "Heroes whose win rate moved beyond normal variation. {rule}",
+    "changedHeroes": "Heroes changed in this patch",
+    "heroCaption": "Hero win and pick rates before and after the patch",
+    "noChangedHeroes": "No hero values changed in this patch.",
+    "noGameData": "Game data for this patch isn’t available, so changed heroes can’t be marked.",
+    "allHeroes": "All heroes ({count})",
+    "allCaption": "All heroes before and after the patch",
+    "changedItems": "Items changed in this patch",
+    "itemCaption": "Item win and buy rates before and after the patch",
+    "itemsUnavailable": "Item statistics are unavailable right now.",
+    "itemLowPurchases": "Not enough purchases of this item around the patch.",
+    "noChangedItems": "No changed shop item has enough purchases around the patch.",
+    "up": "Win rate up",
+    "down": "Win rate down",
+    "upEmpty": "No hero’s win rate rose beyond normal variation.",
+    "downEmpty": "No hero’s win rate fell beyond normal variation.",
+    "footnote": "{a} → {b}. Changed-in-patch markers come from the game data.",
+    "table": {
+      "name": "Name",
+      "inPatch": "In patch",
+      "winRate": "Win rate",
+      "change": "Change",
+      "clear": "Clear change?",
+      "matchesAfter": "Matches (after)",
+      "matchesAfterCount": "{count, plural, one {# match after} other {# matches after}}"
+    }
+  },
+  "compare": {
+    "title": "Compare patches",
+    "description": "Hero and item statistics in each patch’s first days, and every game-data change between the two.",
+    "loading": "Loading the comparison",
+    "patchA": "Patch A",
+    "patchB": "Patch B",
+    "pickTwoTitle": "Pick two patches",
+    "pickTwoDescription": "One of the selected patches isn’t in the patch feed.",
+    "latestTwo": "Latest two patches",
+    "sameTitle": "Same patch twice",
+    "sameDescription": "Pick two different patches to compare.",
+    "heroesTitle": "Hero win rate changes",
+    "heroesDescription": "{a} → {b}. Observed differences between the two periods, not effects of the patches.",
+    "early": "The newer patch has only {count, plural, one {# day} other {# days}} of data so far. Treat changes as early signals.",
+    "heroCaption": "Hero win and pick rates, {a} vs {b}",
+    "itemsTitle": "Item changes",
+    "itemsDescription": "Items changed in the game data between the two patches, plus any item whose win rate moved beyond normal variation.",
+    "itemCaption": "Item win and buy rates, {a} vs {b}",
+    "noItems": "No item changed or moved beyond normal variation in this scope.",
+    "dataTitle": "Game data between the patches",
+    "dataDescription": "Build {from} → build {to}: every value that differs, across all patches in between.",
+    "noBuilds": "No game builds are available to compare for these patches.",
+    "heroesCount": "Heroes ({count})",
+    "itemsCount": "Items ({count})",
+    "how": {
+      "summary": "How patches are compared",
+      "periods": "Each patch’s period runs from its patch day to the next patch, at most 7 days. Statistics compare the older patch’s period with the newer one’s.",
+      "clear": "“Clear change”: {rule}",
+      "data": "Game-data changes compare the build in effect after the older patch with the build in effect after the newer one, so they include every patch in between.",
+      "observed": "Differences between periods are observed, not explained: the player mix, the rest of the meta and events change too."
+    }
+  },
+  "filters": {
+    "rank": "Rank (match average, for statistics)",
+    "gameModeNote": "Normal (6v6). The statistics source covers Street Brawl separately; it isn’t shown here."
+  },
+  "marks": {
+    "buff": "Buff",
+    "nerf": "Nerf",
+    "changed": "Changed",
+    "mixed": "Mixed",
+    "new": "New",
+    "removed": "Removed"
+  },
+  "verdicts": {
+    "higher": "Higher",
+    "lower": "Lower",
+    "none": "No clear change",
+    "insufficient": "Not enough data"
+  },
+  "beforeAfter": {
+    "from": "from",
+    "to": "to"
+  },
+  "rules": {
+    "clear": "Both periods have 200+ matches, their 95% intervals don’t overlap, and the win rate moved at least 1 percentage point.",
+    "direction": "Buff / nerf follows a fixed rule on the property and its values: lower cooldowns, costs, delays and penalties count as buffs; higher damage, health, healing, duration, radius, range, speed, slows and resists count as buffs. Anything else, or a change to or from zero, is shown as “changed”."
+  }
+}

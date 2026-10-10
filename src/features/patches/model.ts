@@ -23,11 +23,15 @@ export type PatchSummary = {
   id: string
   /** Unix seconds, 00:00 UTC of the patch day. */
   day: number
-  title: string
+  /** The patch's name from the feed; null when the feed names none (worded at render as "{date} update"). */
+  title: string | null
   /** Official notes HTML (Steam "Minor Update" posts); null when the feed only links to them. */
   notesHtml: string | null
-  links: Array<{ label: string; href: string }>
+  /** Official changelog (forum) and Steam news links; `kind` is worded at render (patch.links). */
+  links: Array<{ kind: PatchLinkKind; href: string }>
 }
+
+export type PatchLinkKind = 'forum' | 'steam'
 
 const MINOR_UPDATE = /minor update\s*-\s*(\d{2}-\d{2}-\d{4})/i
 const isoDay = (day: number) => new Date(day * 1000).toISOString().slice(0, 10)
@@ -42,7 +46,7 @@ export function patchesFromFeed(feed: FeedEntry[]): PatchSummary[] {
   const byDay = new Map<number, PatchSummary>()
   const get = (day: number) => {
     let p = byDay.get(day)
-    if (!p) byDay.set(day, (p = { id: isoDay(day), day, title: `${isoDay(day)} update`, notesHtml: null, links: [] }))
+    if (!p) byDay.set(day, (p = { id: isoDay(day), day, title: null, notesHtml: null, links: [] }))
     return p
   }
   for (const e of feed) {
@@ -51,7 +55,7 @@ export function patchesFromFeed(feed: FeedEntry[]): PatchSummary[] {
     if (titled === null) continue
     const p = get(titled / 1000)
     if (minor && e.content) p.notesHtml = e.content
-    if (e.link) p.links.push({ label: e.source === 'forum' ? 'Official changelog (forum)' : 'Steam news', href: e.link })
+    if (e.link) p.links.push({ kind: e.source === 'forum' ? 'forum' : 'steam', href: e.link })
   }
   for (const e of feed) {
     if (e.source !== 'steam' || MINOR_UPDATE.test(e.title)) continue
@@ -59,7 +63,7 @@ export function patchesFromFeed(feed: FeedEntry[]): PatchSummary[] {
     const p = byDay.get(day)
     if (!p) continue
     p.title = e.title.trim()
-    if (e.link) p.links.push({ label: 'Steam news', href: e.link })
+    if (e.link) p.links.push({ kind: 'steam', href: e.link })
   }
   return [...byDay.values()].sort((a, b) => b.day - a.day)
 }
@@ -110,9 +114,8 @@ export function sumWindow(rows: DayRow[], w: Window): Map<number, { wins: number
   return out
 }
 
+/** Identifiers (not display text): worded at render (patch.verdicts). The rule is patch.rules.clear. */
 export type Verdict = 'higher' | 'lower' | 'no clear change' | 'not enough data'
-
-export const CLEAR_RULE = 'Both periods have 200+ matches, their 95% intervals don’t overlap, and the win rate moved at least 1 percentage point.'
 
 /** Same rule as the Recent shift insight: separated 95% intervals and a gap ≥ MIN_EFFECT. */
 export function verdict(before: Stat | null, after: Stat | null): Verdict {
@@ -185,14 +188,15 @@ export function mostImpacted<T extends Movement>(rows: T[], limit = 3): { up: T[
 
 // ── Changes, grouped for display ─────────────────────────────────────
 
-export type HeroChanges = { heroId: number; name: string; status: 'changed' | 'new' | 'removed'; direction: Direction | 'mixed'; parts: EntityChange[] }
+/** `name` is the game's hero name; null when the builds don't name the hero (worded at render). */
+export type HeroChanges = { heroId: number; name: string | null; status: 'changed' | 'new' | 'removed'; direction: Direction | 'mixed'; parts: EntityChange[] }
 
 /** Hero base stats, gun and abilities grouped per hero; shop items separately. */
 export function groupChanges(changes: EntityChange[], heroNames: Record<number, string>): { heroes: HeroChanges[]; items: EntityChange[] } {
   const heroes = new Map<number, HeroChanges>()
   for (const c of changes) {
     if (c.kind === 'item' || c.heroId === null) continue
-    const h = heroes.get(c.heroId) ?? { heroId: c.heroId, name: heroNames[c.heroId] ?? `Hero ${c.heroId}`, status: 'changed', direction: 'changed', parts: [] }
+    const h = heroes.get(c.heroId) ?? { heroId: c.heroId, name: heroNames[c.heroId] ?? null, status: 'changed', direction: 'changed', parts: [] }
     if (c.kind === 'hero' && c.status !== 'changed') h.status = c.status
     else h.parts.push(c)
     heroes.set(c.heroId, h)
@@ -203,7 +207,8 @@ export function groupChanges(changes: EntityChange[], heroNames: Record<number, 
     h.direction = combine(h.parts.map((p) => p.direction))
   }
   return {
-    heroes: [...heroes.values()].sort((a, b) => a.name.localeCompare(b.name)),
+    // Unnamed heroes sort as they always have ("Hero 12"); the name itself is worded at render.
+    heroes: [...heroes.values()].sort((a, b) => (a.name ?? `Hero ${a.heroId}`).localeCompare(b.name ?? `Hero ${b.heroId}`)),
     items: changes.filter((c) => c.kind === 'item').sort((a, b) => a.name.localeCompare(b.name)),
   }
 }

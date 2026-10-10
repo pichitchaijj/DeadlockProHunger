@@ -1,0 +1,211 @@
+{
+  "meta": {
+    "listTitle": "패치",
+    "listDescription": "Deadlock 패치: 게임 데이터에서 바뀐 점, 공식 패치 노트, 각 패치 전후의 영웅과 아이템 통계.",
+    "detailTitle": "{title} · 패치",
+    "detailDescription": "{date} Deadlock 패치에서 바뀐 점과 패치 전후의 영웅 및 아이템 통계.",
+    "compareTitle": "패치 비교",
+    "compareDescription": "두 Deadlock 패치를 나란히 비교: 각 패치 초기의 영웅과 아이템 승률, 그리고 두 패치 사이의 모든 게임 데이터 변경."
+  },
+  "untitled": "{date} 업데이트",
+  "option": "{id} · {title}",
+  "links": {
+    "forum": "공식 패치 노트(포럼)",
+    "steam": "Steam 뉴스",
+    "external": "{label} ↗"
+  },
+  "list": {
+    "eyebrow": "패치",
+    "title": "패치 노트와 바뀐 점",
+    "description": "모든 패치의 게임 데이터 변경, 공식 패치 노트, 그리고 그 전후의 영웅과 아이템 통계.",
+    "emptyTitle": "패치를 찾을 수 없습니다",
+    "emptyDescription": "패치 피드에 날짜가 있는 패치가 없습니다.",
+    "latest": "최신 패치 · {date}",
+    "whatChanged": "바뀐 점",
+    "compareWithPrevious": "이전 패치와 비교",
+    "compareTitle": "두 패치 비교",
+    "patchA": "패치 A(이전)",
+    "patchB": "패치 B(최신)",
+    "allTitle": "전체 패치",
+    "notesIncluded": "패치 노트 포함",
+    "notesLinked": "패치 노트 링크",
+    "footnote": "패치는 데이터 피드의 공식 패치 노트와 Steam 업데이트 게시글에서 가져옵니다({count, plural, other {#개 패치}}). 각 패치 페이지는 해당 날짜 전후 빌드의 게임 데이터를 비교합니다.",
+    "countsUnknown": "열어서 게임 데이터 변경과 통계를 확인하세요.",
+    "counts": "영웅 {heroes, plural, other {#명}} · 능력 {abilities, plural, other {#개}} · 아이템 {items, plural, other {#개}}(공식 패치 노트)"
+  },
+  "detail": {
+    "nav": "패치",
+    "all": "← 전체 패치",
+    "older": "‹ 이전",
+    "newer": "다음 ›",
+    "eyebrow": "패치 · {date}",
+    "description": "게임 데이터에서 바뀐 점, 공식 패치 노트, 그리고 패치 전후의 영웅과 아이템 통계.",
+    "picker": "패치",
+    "unknownHero": "알 수 없는 영웅",
+    "unknownItem": "알 수 없는 아이템",
+    "changed": {
+      "eyebrow": "1단계",
+      "title": "바뀐 점",
+      "description": "값은 패치일 전후 빌드의 게임 파일에서 가져옵니다. 공식 패치 노트가 그 뒤에 이어집니다."
+    },
+    "impact": {
+      "eyebrow": "2단계",
+      "title": "패치 전후",
+      "description": "패치일 전후에 관찰된 통계입니다. 시기만 보여 줄 뿐 원인은 아닙니다. 플레이어 구성, 다른 영웅, 다른 변경도 승률을 움직입니다."
+    },
+    "loadingChanges": "변경 사항 불러오는 중",
+    "loadingStats": "통계 불러오는 중",
+    "how": {
+      "summary": "이 페이지의 원리",
+      "gameData": "<b>게임 데이터</b>: 모든 값은 데이터 출처가 빌드마다 분석한 게임 파일에서 읽습니다. “이전” 빌드는 패치일 전의 마지막 빌드이고, “이후” 빌드는 패치일의 마지막 빌드(또는 다음 패치 전)입니다.",
+      "notes": "<b>공식 패치 노트</b>: 피드에 포함된 경우 표시합니다(Steam “Minor Update” 게시글). 이전 → 이후 값은 해당 줄에 “from X to Y”가 있을 때만 표시합니다.",
+      "direction": "<b>버프 / 너프</b>: {rule}",
+      "stats": "<b>전후 통계</b>: 패치일 전 7일(이전 패치 이전은 제외)과 패치일부터 최대 7일(다음 패치를 넘지 않음)을 비교합니다. “뚜렷한 변화”: {rule}"
+    }
+  },
+  "changes": {
+    "noDataTitle": "이 패치의 변경 데이터가 없습니다",
+    "noDataDescription": "이 패치일 날짜의 게임 빌드가 없고, 피드에도 공식 패치 노트가 없습니다. 위의 공식 패치 노트 링크를 이용하세요.",
+    "build": "게임 데이터: 빌드 {from}({fromTime} UTC) → 빌드 {to}({toTime} UTC).",
+    "noBuild": "이 패치일 날짜의 게임 빌드가 없어 게임 데이터로 값을 비교할 수 없습니다. 아래 공식 패치 노트가 출처입니다.",
+    "heroes": "영웅",
+    "noHeroes": "바뀐 영웅 수치가 없습니다.",
+    "noHeroesFor": "{hero}의 바뀐 수치가 없습니다.",
+    "items": "가장 많이 바뀐 아이템",
+    "noItems": "바뀐 상점 아이템 수치가 없습니다.",
+    "noItemsFor": "{item}의 바뀐 수치가 없습니다.",
+    "officialNotes": "공식 패치 노트",
+    "showNotes": "공식 패치 노트 보기({count, plural, other {#줄}})",
+    "noNoteMatch": "영웅 또는 아이템 필터와 일치하는 노트 줄이 없습니다.",
+    "notesLinkOnly": "데이터 피드에는 이 패치 노트의 링크만 있습니다. 위의 공식 패치 노트 링크를 이용하세요.",
+    "summary": {
+      "heroes": "바뀐 영웅",
+      "abilities": "바뀐 능력",
+      "items": "바뀐 아이템",
+      "values": "수치 변경 · {source, select, notes {공식 패치 노트 기준} other {게임 데이터 기준}}"
+    },
+    "baseStats": "기본 능력치",
+    "gun": "총",
+    "unnamedHero": "영웅 {id}",
+    "newHero": "이 빌드에서 새로 플레이할 수 있는 영웅입니다.",
+    "removedHero": "이 빌드에서는 더 이상 플레이할 수 없습니다.",
+    "itemTier": "{tier}티어",
+    "winRate": "승률(이전 → 이후)",
+    "buyRate": "구매율(이전 → 이후)",
+    "notesGeneral": "변경 사항",
+    "broad": {
+      "summary": "광범위한 변경({count}): 여러 항목에 같은 수치 변경",
+      "explanation": "전체 규칙이거나 게임 파일이 값을 저장하는 방식의 변경입니다. 모든 능력이나 아이템에 표시하는 대신 여기에 한 번만 표시합니다.",
+      "entries": "{count, plural, other {#개 항목}}"
+    }
+  },
+  "labels": {
+    "cost": "가격",
+    "bullet_damage": "탄환 피해",
+    "bullets": "발사당 탄환 수",
+    "cycle_time": "발사 간격",
+    "clip_size": "탄창 크기",
+    "reload_duration": "재장전 시간",
+    "damage_falloff_start_range": "피해 감소 시작 거리",
+    "damage_falloff_end_range": "피해 감소 종료 거리",
+    "crit_bonus_start": "헤드샷 배율"
+  },
+  "values": {
+    "souls": "{value} 소울"
+  },
+  "impact": {
+    "range": "{from}–{to}",
+    "before": "이전({range})",
+    "after": "이후({range})",
+    "period": "{id}({range})",
+    "versus": "{a} 대 {b}",
+    "noAfterTitle": "아직 패치 이후 데이터가 없습니다",
+    "noAfterDescription": "패치 이후 통계는 패치일부터 시작합니다. 내일 다시 확인하세요.",
+    "early": "패치 이후 아직 {count, plural, other {#일}}밖에 지나지 않았습니다(마지막 날은 집계 중). 변화는 초기 신호로 보세요.",
+    "mostImpacted": "영향이 가장 큰 영웅",
+    "mostImpactedNote": "승률이 정상 변동을 넘어 움직인 영웅. {rule}",
+    "changedHeroes": "이 패치에서 바뀐 영웅",
+    "heroCaption": "패치 전후 영웅의 승률과 픽률",
+    "noChangedHeroes": "이 패치에서 바뀐 영웅 수치가 없습니다.",
+    "noGameData": "이 패치의 게임 데이터가 없어 바뀐 영웅을 표시할 수 없습니다.",
+    "allHeroes": "전체 영웅({count})",
+    "allCaption": "패치 전후 전체 영웅",
+    "changedItems": "이 패치에서 바뀐 아이템",
+    "itemCaption": "패치 전후 아이템의 승률과 구매율",
+    "itemsUnavailable": "지금은 아이템 통계를 사용할 수 없습니다.",
+    "itemLowPurchases": "패치 전후 이 아이템의 구매가 충분하지 않습니다.",
+    "noChangedItems": "바뀐 상점 아이템 중 패치 전후 구매가 충분한 아이템이 없습니다.",
+    "up": "승률 상승",
+    "down": "승률 하락",
+    "upEmpty": "정상 변동을 넘어 승률이 오른 영웅이 없습니다.",
+    "downEmpty": "정상 변동을 넘어 승률이 내린 영웅이 없습니다.",
+    "footnote": "{a} → {b}. 패치 변경 표시는 게임 데이터 기준입니다.",
+    "table": {
+      "name": "이름",
+      "inPatch": "패치 변경",
+      "winRate": "승률",
+      "change": "변화",
+      "clear": "뚜렷한 변화?",
+      "matchesAfter": "매치(이후)",
+      "matchesAfterCount": "패치 이후 {count, plural, other {#매치}}"
+    }
+  },
+  "compare": {
+    "title": "패치 비교",
+    "description": "각 패치 초기의 영웅과 아이템 통계, 그리고 두 패치 사이의 모든 게임 데이터 변경.",
+    "loading": "비교 불러오는 중",
+    "patchA": "패치 A",
+    "patchB": "패치 B",
+    "pickTwoTitle": "패치 두 개를 고르세요",
+    "pickTwoDescription": "선택한 패치 중 하나가 패치 피드에 없습니다.",
+    "latestTwo": "최신 패치 두 개",
+    "sameTitle": "같은 패치를 두 번 선택함",
+    "sameDescription": "비교할 서로 다른 패치 두 개를 고르세요.",
+    "heroesTitle": "영웅 승률 변화",
+    "heroesDescription": "{a} → {b}. 두 기간 사이에 관찰된 차이이며, 패치의 효과가 아닙니다.",
+    "early": "최신 패치의 데이터는 아직 {count, plural, other {#일}}치뿐입니다. 변화는 초기 신호로 보세요.",
+    "heroCaption": "영웅 승률과 픽률, {a} 대 {b}",
+    "itemsTitle": "아이템 변화",
+    "itemsDescription": "두 패치 사이 게임 데이터에서 바뀐 아이템과, 승률이 정상 변동을 넘어 움직인 아이템.",
+    "itemCaption": "아이템 승률과 구매율, {a} 대 {b}",
+    "noItems": "이 범위에서 바뀌었거나 정상 변동을 넘어 움직인 아이템이 없습니다.",
+    "dataTitle": "두 패치 사이의 게임 데이터",
+    "dataDescription": "빌드 {from} → 빌드 {to}: 사이의 모든 패치를 포함해 달라진 모든 값.",
+    "noBuilds": "이 패치들에는 비교할 게임 빌드가 없습니다.",
+    "heroesCount": "영웅({count})",
+    "itemsCount": "아이템({count})",
+    "how": {
+      "summary": "패치 비교 방법",
+      "periods": "각 패치의 기간은 패치일부터 다음 패치까지이며 최대 7일입니다. 통계는 이전 패치의 기간과 최신 패치의 기간을 비교합니다.",
+      "clear": "“뚜렷한 변화”: {rule}",
+      "data": "게임 데이터 변경은 이전 패치 후 적용된 빌드와 최신 패치 후 적용된 빌드를 비교하므로, 사이의 모든 패치를 포함합니다.",
+      "observed": "기간 사이의 차이는 관찰된 것이며 설명이 아닙니다. 플레이어 구성, 나머지 메타, 이벤트도 함께 바뀝니다."
+    }
+  },
+  "filters": {
+    "rank": "랭크(매치 평균, 통계용)",
+    "gameModeNote": "일반(6v6). Street Brawl은 통계 출처에서 따로 다루므로 여기에는 표시하지 않습니다."
+  },
+  "marks": {
+    "buff": "버프",
+    "nerf": "너프",
+    "changed": "변경",
+    "mixed": "혼합",
+    "new": "신규",
+    "removed": "삭제"
+  },
+  "verdicts": {
+    "higher": "상승",
+    "lower": "하락",
+    "none": "뚜렷한 변화 없음",
+    "insufficient": "데이터 부족"
+  },
+  "beforeAfter": {
+    "from": "이전",
+    "to": "이후"
+  },
+  "rules": {
+    "clear": "두 기간 모두 200매치 이상이고, 95% 구간이 겹치지 않으며, 승률이 1%p 이상 움직인 경우.",
+    "direction": "버프 / 너프는 항목 이름과 값에 대한 고정 규칙으로 판단합니다. 재사용 대기시간, 가격, 지연, 페널티가 낮아지면 버프이고, 피해, 체력, 치유, 지속 시간, 반경, 사거리, 속도, 둔화, 저항이 높아지면 버프입니다. 그 밖의 경우나 0으로 또는 0에서 바뀐 경우는 “변경”으로 표시합니다."
+  }
+}

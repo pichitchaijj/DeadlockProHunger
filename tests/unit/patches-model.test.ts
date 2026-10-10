@@ -93,9 +93,9 @@ describe('patches from the feed', () => {
 
   it('dates patches by title, names them from a same-day Steam post, and skips other news', () => {
     expect(patches.map((p) => p.id)).toEqual(['2026-10-05', '2026-09-29', '2026-09-16'])
-    expect(patches[0]).toMatchObject({ notesHtml: '<p>- x</p>', title: '2026-10-05 update' })
+    expect(patches[0]).toMatchObject({ notesHtml: '<p>- x</p>', title: null })
     expect(patches[1]).toMatchObject({ title: 'City Never Sleeps', notesHtml: null })
-    expect(patches[1].links.map((l) => l.href)).toEqual(['https://forum/1', 'https://steam/2'])
+    expect(patches[1].links).toEqual([{ kind: 'forum', href: 'https://forum/1' }, { kind: 'steam', href: 'https://steam/2' }])
   })
 
   it('bounds windows by the neighbouring patches and today', () => {
@@ -130,15 +130,15 @@ describe('game-data diff', () => {
   it('keeps player-facing entities only, with readable values', () => {
     expect([...before.keys()].sort()).toEqual(['hero:1', 'item:10', 'item:11', 'item:12'])
     expect(before.get('item:11')!.props.damage_falloff_start_range.text).toBe('19.99m')
-    expect(before.get('item:12')!.props.cost.text).toBe('3000 souls')
+    expect(before.get('item:12')!.props.cost).toMatchObject({ text: '3000', unit: 'souls', ref: { site: 'cost' } })
   })
 
   it('reports changed values with direction, and unlabeled values as changed', () => {
     const changes = diffSnapshots(before, after)
     const byKey = new Map(changes.map((c) => [c.key, c]))
-    expect(byKey.get('item:10')!.changes).toEqual([{ property: 'Cooldown', before: '28s', after: '24s', direction: 'buff' }])
-    expect(byKey.get('item:11')!.changes[0]).toMatchObject({ property: 'Bullet damage', before: '17.76', after: '16.5', direction: 'nerf' })
-    expect(byKey.get('hero:1')!.changes[0]).toMatchObject({ property: 'Max health', direction: 'nerf' })
+    expect(byKey.get('item:10')!.changes).toEqual([{ property: { game: 'Cooldown' }, before: '28s', after: '24s', direction: 'buff' }])
+    expect(byKey.get('item:11')!.changes[0]).toMatchObject({ property: { site: 'bullet_damage' }, before: '17.76', after: '16.5', direction: 'nerf' })
+    expect(byKey.get('hero:1')!.changes[0]).toMatchObject({ property: { stat: 'max_health' }, direction: 'nerf' })
     expect(byKey.has('item:12')).toBe(false)
   })
 
@@ -160,13 +160,13 @@ describe('game-data diff', () => {
   it('collapses identical changes on many entries into broad changes', () => {
     const entity = (i: number, extra: EntityChange['changes'] = []): EntityChange => ({
       key: `item:${i}`, kind: 'item', id: i, name: `Item ${i}`, heroId: null, slot: null, status: 'changed', direction: 'changed',
-      changes: [{ property: 'Channel Move Speed', before: '50m/s', after: '-1m/s', direction: 'changed' }, ...extra],
+      changes: [{ property: { game: 'Channel Move Speed' }, before: '50m/s', after: '-1m/s', direction: 'changed' }, ...extra],
     })
-    const list = Array.from({ length: BROAD_MIN }, (_, i) => entity(i, i === 0 ? [{ property: 'Cooldown', before: '20s', after: '18s', direction: 'buff' }] : []))
+    const list = Array.from({ length: BROAD_MIN }, (_, i) => entity(i, i === 0 ? [{ property: { game: 'Cooldown' }, before: '20s', after: '18s', direction: 'buff' }] : []))
     const { changes, broad } = splitBroadChanges(list)
-    expect(broad).toEqual([{ property: 'Channel Move Speed', before: '50m/s', after: '-1m/s', direction: 'changed', count: BROAD_MIN }])
+    expect(broad).toEqual([{ property: { game: 'Channel Move Speed' }, before: '50m/s', after: '-1m/s', direction: 'changed', count: BROAD_MIN }])
     expect(changes).toHaveLength(1)
-    expect(changes[0]).toMatchObject({ id: 0, direction: 'buff', changes: [{ property: 'Cooldown' }] })
+    expect(changes[0]).toMatchObject({ id: 0, direction: 'buff', changes: [{ property: { game: 'Cooldown' } }] })
     expect(splitBroadChanges(list.slice(0, BROAD_MIN - 1)).broad).toEqual([])
   })
 

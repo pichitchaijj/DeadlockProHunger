@@ -1,5 +1,9 @@
+/*
+ * features/patches/diff.ts before label references (patch-diff-v2), verbatim: the invariance oracle for
+ * tests/unit/patches-text.test.ts. Test-only: never import it from src/.
+ */
 import type { RawAssetHero, RawAssetItem } from '@/lib/deadlock/patchEndpoints'
-import { direction, overallDirection, parseValue, type Direction } from './direction'
+import { direction, overallDirection, parseValue, type Direction } from '@/features/patches/direction'
 
 /*
  * Game-data diff between two builds (pure). Values come from the game files as the API parses them per
@@ -10,30 +14,19 @@ import { direction, overallDirection, parseValue, type Direction } from './direc
 
 export type EntityKind = 'hero' | 'ability' | 'weapon' | 'item'
 
-/**
- * A property's label as data, never as display text (worded at render by features/patches/text.ts):
- * the game's own label, a game stat key (shown humanized), or one of this site's labels (catalog patch.labels).
- */
-export type PropLabel = { game: string } | { stat: string } | { site: SiteLabel }
-
-/**
- * `label` is the English source label: the direction rule and change identity read it (never a translation).
- * `ref` is what gets shown. `unit` is a unit word this site adds (Cost is in souls), worded at render.
- */
-type Prop = { label: string; ref: PropLabel; n: number | null; text: string; unit?: SiteUnit; labeled: boolean }
+type Prop = { label: string; n: number | null; text: string; labeled: boolean }
 
 export type Entity = { key: string; kind: EntityKind; id: number; name: string; heroId: number | null; slot: string | null; props: Record<string, Prop> }
 
-/** Before / after are the game's values (numbers with the game's own unit symbols); `unit` is a site-added unit word. */
-export type PropChange = { property: PropLabel; before: string; after: string; unit?: SiteUnit; direction: Direction }
+export type PropChange = { property: string; before: string; after: string; direction: Direction }
 
 export type EntityChange = Omit<Entity, 'props'> & { status: 'changed' | 'new' | 'removed'; changes: PropChange[]; direction: Direction | 'mixed' }
 
 /** Game units per meter (verified: falloff 787 units = 20 m in the patch notes). */
 const UNITS_PER_METER = 39.37
 
-/** Gun stats shown from weapon_info: [key, English source label, unit, divisor]. */
-const WEAPON_FIELDS = [
+/** Gun stats shown from weapon_info: [key, label, unit, divisor]. */
+const WEAPON_FIELDS: Array<[string, string, string, number]> = [
   ['bullet_damage', 'Bullet damage', '', 1],
   ['bullets', 'Bullets per shot', '', 1],
   ['cycle_time', 'Fire interval', 's', 1],
@@ -42,22 +35,11 @@ const WEAPON_FIELDS = [
   ['damage_falloff_start_range', 'Falloff start range', 'm', UNITS_PER_METER],
   ['damage_falloff_end_range', 'Falloff end range', 'm', UNITS_PER_METER],
   ['crit_bonus_start', 'Headshot multiplier', '×', 1],
-] as const
-
-/** This site's own property labels: the item cost and the gun stats (catalog patch.labels.<key>). */
-export type SiteLabel = 'cost' | (typeof WEAPON_FIELDS)[number][0]
-
-/** English source labels of this site's own properties, for the direction rule and change identity only. */
-const SITE_SOURCE: Record<SiteLabel, string> = { cost: 'Cost', ...Object.fromEntries(WEAPON_FIELDS.map(([key, label]) => [key, label])) } as Record<SiteLabel, string>
-
-/** Unit words this site adds to a value (catalog patch.values.<unit>). */
-export type SiteUnit = 'souls'
-const UNIT_SOURCE: Record<SiteUnit, string> = { souls: ' souls' }
+]
 
 const CLASS_LIKE = /^[a-z0-9_]+$/
 const round = (n: number) => Number(n.toFixed(3))
-/** A game stat key as readable text ("max_health" → "Max health"): data, shown as is in every locale. */
-export const humanize = (key: string) =>
+const humanize = (key: string) =>
   key
     .replace(/_/g, ' ')
     .replace(/([a-z])([A-Z])/g, '$1 $2')
@@ -65,21 +47,12 @@ export const humanize = (key: string) =>
     .replace(/\s+/g, ' ')
     .trim()
 
-/** The English source label of a property label: what the direction rule reads and changes are keyed by. */
-export function sourceLabel(ref: PropLabel): string {
-  return 'game' in ref ? ref.game : 'stat' in ref ? humanize(ref.stat) : SITE_SOURCE[ref.site]
+function prop(label: string, raw: string | number, labeled: boolean, fallbackUnit = '', divisor = 1): Prop | null {
+  const { n, unit } = parseValue(raw)
+  if (n === null) return typeof raw === 'string' && raw.trim() !== '' ? { label, n: null, text: raw.trim(), labeled: false } : null
+  const value = round(n / divisor)
+  return { label, n: value, text: `${value}${unitText(unit || fallbackUnit)}`, labeled }
 }
-
-function prop(ref: PropLabel, raw: string | number, labeled: boolean, fallbackUnit = '', divisor = 1, unit?: SiteUnit): Prop | null {
-  const label = sourceLabel(ref)
-  const parsed = parseValue(raw)
-  if (parsed.n === null) return typeof raw === 'string' && raw.trim() !== '' ? { label, ref, n: null, text: raw.trim(), labeled: false } : null
-  const value = round(parsed.n / divisor)
-  return { label, ref, n: value, text: `${value}${unitText(parsed.unit || fallbackUnit)}`, unit, labeled }
-}
-
-/** A value as the English source wrote it ("3000 souls"): change identity only, never shown. */
-const sourceValue = (text: string, unit: SiteUnit | undefined) => (unit ? `${text}${UNIT_SOURCE[unit]}` : text)
 
 /** Short units attach to the number (12s, 6.5m, 15%, 1.65×); words get a space (800 souls). */
 const unitText = (u: string) => (!u ? '' : /^(%|m|s|×|m\/s)$/.test(u) ? u : ` ${u}`)
@@ -94,7 +67,7 @@ export function snapshotEntities(snapshot: { items: RawAssetItem[]; heroes: RawA
     const props: Record<string, Prop> = {}
     for (const [key, stat] of Object.entries(h.starting_stats ?? {})) {
       if (typeof stat?.value !== 'number') continue
-      const p = prop({ stat: key }, stat.value, true)
+      const p = prop(humanize(key), stat.value, true)
       if (p) props[key] = p
     }
     out.set(`hero:${h.id}`, { key: `hero:${h.id}`, kind: 'hero', id: h.id, name: h.name, heroId: h.id, slot: null, props })
@@ -108,7 +81,7 @@ export function snapshotEntities(snapshot: { items: RawAssetItem[]; heroes: RawA
     const props: Record<string, Prop> = {}
     if (item.type === 'upgrade') {
       if (!item.shopable || !item.name || CLASS_LIKE.test(item.name)) continue
-      if (typeof item.cost === 'number') props.cost = prop({ site: 'cost' }, item.cost, true, '', 1, 'souls')!
+      if (typeof item.cost === 'number') props.cost = prop('Cost', item.cost, true, 'souls')!
       addProperties(item, props)
       out.set(`item:${item.id}`, { key: `item:${item.id}`, kind: 'item', id: item.id, name: item.name, heroId: null, slot: item.item_slot_type ?? null, props })
       continue
@@ -116,14 +89,13 @@ export function snapshotEntities(snapshot: { items: RawAssetItem[]; heroes: RawA
     const own = owner.get(item.class_name)
     if (!own) continue
     if (own.kind === 'weapon') {
-      for (const [key, , unit, divisor] of WEAPON_FIELDS) {
+      for (const [key, label, unit, divisor] of WEAPON_FIELDS) {
         const v = item.weapon_info?.[key]
         if (typeof v !== 'number') continue
-        const p = prop({ site: key }, v, true, unit, divisor)
+        const p = prop(label, v, true, unit, divisor)
         if (p) props[key] = p
       }
-      // The gun has no name of its own: it is worded by kind at render (patch.changes.gun).
-      out.set(`item:${item.id}`, { key: `item:${item.id}`, kind: 'weapon', id: item.id, name: '', heroId: own.heroId, slot: null, props })
+      out.set(`item:${item.id}`, { key: `item:${item.id}`, kind: 'weapon', id: item.id, name: 'Gun', heroId: own.heroId, slot: null, props })
     } else {
       if (!item.name || CLASS_LIKE.test(item.name)) continue
       addProperties(item, props)
@@ -136,8 +108,7 @@ export function snapshotEntities(snapshot: { items: RawAssetItem[]; heroes: RawA
 function addProperties(item: RawAssetItem, props: Record<string, Prop>) {
   for (const [key, p] of Object.entries(item.properties ?? {})) {
     if (!p || p.value === null || p.value === undefined) continue
-    const label = p.label?.trim()
-    const made = prop(label ? { game: label } : { stat: key }, p.value, Boolean(label), p.postfix ?? '')
+    const made = prop(p.label?.trim() || humanize(key), p.value, Boolean(p.label?.trim()), p.postfix ?? '')
     if (made) props[key] = made
   }
 }
@@ -160,12 +131,10 @@ export function diffSnapshots(before: Map<string, Entity>, after: Map<string, En
     const list: PropChange[] = []
     for (const [k, pa] of Object.entries(a.props)) {
       const pb = b.props[k]
-      if (!pb || sourceValue(pb.text, pb.unit) === sourceValue(pa.text, pa.unit)) continue
+      if (!pb || pb.text === pa.text) continue
       // Same number, different display unit (e.g. "2 %/sec" → "2 % DPS"): not a value change.
       if (pb.n !== null && pa.n !== null && pb.n === pa.n) continue
-      const change: PropChange = { property: pa.ref, before: pb.text, after: pa.text, direction: pa.labeled && pb.n !== null ? direction(pa.label, pb.n, pa.n) : 'changed' }
-      if (pa.unit) change.unit = pa.unit
-      list.push(change)
+      list.push({ property: pa.label, before: pb.text, after: pa.text, direction: pa.labeled && pb.n !== null ? direction(pa.label, pb.n, pa.n) : 'changed' })
     }
     if (list.length > 0) changes.push({ ...rest, status: 'changed', changes: list, direction: overallDirection(list.map((c) => c.direction)) })
   }
@@ -182,17 +151,13 @@ export const BROAD_MIN = 10
 
 export type BroadChange = PropChange & { count: number }
 
-/** A change's identity: English source label, before and after ("Cost|3000 souls|2800 souls"). Locale-neutral. */
-export const changeKey = (c: PropChange) => `${sourceLabel(c.property)}|${sourceValue(c.before, c.unit)}|${sourceValue(c.after, c.unit)}`
-
 /**
  * Moves identical changes (same property, before and after) that appear on BROAD_MIN+ entries out of the
  * per-entity lists into one line each, so a global change doesn't bury the specific ones. Entities left
  * without changes are dropped.
  */
 export function splitBroadChanges(changes: EntityChange[]): { changes: EntityChange[]; broad: BroadChange[] } {
-  // Keyed by the English source label and values, exactly as before label references (patch-diff-v2).
-  const key = changeKey
+  const key = (c: PropChange) => `${c.property}|${c.before}|${c.after}`
   const counts = new Map<string, { change: PropChange; count: number }>()
   for (const e of changes) for (const c of e.changes) counts.set(key(c), { change: c, count: (counts.get(key(c))?.count ?? 0) + 1 })
   const broadKeys = new Set([...counts].filter(([, v]) => v.count >= BROAD_MIN).map(([k]) => k))

@@ -7,13 +7,10 @@
  * - Cooldowns, costs, delays, reload / fire interval, penalties: lower is stronger.
  * - Damage, health, healing, duration, radius, range, speed, slows, resist, ammo…: higher is stronger.
  * Magnitudes are compared (−8% → −7% resist reduction is weaker). A sign flip or a value from/to 0 is "changed".
+ * The rule reads the English source label of a property (game or site), never a translation; its explanation
+ * for readers is the catalog's patch.rules.direction.
  */
 export type Direction = 'buff' | 'nerf' | 'changed'
-
-export const DIRECTION_LABEL: Record<Direction, string> = { buff: 'Buff', nerf: 'Nerf', changed: 'Changed' }
-
-export const DIRECTION_RULE =
-  'Buff / nerf follows a fixed rule on the property and its values: lower cooldowns, costs, delays and penalties count as buffs; higher damage, health, healing, duration, radius, range, speed, slows and resists count as buffs. Anything else, or a change to or from zero, is shown as “changed”.'
 
 const REDUCTION = /reduction\b/i
 const LOWER_BETTER = /cooldown|\bcost\b|delay|cast time|charge time|windup|reload|fire interval|cycle time|penalty|spread|recoil|damage taken|respawn/i

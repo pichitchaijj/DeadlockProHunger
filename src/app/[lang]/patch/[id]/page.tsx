@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
+import { OG_LOCALE, type Locale } from '@/i18n/config'
 import { DataNotice } from '@/components/data/DataState'
 import { ScopeLine } from '@/components/data/ScopeLine'
 import { PageContainer } from '@/components/layout/PageContainer'
@@ -15,35 +17,38 @@ import { heroCatalog, heroOptions, itemCatalog, itemOptions } from '@/features/i
 import { BroadChanges, ChangeSummary, HeroChangeCards, ItemChangeCards, OfficialNotes } from '@/features/patches/components/changes'
 import { MostImpacted, MovementTable } from '@/features/patches/components/impact'
 import { PatchFilters } from '@/features/patches/components/PatchFilters'
-import { DIRECTION_RULE } from '@/features/patches/direction'
 import { findPatch, getPatchContext, patchDiffById, patchImpactById, patchNotes, type PatchContext } from '@/features/patches/loaders'
-import { changeMarks, CLEAR_RULE, diffCounts, groupChanges, mostImpacted, noteCounts, type PatchSummary, type Window } from '@/features/patches/model'
+import { changeMarks, diffCounts, groupChanges, mostImpacted, noteCounts, type PatchSummary } from '@/features/patches/model'
 import { compareHref, parsePatchQuery, patchHref, patchListHref, type PatchQuery } from '@/features/patches/query'
+import { patchDate, patchTitle, windowRange, type PatchTranslate } from '@/features/patches/text'
 import { getScopeWording } from '@/components/data/scopeWording'
 
 type Params = Promise<{ id: string }>
 type SearchParams = Promise<Record<string, string | string[] | undefined>>
 
-const DATE = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
-const SHORT = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
-const BUILD = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' })
-const DAY = 86_400
+/** The Patch catalog as a plain translator, for the pure wording helpers (features/patches/text.ts). */
+async function patchWords(): Promise<{ t: Awaited<ReturnType<typeof getTranslations<'patch'>>>; tr: PatchTranslate; locale: Locale }> {
+  const [t, locale] = await Promise.all([getTranslations('patch'), getLocale()])
+  return { t, tr: (key, values) => t(key as 'untitled', values), locale: locale as Locale }
+}
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const found = await findPatch((await params).id).catch(() => null)
-  if (!found) return { title: 'Patch' }
+  const [found, { t, tr, locale }] = await Promise.all([findPatch((await params).id).catch(() => null), patchWords()])
+  if (!found) return { title: t('meta.listTitle') }
   const p = found.patches[found.index]
-  return { title: `${p.title} · Patch`, description: `What changed in the ${DATE.format(p.day * 1000)} Deadlock patch, and hero and item statistics before and after it.` }
+  const title = t('meta.detailTitle', { title: patchTitle(p, tr) })
+  const description = t('meta.detailDescription', { date: patchDate(p.day, 'long', locale) })
+  return { title, description, openGraph: { title, description, locale: OG_LOCALE[locale], type: 'website' } }
 }
 
 export default async function PatchPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
-  const [{ id }, raw] = await Promise.all([params, searchParams])
+  const [{ id }, raw, { t, tr, locale }, common] = await Promise.all([params, searchParams, patchWords(), getTranslations('common')])
   const query = parsePatchQuery(raw)
   const load = await attempt('[patch] list failed', findPatch(id))
   if (!load.ok) {
     return (
       <PageContainer>
-        <DataNotice error={load.kind} what="Patch" action={<ButtonLink href={patchHref(id, query)} variant="secondary" size="sm">Try again</ButtonLink>} />
+        <DataNotice error={load.kind} what="Patch" action={<ButtonLink href={patchHref(id, query)} variant="secondary" size="sm">{common('tryAgain')}</ButtonLink>} />
       </PageContainer>
     )
   }
@@ -52,37 +57,43 @@ export default async function PatchPage({ params, searchParams }: { params: Para
   const patch = patches[index]
   const older = patches[index + 1] ?? null
   const newer = index > 0 ? patches[index - 1] : null
-  const [ctxLoad, heroes, items] = await Promise.all([attempt('[patch] scope failed', getPatchContext(query)), heroOptions(), itemOptions()])
+  const [ctxLoad, heroes, items, words, heroesT] = await Promise.all([
+    attempt('[patch] scope failed', getPatchContext(query)),
+    heroOptions(),
+    itemOptions(),
+    getScopeWording(),
+    getTranslations('heroes.list'),
+  ])
 
   return (
     <PageContainer className="flex flex-col gap-(--spacing-section)">
       <div className="flex flex-col gap-6">
-        <nav aria-label="Patches" className="flex flex-wrap items-center justify-between gap-3 font-ui text-sm font-semibold">
+        <nav aria-label={t('detail.nav')} className="flex flex-wrap items-center justify-between gap-3 font-ui text-sm font-semibold">
           <Link href={patchListHref(query)} className="text-primary hover:text-highlight pointer-coarse:min-h-11">
-            ← All patches
+            {t('detail.all')}
           </Link>
           <span className="flex gap-4">
             {older && (
               <Link href={patchHref(older.id, query)} className="text-primary hover:text-highlight pointer-coarse:min-h-11">
-                ‹ Older
+                {t('detail.older')}
               </Link>
             )}
             {newer && (
               <Link href={patchHref(newer.id, query)} className="text-primary hover:text-highlight pointer-coarse:min-h-11">
-                Newer ›
+                {t('detail.newer')}
               </Link>
             )}
           </span>
         </nav>
         <SectionHeader
           as="h1"
-          eyebrow={`Patch · ${DATE.format(patch.day * 1000)}`}
-          title={patch.title}
-          description="What the game data changed, the official notes, and what hero and item statistics did around the patch."
+          eyebrow={t('detail.eyebrow', { date: patchDate(patch.day, 'long', locale) })}
+          title={patchTitle(patch, tr)}
+          description={t('detail.description')}
           actions={
             older ? (
               <ButtonLink href={compareHref({ ...query, a: older.id, b: patch.id })} variant="secondary" size="sm">
-                Compare with previous patch
+                {t('list.compareWithPrevious')}
               </ButtonLink>
             ) : undefined
           }
@@ -92,7 +103,7 @@ export default async function PatchPage({ params, searchParams }: { params: Para
             {patch.links.map((l) => (
               <li key={l.href}>
                 <a href={l.href} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:text-highlight">
-                  {l.label} ↗
+                  {t('links.external', { label: t(`links.${l.kind}`) })}
                 </a>
               </li>
             ))}
@@ -103,8 +114,8 @@ export default async function PatchPage({ params, searchParams }: { params: Para
           <DataNotice error={ctxLoad.kind} what="Patch statistics" />
         ) : typeof ctxLoad.value === 'string' ? (
           <EmptyState
-            title={ctxLoad.value === 'unknown-hero' ? 'Unknown hero' : 'Unknown item'}
-            action={<ButtonLink href={patchHref(patch.id, { ...query, hero: 'all', item: 'all' })} variant="secondary" size="sm">Clear filters</ButtonLink>}
+            title={ctxLoad.value === 'unknown-hero' ? t('detail.unknownHero') : t('detail.unknownItem')}
+            action={<ButtonLink href={patchHref(patch.id, { ...query, hero: 'all', item: 'all' })} variant="secondary" size="sm">{heroesT('clearFilters')}</ButtonLink>}
           />
         ) : (
           <PatchFilters
@@ -112,12 +123,12 @@ export default async function PatchPage({ params, searchParams }: { params: Para
             href={(changes) => patchHref(patch.id, query, changes)}
             heroes={heroes}
             items={items}
-            rankLabels={(await getScopeWording('en')).rankLabels(ctxLoad.value.scope.rankRefs)}
+            rankLabels={words.rankLabels(ctxLoad.value.scope.rankRefs)}
             ranks={ctxLoad.value.scope.ranks}
           >
             <SelectNav
-              label="Patch"
-              options={patches.map((p) => ({ value: p.id, label: `${p.id} · ${p.title}` }))}
+              label={t('detail.picker')}
+              options={patches.map((p) => ({ value: p.id, label: t('option', { id: p.id, title: patchTitle(p, tr) }) }))}
               value={patch.id}
               hrefFor={Object.fromEntries(patches.map((p) => [p.id, patchHref(p.id, query)]))}
             />
@@ -126,44 +137,32 @@ export default async function PatchPage({ params, searchParams }: { params: Para
       </div>
 
       <section aria-labelledby="changed-title" className="flex flex-col gap-5">
-        <SectionHeader id="changed-title" eyebrow="Layer 1" title="What changed" description="Values come from the game files of the builds before and after the patch day; the official notes follow." />
-        <Suspense key={patchHref(patch.id, query)} fallback={<SectionSkeleton label="Loading changes" />}>
+        <SectionHeader id="changed-title" eyebrow={t('detail.changed.eyebrow')} title={t('detail.changed.title')} description={t('detail.changed.description')} />
+        <Suspense key={patchHref(patch.id, query)} fallback={<SectionSkeleton label={t('detail.loadingChanges')} />}>
           <Changes patch={patch} query={query} ctx={ctxLoad.ok && typeof ctxLoad.value !== 'string' ? ctxLoad.value : null} />
         </Suspense>
       </section>
 
       {ctxLoad.ok && typeof ctxLoad.value !== 'string' && (
         <section aria-labelledby="impact-title" className="flex flex-col gap-5">
-          <SectionHeader
-            id="impact-title"
-            eyebrow="Layer 2"
-            title="Around the patch"
-            description="Statistics observed before and after the patch day. They show timing, not cause: player mix, other heroes and other changes move win rates too."
-          />
-          <Suspense key={patchHref(patch.id, query)} fallback={<SectionSkeleton label="Loading statistics" />}>
+          <SectionHeader id="impact-title" eyebrow={t('detail.impact.eyebrow')} title={t('detail.impact.title')} description={t('detail.impact.description')} />
+          <Suspense key={patchHref(patch.id, query)} fallback={<SectionSkeleton label={t('detail.loadingStats')} />}>
             <Impact patch={patch} ctx={ctxLoad.value} />
           </Suspense>
         </section>
       )}
 
       <details className="rounded-md border border-border bg-surface-sunken px-(--spacing-card) py-4 text-sm text-text-muted">
-        <summary className="cursor-pointer py-3 font-ui font-semibold text-text">How this page works</summary>
+        <summary className="cursor-pointer py-3 font-ui font-semibold text-text">{t('detail.how.summary')}</summary>
         <ul className="mt-3 flex flex-col gap-1.5">
-          <li>
-            <span className="font-semibold text-text">Game data</span>: every value is read from the game files the data source parses per build. The “before” build is the last
-            one before the patch day; the “after” build is the last one of the patch day (or before the next patch).
-          </li>
-          <li>
-            <span className="font-semibold text-text">Official notes</span>: shown when the feed carries them (Steam “Minor Update” posts). A before → after appears only when a line
-            states “from X to Y”.
-          </li>
-          <li>
-            <span className="font-semibold text-text">Buff / nerf</span>: {DIRECTION_RULE}
-          </li>
-          <li>
-            <span className="font-semibold text-text">Before / after statistics</span>: the 7 days before the patch day (not before the previous patch) vs up to 7 days from it (not
-            past the next patch). “Clear change”: {CLEAR_RULE}
-          </li>
+          {(['gameData', 'notes', 'direction', 'stats'] as const).map((key) => (
+            <li key={key}>
+              {t.rich(`detail.how.${key}`, {
+                rule: key === 'direction' ? t('rules.direction') : t('rules.clear'),
+                b: (chunks) => <span className="font-semibold text-text">{chunks}</span>,
+              })}
+            </li>
+          ))}
         </ul>
       </details>
     </PageContainer>
@@ -189,12 +188,14 @@ const noteMatches = (subject: string | null, ctx: PatchContext | null) =>
   !ctx || (!ctx.hero && !ctx.item) || subject === ctx.hero?.name || subject === ctx.item?.name
 
 async function Changes({ patch, query, ctx }: { patch: PatchSummary; query: PatchQuery; ctx: PatchContext | null }) {
-  const [diffLoad, notesLoad, heroRefs, itemRefs, impact] = await Promise.all([
+  const [diffLoad, notesLoad, heroRefs, itemRefs, impact, { t, locale }, common] = await Promise.all([
     attempt('[patch] diff failed', patchDiffById(patch.id)),
     attempt('[patch] notes failed', patchNotes(patch)),
     heroCatalog().catch(() => new Map()),
     itemCatalog().catch(() => new Map()),
     ctx ? patchImpactById(patch.id, ctx).catch(() => null) : null,
+    patchWords(),
+    getTranslations('common'),
   ])
   const diff = diffLoad.ok ? diffLoad.value?.diff ?? null : null
   const builds = diffLoad.ok ? diffLoad.value : null
@@ -207,47 +208,43 @@ async function Changes({ patch, query, ctx }: { patch: PatchSummary; query: Patc
   const itemStats = impact?.items ? new Map(impact.items.map((m) => [m.id, m])) : null
 
   if (!diff && !notes) {
-    if (!diffLoad.ok) return <DataNotice error={diffLoad.kind} what="Game data changes" action={<ButtonLink href={patchHref(patch.id, query)} variant="secondary" size="sm">Try again</ButtonLink>} />
-    return (
-      <EmptyState
-        title="No change data for this patch"
-        description="No game build is dated on this patch day, and the feed has no official notes for it. Use the official changelog link above."
-      />
-    )
+    if (!diffLoad.ok) return <DataNotice error={diffLoad.kind} what="Game data changes" action={<ButtonLink href={patchHref(patch.id, query)} variant="secondary" size="sm">{common('tryAgain')}</ButtonLink>} />
+    return <EmptyState title={t('changes.noDataTitle')} description={t('changes.noDataDescription')} />
   }
 
   return (
     <div className="flex flex-col gap-8">
-      {grouped ? (
-        <ChangeSummary counts={diffCounts(grouped.heroes, grouped.items)} source="from game data" />
-      ) : (
-        notes && <ChangeSummary counts={noteCounts(notes)} source="from the official notes" />
-      )}
+      {grouped ? <ChangeSummary counts={diffCounts(grouped.heroes, grouped.items)} source="game" /> : notes && <ChangeSummary counts={noteCounts(notes)} source="notes" />}
 
       {builds?.from && builds.to && diff && (
         <p className="text-caption text-text-muted">
-          Game data: build {builds.from.version} ({BUILD.format(builds.from.builtAt * 1000)} UTC) → build {builds.to.version} ({BUILD.format(builds.to.builtAt * 1000)} UTC).
+          {t('changes.build', {
+            from: builds.from.version,
+            fromTime: patchDate(builds.from.builtAt, 'build', locale),
+            to: builds.to.version,
+            toTime: patchDate(builds.to.builtAt, 'build', locale),
+          })}
         </p>
       )}
-      {!diff && diffLoad.ok && (
-        <p className="rounded-md border border-dashed border-border-strong px-4 py-3 text-sm text-text-muted">
-          No game build is dated on this patch day, so values can’t be compared from game data. The official notes below are the source.
-        </p>
-      )}
+      {!diff && diffLoad.ok && <p className="rounded-md border border-dashed border-border-strong px-4 py-3 text-sm text-text-muted">{t('changes.noBuild')}</p>}
       {!diff && !diffLoad.ok && <DataNotice error={diffLoad.kind} what="Game data changes" />}
 
       {grouped && (
         <>
           <div className="flex flex-col gap-3">
-            <h3 className="font-ui text-title font-semibold text-text">Heroes</h3>
-            {heroCards.length > 0 ? <HeroChangeCards heroes={heroCards} refs={heroRefs} /> : <p className="text-sm text-text-muted">No hero values changed{ctx?.hero ? ` for ${ctx.hero.name}` : ''}.</p>}
+            <h3 className="font-ui text-title font-semibold text-text">{t('changes.heroes')}</h3>
+            {heroCards.length > 0 ? (
+              <HeroChangeCards heroes={heroCards} refs={heroRefs} />
+            ) : (
+              <p className="text-sm text-text-muted">{ctx?.hero ? t('changes.noHeroesFor', { hero: ctx.hero.name }) : t('changes.noHeroes')}</p>
+            )}
           </div>
           <div className="flex flex-col gap-3">
-            <h3 className="font-ui text-title font-semibold text-text">Most changed items</h3>
+            <h3 className="font-ui text-title font-semibold text-text">{t('changes.items')}</h3>
             {itemCards.length > 0 ? (
               <ItemChangeCards items={itemCards} refs={itemRefs} stats={itemStats} />
             ) : (
-              <p className="text-sm text-text-muted">No shop item values changed{ctx?.item ? ` for ${ctx.item.name}` : ''}.</p>
+              <p className="text-sm text-text-muted">{ctx?.item ? t('changes.noItemsFor', { item: ctx.item.name }) : t('changes.noItems')}</p>
             )}
           </div>
           <BroadChanges list={diff?.broad ?? []} />
@@ -255,12 +252,12 @@ async function Changes({ patch, query, ctx }: { patch: PatchSummary; query: Patc
       )}
 
       <div className="flex flex-col gap-3">
-        <h3 className="font-ui text-title font-semibold text-text">Official notes</h3>
+        <h3 className="font-ui text-title font-semibold text-text">{t('changes.officialNotes')}</h3>
         {filteredNotes && filteredNotes.length > 0 ? (
           diff ? (
             <details className="group">
               <summary className="inline-flex min-h-11 cursor-pointer items-center font-ui text-sm font-semibold text-primary hover:text-highlight">
-                Show the official notes ({filteredNotes.length} lines)
+                {t('changes.showNotes', { count: filteredNotes.length })}
               </summary>
               <div className="mt-3">
                 <OfficialNotes lines={filteredNotes} />
@@ -270,28 +267,34 @@ async function Changes({ patch, query, ctx }: { patch: PatchSummary; query: Patc
             <OfficialNotes lines={filteredNotes} />
           )
         ) : (
-          <p className="text-sm text-text-muted">
-            {notes ? 'No note lines match the hero or item filter.' : 'The data feed only links to the notes for this patch. Use the official changelog link above.'}
-          </p>
+          <p className="text-sm text-text-muted">{notes ? t('changes.noNoteMatch') : t('changes.notesLinkOnly')}</p>
         )}
       </div>
     </div>
   )
 }
 
-const windowText = (w: Window) => `${SHORT.format(w.from * 1000)}–${SHORT.format((w.to - DAY) * 1000)}`
-
 async function Impact({ patch, ctx }: { patch: PatchSummary; ctx: PatchContext }) {
-  const [load, diffLoad] = await Promise.all([attempt('[patch] impact failed', patchImpactById(patch.id, ctx)), patchDiffById(patch.id).catch(() => null)])
+  const [load, diffLoad, { t, tr, locale }, words, heroesT, itemsT] = await Promise.all([
+    attempt('[patch] impact failed', patchImpactById(patch.id, ctx)),
+    patchDiffById(patch.id).catch(() => null),
+    patchWords(),
+    getScopeWording(),
+    getTranslations('heroes.list'),
+    getTranslations('items.table'),
+  ])
   if (!load.ok) return <DataNotice error={load.kind} what="Patch statistics" />
   if (!load.value) return null
   const { before, after, heroes, items } = load.value
   if (!heroes) {
-    return <EmptyState title="No days after the patch yet" description="Statistics after the patch start with the patch day. Check back tomorrow." />
+    return <EmptyState title={t('impact.noAfterTitle')} description={t('impact.noAfterDescription')} />
   }
   const grouped = diffLoad?.diff ? groupChanges(diffLoad.diff.changes, diffLoad.diff.heroNames) : null
   const marks = grouped ? changeMarks(grouped.heroes, grouped.items) : { heroes: new Map(), items: new Map() }
-  const labels = { a: `Before (${windowText(before)})`, b: `After (${windowText(after)})` }
+  const labels = {
+    a: t('impact.before', { range: windowRange(before, 'short', locale, tr) }),
+    b: t('impact.after', { range: windowRange(after, 'short', locale, tr) }),
+  }
   const moved = mostImpacted(heroes)
   const heroRows = heroes.filter((h) => !ctx.hero || h.id === ctx.hero.id)
   const changedHeroes = heroRows.filter((h) => marks.heroes.has(h.id))
@@ -300,44 +303,51 @@ async function Impact({ patch, ctx }: { patch: PatchSummary; ctx: PatchContext }
 
   return (
     <div className="flex flex-col gap-8">
-      <ScopeLine scope={{ window: { kind: 'text', text: `${labels.a} vs ${labels.b}` }, rank: { kind: 'text', text: (await getScopeWording('en')).rankScope(ctx.rank) }, sampleSize: Math.round(sample / 12), source: 'live' }} />
+      <ScopeLine scope={{ window: { kind: 'text', text: t('impact.versus', labels) }, rank: { kind: 'text', text: words.rankScope(ctx.rank) }, sampleSize: Math.round(sample / 12), source: 'live' }} />
       {after.days < 3 && (
         <p role="status" className="rounded-md border border-orange/40 bg-orange/10 px-4 py-3 text-sm text-text">
-          Only {after.days} {after.days === 1 ? 'day' : 'days'} after the patch so far (the latest day is incomplete). Treat changes as early signals.
+          {t('impact.early', { count: after.days })}
         </p>
       )}
 
       <div className="flex flex-col gap-3">
-        <h3 className="font-ui text-title font-semibold text-text">Most impacted heroes</h3>
-        <p className="text-sm text-text-muted">Heroes whose win rate moved beyond normal variation. {CLEAR_RULE}</p>
+        <h3 className="font-ui text-title font-semibold text-text">{t('impact.mostImpacted')}</h3>
+        <p className="text-sm text-text-muted">{t('impact.mostImpactedNote', { rule: t('rules.clear') })}</p>
         <MostImpacted up={moved.up} down={moved.down} marks={marks.heroes} labels={labels} />
       </div>
 
       <div className="flex flex-col gap-3">
-        <h3 className="font-ui text-title font-semibold text-text">{ctx.hero ? ctx.hero.name : 'Heroes changed in this patch'}</h3>
+        <h3 className="font-ui text-title font-semibold text-text">{ctx.hero ? ctx.hero.name : t('impact.changedHeroes')}</h3>
         {(ctx.hero ? heroRows : changedHeroes).length > 0 ? (
-          <MovementTable rows={ctx.hero ? heroRows : changedHeroes} rateLabel="Pick rate" marks={marks.heroes} caption="Hero win and pick rates before and after the patch" />
+          <MovementTable rows={ctx.hero ? heroRows : changedHeroes} rateLabel={heroesT('pickRate')} marks={marks.heroes} caption={t('impact.heroCaption')} />
         ) : (
-          <p className="text-sm text-text-muted">{grouped ? 'No hero values changed in this patch.' : 'Game data for this patch isn’t available, so changed heroes can’t be marked.'}</p>
+          <p className="text-sm text-text-muted">{grouped ? t('impact.noChangedHeroes') : t('impact.noGameData')}</p>
         )}
         {!ctx.hero && (
           <details>
-            <summary className="inline-flex min-h-11 cursor-pointer items-center font-ui text-sm font-semibold text-primary hover:text-highlight">All heroes ({heroRows.length})</summary>
+            <summary className="inline-flex min-h-11 cursor-pointer items-center font-ui text-sm font-semibold text-primary hover:text-highlight">
+              {t('impact.allHeroes', { count: heroRows.length })}
+            </summary>
             <div className="mt-3">
-              <MovementTable rows={[...heroRows].sort((a, b) => (b.winDelta ?? -1) - (a.winDelta ?? -1))} rateLabel="Pick rate" marks={marks.heroes} caption="All heroes before and after the patch" />
+              <MovementTable
+                rows={[...heroRows].sort((a, b) => (b.winDelta ?? -1) - (a.winDelta ?? -1))}
+                rateLabel={heroesT('pickRate')}
+                marks={marks.heroes}
+                caption={t('impact.allCaption')}
+              />
             </div>
           </details>
         )}
       </div>
 
       <div className="flex flex-col gap-3">
-        <h3 className="font-ui text-title font-semibold text-text">{ctx.item ? ctx.item.name : 'Items changed in this patch'}</h3>
+        <h3 className="font-ui text-title font-semibold text-text">{ctx.item ? ctx.item.name : t('impact.changedItems')}</h3>
         {itemRows === null ? (
-          <p className="text-sm text-text-muted">Item statistics are unavailable right now.</p>
+          <p className="text-sm text-text-muted">{t('impact.itemsUnavailable')}</p>
         ) : itemRows.length > 0 ? (
-          <MovementTable rows={itemRows} rateLabel="Buy rate" marks={marks.items} caption="Item win and buy rates before and after the patch" />
+          <MovementTable rows={itemRows} rateLabel={itemsT('buyRate')} marks={marks.items} caption={t('impact.itemCaption')} />
         ) : (
-          <p className="text-sm text-text-muted">{ctx.item ? 'Not enough purchases of this item around the patch.' : 'No changed shop item has enough purchases around the patch.'}</p>
+          <p className="text-sm text-text-muted">{ctx.item ? t('impact.itemLowPurchases') : t('impact.noChangedItems')}</p>
         )}
       </div>
     </div>

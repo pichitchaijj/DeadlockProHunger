@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { ConfidenceBadge } from '@/components/data/ConfidenceBadge'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
@@ -5,7 +6,6 @@ import { ItemIcon } from '@/components/game-assets/ItemIcon'
 import { cardClasses } from '@/components/ui/Card'
 import { Table, type TableColumn } from '@/components/ui/Table'
 import { cx } from '@/lib/cx'
-import { formatInteger } from '@/lib/format'
 import type { HeroMovement, ItemMovement } from '../loaders'
 import type { Mark } from '../model'
 import { DirectionBadge, PointDelta, RateChange, VerdictBadge } from './indicators'
@@ -29,15 +29,16 @@ function Subject({ row }: { row: Row }) {
 
 /** Top clear risers and fallers (verdict higher / lower only), with what the patch did to each. */
 export function MostImpacted({ up, down, marks, labels }: { up: Row[]; down: Row[]; marks: Map<number, Mark>; labels: { a: string; b: string } }) {
+  const t = useTranslations('patch.impact')
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {(
         [
-          ['Win rate up', up, 'No hero’s win rate rose beyond normal variation.'],
-          ['Win rate down', down, 'No hero’s win rate fell beyond normal variation.'],
+          ['up', t('up'), up, t('upEmpty')],
+          ['down', t('down'), down, t('downEmpty')],
         ] as const
-      ).map(([title, rows, empty]) => (
-        <section key={title} className={cx(cardClasses({}), 'flex flex-col gap-3 p-4')}>
+      ).map(([id, title, rows, empty]) => (
+        <section key={id} className={cx(cardClasses({}), 'flex flex-col gap-3 p-4')}>
           <h3 className="text-eyebrow">{title}</h3>
           {rows.length === 0 ? (
             <p className="text-sm text-text-muted">{empty}</p>
@@ -56,9 +57,7 @@ export function MostImpacted({ up, down, marks, labels }: { up: Row[]; down: Row
               ))}
             </ol>
           )}
-          <p className="text-caption text-text-muted">
-            {labels.a} → {labels.b}. Changed-in-patch markers come from the game data.
-          </p>
+          <p className="text-caption text-text-muted">{t('footnote', { a: labels.a, b: labels.b })}</p>
         </section>
       ))}
     </div>
@@ -67,14 +66,15 @@ export function MostImpacted({ up, down, marks, labels }: { up: Row[]; down: Row
 
 /** Win rate and pick / buy rate in two periods, per hero or item. Table on desktop, cards on phones. */
 export function MovementTable({ rows, rateLabel, marks, caption }: { rows: Row[]; rateLabel: string; marks: Map<number, Mark>; caption: string }) {
+  const t = useTranslations('patch.impact.table')
   const columns: TableColumn<Row>[] = [
-    { key: 'name', header: 'Name', cell: (r) => <Subject row={r} /> },
-    { key: 'patch', header: 'In patch', cell: (r) => (marks.has(r.id) ? <DirectionBadge mark={marks.get(r.id)!} /> : <span className="text-text-muted">—</span>) },
-    { key: 'wr', header: 'Win rate', numeric: true, cell: (r) => <RateChange before={r.before?.winRate ?? null} after={r.after?.winRate ?? null} /> },
-    { key: 'delta', header: 'Change', numeric: true, cell: (r) => <PointDelta delta={r.winDelta} muted={r.verdict !== 'higher' && r.verdict !== 'lower'} /> },
-    { key: 'verdict', header: 'Clear change?', align: 'end', cell: (r) => <VerdictBadge verdict={r.verdict} /> },
+    { key: 'name', header: t('name'), cell: (r) => <Subject row={r} /> },
+    { key: 'patch', header: t('inPatch'), cell: (r) => (marks.has(r.id) ? <DirectionBadge mark={marks.get(r.id)!} /> : <span className="text-text-muted">—</span>) },
+    { key: 'wr', header: t('winRate'), numeric: true, cell: (r) => <RateChange before={r.before?.winRate ?? null} after={r.after?.winRate ?? null} /> },
+    { key: 'delta', header: t('change'), numeric: true, cell: (r) => <PointDelta delta={r.winDelta} muted={r.verdict !== 'higher' && r.verdict !== 'lower'} /> },
+    { key: 'verdict', header: t('clear'), align: 'end', cell: (r) => <VerdictBadge verdict={r.verdict} /> },
     { key: 'rate', header: rateLabel, numeric: true, cell: (r) => <RateChange before={r.rateBefore} after={r.rateAfter} /> },
-    { key: 'n', header: 'Matches (after)', numeric: true, cell: (r) => (r.after ? <ConfidenceBadge sampleSize={r.after.matches} /> : '—') },
+    { key: 'n', header: t('matchesAfter'), numeric: true, cell: (r) => (r.after ? <ConfidenceBadge sampleSize={r.after.matches} /> : '—') },
   ]
   return (
     <>
@@ -88,7 +88,7 @@ export function MovementTable({ rows, rateLabel, marks, caption }: { rows: Row[]
             </div>
             <dl className="mt-3 grid grid-cols-2 gap-2 border-t border-border pt-3 text-sm">
               <div>
-                <dt className="text-caption text-text-muted">Win rate</dt>
+                <dt className="text-caption text-text-muted">{t('winRate')}</dt>
                 <dd className="flex flex-wrap items-center gap-2">
                   <RateChange before={r.before?.winRate ?? null} after={r.after?.winRate ?? null} />
                   <PointDelta delta={r.winDelta} muted={r.verdict !== 'higher' && r.verdict !== 'lower'} />
@@ -103,7 +103,7 @@ export function MovementTable({ rows, rateLabel, marks, caption }: { rows: Row[]
             </dl>
             <p className="mt-2 flex flex-wrap items-center gap-2">
               <VerdictBadge verdict={r.verdict} />
-              {r.after && <span className="text-caption text-text-muted">{formatInteger(r.after.matches)} matches after</span>}
+              {r.after && <span className="text-caption text-text-muted">{t('matchesAfterCount', { count: r.after.matches })}</span>}
             </p>
           </li>
         ))}

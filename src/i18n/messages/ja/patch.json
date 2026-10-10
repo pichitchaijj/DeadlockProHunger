@@ -1,0 +1,211 @@
+{
+  "meta": {
+    "listTitle": "パッチ",
+    "listDescription": "Deadlock のパッチ：ゲームデータで何が変わったか、公式パッチノート、各パッチ前後のヒーローとアイテムの統計。",
+    "detailTitle": "{title} · パッチ",
+    "detailDescription": "{date} の Deadlock パッチで何が変わったか、そしてパッチ前後のヒーローとアイテムの統計。",
+    "compareTitle": "パッチを比較",
+    "compareDescription": "2 つの Deadlock パッチを並べて比較：各パッチ初期のヒーローとアイテムの勝率、そして両パッチ間のゲームデータの変更すべて。"
+  },
+  "untitled": "{date} のアップデート",
+  "option": "{id} · {title}",
+  "links": {
+    "forum": "公式パッチノート（フォーラム）",
+    "steam": "Steam ニュース",
+    "external": "{label} ↗"
+  },
+  "list": {
+    "eyebrow": "パッチ",
+    "title": "パッチノートと変更点",
+    "description": "すべてのパッチについて、ゲームデータの変更、公式パッチノート、そしてその前後のヒーローとアイテムの統計を掲載。",
+    "emptyTitle": "パッチが見つかりません",
+    "emptyDescription": "パッチフィードに日付付きのパッチがありませんでした。",
+    "latest": "最新パッチ · {date}",
+    "whatChanged": "変更点",
+    "compareWithPrevious": "前のパッチと比較",
+    "compareTitle": "2 つのパッチを比較",
+    "patchA": "パッチ A（古い方）",
+    "patchB": "パッチ B（新しい方）",
+    "allTitle": "すべてのパッチ",
+    "notesIncluded": "パッチノートあり",
+    "notesLinked": "パッチノートへのリンク",
+    "footnote": "パッチはデータフィード内の公式パッチノートと Steam のアップデート投稿から取得しています（{count, plural, other {# 件}}）。各パッチのページでは、その日付前後のビルドのゲームデータを比較します。",
+    "countsUnknown": "開くとゲームデータの変更と統計を確認できます。",
+    "counts": "ヒーロー {heroes, plural, other {# 体}} · アビリティ {abilities, plural, other {# 個}} · アイテム {items, plural, other {# 個}}（公式パッチノート）"
+  },
+  "detail": {
+    "nav": "パッチ",
+    "all": "← すべてのパッチ",
+    "older": "‹ 前のパッチ",
+    "newer": "次のパッチ ›",
+    "eyebrow": "パッチ · {date}",
+    "description": "ゲームデータで何が変わったか、公式パッチノート、そしてパッチ前後のヒーローとアイテムの統計。",
+    "picker": "パッチ",
+    "unknownHero": "不明なヒーロー",
+    "unknownItem": "不明なアイテム",
+    "changed": {
+      "eyebrow": "レイヤー 1",
+      "title": "変更点",
+      "description": "値はパッチ日の前後のビルドのゲームファイルから取得しています。公式パッチノートはその後に続きます。"
+    },
+    "impact": {
+      "eyebrow": "レイヤー 2",
+      "title": "パッチ前後",
+      "description": "パッチ日の前後に観測された統計です。時期を示すだけで、原因ではありません。プレイヤー層、他のヒーロー、他の変更も勝率を動かします。"
+    },
+    "loadingChanges": "変更点を読み込み中",
+    "loadingStats": "統計を読み込み中",
+    "how": {
+      "summary": "このページのしくみ",
+      "gameData": "<b>ゲームデータ</b>：すべての値は、データソースがビルドごとに解析したゲームファイルから読み取っています。「前」のビルドはパッチ日より前の最後のビルド、「後」のビルドはパッチ日の最後のビルド（または次のパッチより前）です。",
+      "notes": "<b>公式パッチノート</b>：フィードに含まれている場合に表示します（Steam の “Minor Update” 投稿）。前 → 後は、その行に “from X to Y” と書かれている場合のみ表示します。",
+      "direction": "<b>バフ / ナーフ</b>：{rule}",
+      "stats": "<b>前後の統計</b>：パッチ日の前 7 日間（前のパッチより前は含まない）と、パッチ日から最大 7 日間（次のパッチを越えない）の比較。「明確な変化」：{rule}"
+    }
+  },
+  "changes": {
+    "noDataTitle": "このパッチの変更データがありません",
+    "noDataDescription": "このパッチ日の日付を持つゲームビルドがなく、フィードにも公式パッチノートがありません。上の公式パッチノートのリンクを使ってください。",
+    "build": "ゲームデータ：ビルド {from}（{fromTime} UTC）→ ビルド {to}（{toTime} UTC）。",
+    "noBuild": "このパッチ日の日付を持つゲームビルドがないため、ゲームデータから値を比較できません。下の公式パッチノートが情報源です。",
+    "heroes": "ヒーロー",
+    "noHeroes": "ヒーローの値の変更はありません。",
+    "noHeroesFor": "{hero} の値の変更はありません。",
+    "items": "変更の多いアイテム",
+    "noItems": "ショップアイテムの値の変更はありません。",
+    "noItemsFor": "{item} の値の変更はありません。",
+    "officialNotes": "公式パッチノート",
+    "showNotes": "公式パッチノートを表示（{count, plural, other {# 行}}）",
+    "noNoteMatch": "ヒーローまたはアイテムのフィルターに一致するノートの行はありません。",
+    "notesLinkOnly": "このパッチについて、データフィードにはノートへのリンクしかありません。上の公式パッチノートのリンクを使ってください。",
+    "summary": {
+      "heroes": "変更されたヒーロー",
+      "abilities": "変更されたアビリティ",
+      "items": "変更されたアイテム",
+      "values": "値の変更 · {source, select, notes {公式パッチノートより} other {ゲームデータより}}"
+    },
+    "baseStats": "基本ステータス",
+    "gun": "銃",
+    "unnamedHero": "ヒーロー {id}",
+    "newHero": "このビルドで新たにプレイ可能になったヒーロー。",
+    "removedHero": "このビルドではプレイできなくなりました。",
+    "itemTier": "ティア {tier}",
+    "winRate": "勝率（前 → 後）",
+    "buyRate": "購入率（前 → 後）",
+    "notesGeneral": "変更点",
+    "broad": {
+      "summary": "広範な変更（{count}）：多くの項目に同じ値の変更",
+      "explanation": "全体的なルール、またはゲームファイルでの値の保存方法の変更です。すべてのアビリティやアイテムに表示する代わりに、ここに一度だけ表示します。",
+      "entries": "{count, plural, other {# 項目}}"
+    }
+  },
+  "labels": {
+    "cost": "コスト",
+    "bullet_damage": "弾丸ダメージ",
+    "bullets": "1 発あたりの弾数",
+    "cycle_time": "射撃間隔",
+    "clip_size": "マガジンサイズ",
+    "reload_duration": "リロード時間",
+    "damage_falloff_start_range": "減衰開始距離",
+    "damage_falloff_end_range": "減衰終了距離",
+    "crit_bonus_start": "ヘッドショット倍率"
+  },
+  "values": {
+    "souls": "{value} ソウル"
+  },
+  "impact": {
+    "range": "{from}–{to}",
+    "before": "前（{range}）",
+    "after": "後（{range}）",
+    "period": "{id}（{range}）",
+    "versus": "{a} と {b}",
+    "noAfterTitle": "パッチ後の日数がまだありません",
+    "noAfterDescription": "パッチ後の統計はパッチ日から始まります。明日また確認してください。",
+    "early": "パッチ後まだ {count, plural, other {# 日}}しか経っていません（最新の日は集計途中です）。変化は初期の兆候として扱ってください。",
+    "mostImpacted": "影響の大きいヒーロー",
+    "mostImpactedNote": "勝率が通常の変動を超えて動いたヒーロー。{rule}",
+    "changedHeroes": "このパッチで変更されたヒーロー",
+    "heroCaption": "パッチ前後のヒーローの勝率とピック率",
+    "noChangedHeroes": "このパッチでヒーローの値の変更はありません。",
+    "noGameData": "このパッチのゲームデータがないため、変更されたヒーローを示せません。",
+    "allHeroes": "全ヒーロー（{count}）",
+    "allCaption": "パッチ前後の全ヒーロー",
+    "changedItems": "このパッチで変更されたアイテム",
+    "itemCaption": "パッチ前後のアイテムの勝率と購入率",
+    "itemsUnavailable": "現在アイテムの統計を利用できません。",
+    "itemLowPurchases": "パッチ前後でこのアイテムの購入数が足りません。",
+    "noChangedItems": "変更されたショップアイテムのうち、パッチ前後で十分に購入されたものはありません。",
+    "up": "勝率上昇",
+    "down": "勝率下降",
+    "upEmpty": "通常の変動を超えて勝率が上がったヒーローはいません。",
+    "downEmpty": "通常の変動を超えて勝率が下がったヒーローはいません。",
+    "footnote": "{a} → {b}。パッチでの変更マークはゲームデータに基づきます。",
+    "table": {
+      "name": "名前",
+      "inPatch": "パッチでの変更",
+      "winRate": "勝率",
+      "change": "変化",
+      "clear": "明確な変化？",
+      "matchesAfter": "試合数（後）",
+      "matchesAfterCount": "パッチ後 {count, plural, other {# 試合}}"
+    }
+  },
+  "compare": {
+    "title": "パッチを比較",
+    "description": "各パッチ初期のヒーローとアイテムの統計、そして 2 つのパッチ間のゲームデータの変更すべて。",
+    "loading": "比較を読み込み中",
+    "patchA": "パッチ A",
+    "patchB": "パッチ B",
+    "pickTwoTitle": "2 つのパッチを選んでください",
+    "pickTwoDescription": "選択したパッチの 1 つがパッチフィードにありません。",
+    "latestTwo": "最新の 2 パッチ",
+    "sameTitle": "同じパッチが 2 回選ばれています",
+    "sameDescription": "比較する 2 つの異なるパッチを選んでください。",
+    "heroesTitle": "ヒーローの勝率の変化",
+    "heroesDescription": "{a} → {b}。2 つの期間の間に観測された差であり、パッチの効果ではありません。",
+    "early": "新しい方のパッチはまだ {count, plural, other {# 日}}分のデータしかありません。変化は初期の兆候として扱ってください。",
+    "heroCaption": "ヒーローの勝率とピック率、{a} と {b}",
+    "itemsTitle": "アイテムの変化",
+    "itemsDescription": "2 つのパッチ間でゲームデータが変更されたアイテムと、勝率が通常の変動を超えて動いたアイテム。",
+    "itemCaption": "アイテムの勝率と購入率、{a} と {b}",
+    "noItems": "この範囲で変更された、または通常の変動を超えて動いたアイテムはありません。",
+    "dataTitle": "パッチ間のゲームデータ",
+    "dataDescription": "ビルド {from} → ビルド {to}：間のすべてのパッチを含め、異なるすべての値。",
+    "noBuilds": "これらのパッチで比較できるゲームビルドがありません。",
+    "heroesCount": "ヒーロー（{count}）",
+    "itemsCount": "アイテム（{count}）",
+    "how": {
+      "summary": "パッチの比較方法",
+      "periods": "各パッチの期間は、パッチ日から次のパッチまで（最大 7 日間）です。統計は古い方のパッチの期間と新しい方の期間を比較します。",
+      "clear": "「明確な変化」：{rule}",
+      "data": "ゲームデータの変更は、古い方のパッチ後に有効なビルドと新しい方のパッチ後に有効なビルドを比較するため、間のすべてのパッチを含みます。",
+      "observed": "期間の差は観測されたもので、説明ではありません。プレイヤー層、メタの他の部分、イベントも変化します。"
+    }
+  },
+  "filters": {
+    "rank": "ランク（試合平均、統計用）",
+    "gameModeNote": "通常（6v6）。Street Brawl は統計ソースで別扱いのため、ここには表示しません。"
+  },
+  "marks": {
+    "buff": "バフ",
+    "nerf": "ナーフ",
+    "changed": "変更",
+    "mixed": "混在",
+    "new": "新規",
+    "removed": "削除"
+  },
+  "verdicts": {
+    "higher": "上昇",
+    "lower": "下降",
+    "none": "明確な変化なし",
+    "insufficient": "データ不足"
+  },
+  "beforeAfter": {
+    "from": "変更前",
+    "to": "変更後"
+  },
+  "rules": {
+    "clear": "両方の期間が 200 試合以上あり、95% 区間が重ならず、勝率が 1 パーセントポイント以上動いた場合。",
+    "direction": "バフ / ナーフは、項目名と値に対する固定ルールで判定します。クールダウン、コスト、ディレイ、ペナルティが下がればバフ、ダメージ、体力、回復、持続時間、範囲、射程、速度、スロー、耐性が上がればバフです。それ以外、または 0 への変更や 0 からの変更は「変更」と表示します。"
+  }
+}

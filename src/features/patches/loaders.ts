@@ -58,7 +58,7 @@ const cachedDiff = unstable_cache(
     for (const e of [...before.values(), ...after.values()]) if (e.kind === 'hero') heroNames[e.id] = e.name
     return { ...splitBroadChanges(diffSnapshots(before, after)), heroNames }
   }),
-  ['patch-diff-v2'],
+  ['patch-diff-v3'], // v3: property labels and units as references (worded at render), not English text
   { revalidate: 30 * DAY, tags: ['assets'] },
 )
 

@@ -1,37 +1,42 @@
+import { useTranslations } from 'next-intl'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
 import { cx } from '@/lib/cx'
 import { formatPercent, formatPointDelta } from '@/lib/format'
 import type { Mark, Verdict } from '../model'
+import { markLabel, verdictLabel } from '../text'
 
-const MARKS: Record<Mark, { tone: BadgeTone; icon: string; label: string }> = {
-  buff: { tone: 'positive', icon: '▲', label: 'Buff' },
-  nerf: { tone: 'negative', icon: '▼', label: 'Nerf' },
-  changed: { tone: 'warning', icon: '●', label: 'Changed' },
-  mixed: { tone: 'neutral', icon: '◆', label: 'Mixed' },
-  new: { tone: 'primary', icon: '+', label: 'New' },
-  removed: { tone: 'neutral', icon: '−', label: 'Removed' },
+/** Marks are identifiers; their words come from the catalog (patch.marks). */
+const MARKS: Record<Mark, { tone: BadgeTone; icon: string }> = {
+  buff: { tone: 'positive', icon: '▲' },
+  nerf: { tone: 'negative', icon: '▼' },
+  changed: { tone: 'warning', icon: '●' },
+  mixed: { tone: 'neutral', icon: '◆' },
+  new: { tone: 'primary', icon: '+' },
+  removed: { tone: 'neutral', icon: '−' },
 }
 
 /** Buff / nerf / changed marker: a word and a symbol, never color alone. */
 export function DirectionBadge({ mark, className }: { mark: Mark; className?: string }) {
+  const t = useTranslations('patch')
   const m = MARKS[mark]
   return (
     <Badge tone={m.tone} className={className} icon={<span aria-hidden="true">{m.icon}</span>}>
-      {m.label}
+      {markLabel(mark, (key) => t(key as 'marks.buff'))}
     </Badge>
   )
 }
 
 /** "28s → 24s" with the new value emphasized; read as "from 28s to 24s". */
 export function BeforeAfter({ before, after, className }: { before: string; after: string; className?: string }) {
+  const t = useTranslations('patch.beforeAfter')
   return (
     <span className={cx('inline-flex flex-wrap items-baseline gap-x-1.5 tabular', className)}>
-      <span className="sr-only">from</span>
+      <span className="sr-only">{t('from')}</span>
       <span className="text-text-muted line-through decoration-text-muted/50">{before}</span>
       <span aria-hidden="true" className="text-text-muted">
         →
       </span>
-      <span className="sr-only">to</span>
+      <span className="sr-only">{t('to')}</span>
       <span className="font-semibold text-text">{after}</span>
     </span>
   )
@@ -55,19 +60,21 @@ export function RateChange({ before, after }: { before: number | null; after: nu
   return <BeforeAfter before={before === null ? '—' : formatPercent(before)} after={after === null ? '—' : formatPercent(after)} />
 }
 
-const VERDICTS: Record<Verdict, { tone: BadgeTone; icon: string; label: string }> = {
-  higher: { tone: 'positive', icon: '▲', label: 'Higher' },
-  lower: { tone: 'negative', icon: '▼', label: 'Lower' },
-  'no clear change': { tone: 'neutral', icon: '', label: 'No clear change' },
-  'not enough data': { tone: 'neutral', icon: '', label: 'Not enough data' },
+/** Verdicts are identifiers; their words come from the catalog (patch.verdicts). */
+const VERDICTS: Record<Verdict, { tone: BadgeTone; icon: string }> = {
+  higher: { tone: 'positive', icon: '▲' },
+  lower: { tone: 'negative', icon: '▼' },
+  'no clear change': { tone: 'neutral', icon: '' },
+  'not enough data': { tone: 'neutral', icon: '' },
 }
 
-/** Whether a win-rate move passes the clear-change rule (CLEAR_RULE). */
+/** Whether a win-rate move passes the clear-change rule (patch.rules.clear). */
 export function VerdictBadge({ verdict }: { verdict: Verdict }) {
+  const t = useTranslations('patch')
   const v = VERDICTS[verdict]
   return (
     <Badge tone={v.tone} icon={v.icon ? <span aria-hidden="true">{v.icon}</span> : undefined}>
-      {v.label}
+      {verdictLabel(verdict, (key) => t(key as 'verdicts.higher'))}
     </Badge>
   )
 }
