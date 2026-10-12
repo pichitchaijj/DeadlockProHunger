@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import { getLocale, getTranslations } from 'next-intl/server'
 import type { ReactNode } from 'react'
 import { OG_LOCALE } from '@/i18n/config'
-import { pageAlternates } from '@/i18n/seo'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { ButtonLink } from '@/components/ui/Button'
 import { Filter } from '@/components/ui/Filter'
@@ -13,22 +12,23 @@ import { HeroPicker, TeamSlots } from '@/features/draft/components/Board'
 import { Balance, Recommendations, RoleCoverage, WeakPoints } from '@/features/draft/components/Insights'
 import { RelationMap } from '@/features/draft/components/RelationMap'
 import { getDraftData } from '@/features/draft/loaders'
-import { draftHref, parseDraftQuery, TEAM_SIZE } from '@/features/draft/query'
+import { draftIndexing } from '@/features/draft/seo'
+import { DRAFT_STATE_REL, draftHref, parseDraftQuery, TEAM_SIZE } from '@/features/draft/query'
 import { DataNotice } from '@/components/data/DataState'
 import { attempt } from '@/lib/deadlock/errors'
 import { getScopeWording } from '@/components/data/scopeWording'
 
-export async function generateMetadata(): Promise<Metadata> {
-  const [t, locale] = await Promise.all([getTranslations('draft.meta'), getLocale()])
+type SearchParams = Promise<Record<string, string | string[] | undefined>>
+
+export async function generateMetadata({ searchParams }: { searchParams: SearchParams }): Promise<Metadata> {
+  const [t, locale, params] = await Promise.all([getTranslations('draft.meta'), getLocale(), searchParams])
   return {
     title: t('title'),
     description: t('description'),
-    alternates: pageAlternates('/draft', locale),
+    ...draftIndexing(params, locale),
     openGraph: { title: t('title'), description: t('description'), locale: OG_LOCALE[locale], type: 'website' },
   }
 }
-
-type SearchParams = Promise<Record<string, string | string[] | undefined>>
 
 function Panel({ id, title, description, children, className }: { id: string; title: string; description?: string; children: ReactNode; className?: string }) {
   return (
@@ -58,12 +58,12 @@ export default async function DraftPage({ searchParams }: { searchParams: Search
     <PageContainer className="flex flex-col gap-6">
       <SectionHeader as="h1" eyebrow={t('eyebrow')} title={t('title')} description={t('description')} />
       {!data ? (
-        <DataNotice error={failed} what="Draft data" action={<ButtonLink href={draftHref(query)} variant="secondary" size="sm">{common('tryAgain')}</ButtonLink>} />
+        <DataNotice error={failed} what="Draft data" action={<ButtonLink href={draftHref(query)} rel={DRAFT_STATE_REL} variant="secondary" size="sm">{common('tryAgain')}</ButtonLink>} />
       ) : (
         <>
           <div className="grid gap-4 rounded-md border border-border bg-surface/60 p-(--spacing-card) md:grid-cols-2">
-            <Filter label={builds('detail.window')} value={query.window} options={(['patch', '7d', '30d'] as const).map((w) => ({ value: w, label: scopeWords.window(data.windows[w], { short: true }), href: draftHref(query, { window: w }) }))} />
-            <Filter label={builds('list.rank')} value={query.rank} options={rankBandOptions(scopeWords.rankLabels(data.rankRefs), data.ranks, (rank) => draftHref(query, { rank }))} />
+            <Filter label={builds('detail.window')} value={query.window} rel={DRAFT_STATE_REL} options={(['patch', '7d', '30d'] as const).map((w) => ({ value: w, label: scopeWords.window(data.windows[w], { short: true }), href: draftHref(query, { window: w }) }))} />
+            <Filter label={builds('list.rank')} value={query.rank} rel={DRAFT_STATE_REL} options={rankBandOptions(scopeWords.rankLabels(data.rankRefs), data.ranks, (rank) => draftHref(query, { rank }))} />
           </div>
 
           <TeamSlots query={query} allies={data.allies} enemies={data.enemies} base={data.baseWinRate} />

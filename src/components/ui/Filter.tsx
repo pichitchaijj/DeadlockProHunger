@@ -16,6 +16,8 @@ type FilterProps = {
   label: string
   options: FilterOption[]
   value: string
+  /** `rel` for every option link (Draft Lab passes "nofollow"); unset elsewhere, so other pages are unchanged. */
+  rel?: string
   className?: string
 }
 
@@ -23,7 +25,7 @@ type FilterProps = {
  * Single-select preset filter rendered as links (no client JS).
  * Scrolls horizontally on narrow screens; the active option is marked with aria-current.
  */
-export function Filter({ label, options, value, className }: FilterProps) {
+export function Filter({ label, options, value, rel, className }: FilterProps) {
   return (
     // min-w-0: inside grid/flex parents, the scrollable chip row must not stretch its track.
     <nav aria-label={`${label} filter`} className={cx('flex min-w-0 flex-col gap-2', className)}>
@@ -37,6 +39,7 @@ export function Filter({ label, options, value, className }: FilterProps) {
             <li key={option.value} className="shrink-0">
               <Link
                 href={option.href}
+                rel={rel}
                 scroll={false}
                 aria-current={active ? 'true' : undefined}
                 className={cx(

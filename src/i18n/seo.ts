@@ -71,10 +71,22 @@ export function sitemapEntries(paths: string[], base: URL | null = siteUrl()): M
   return [...new Set(paths)].flatMap((path) => locales.map((locale) => ({ url: absolute(localizedPath(path, locale), base), alternates: { languages: languages(path, base) } })))
 }
 
-/** robots.txt: the design showcase (every locale prefix) and API routes are off limits; the sitemap when SITE_URL is set. */
+/**
+ * Pages whose query strings describe user state with no useful bound (Draft Lab: every pick order is its own
+ * URL). Their query-string URLs are off limits to crawlers; the base page stays crawlable.
+ */
+export const QUERY_DISALLOWED_PATHS = ['/draft']
+
+/**
+ * robots.txt: the design showcase (every locale prefix), query-string URLs of QUERY_DISALLOWED_PATHS (every
+ * locale prefix; `/draft?` is a prefix rule, so `/draft` itself stays allowed) and API routes are off limits;
+ * the sitemap when SITE_URL is set.
+ */
 export function robotsRules(base: URL | null = siteUrl()): MetadataRoute.Robots {
+  const design = locales.map((l) => localizedPath('/design', l))
+  const queries = QUERY_DISALLOWED_PATHS.flatMap((path) => locales.map((l) => `${localizedPath(path, l)}?`))
   return {
-    rules: [{ userAgent: '*', allow: '/', disallow: [...locales.map((l) => localizedPath('/design', l)), '/api/'] }],
+    rules: [{ userAgent: '*', allow: '/', disallow: [...design, ...queries, '/api/'] }],
     ...(base && { sitemap: absolute('/sitemap.xml', base) }),
   }
 }

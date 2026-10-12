@@ -7,7 +7,7 @@ import { cx } from '@/lib/cx'
 import { formatInteger, formatPercent } from '@/lib/format'
 import { capitalize } from '@/features/meta/model'
 import { BALANCE_AXES, pp, ROLE_ORDER, weakPointText, type BalanceAxis, type DraftHero, type HeroRef, type Recommendation, type Relation, type WeakPoint } from '../model'
-import { draftHref, withHero, type DraftQuery } from '../query'
+import { DRAFT_STATE_REL, draftHref, withHero, type DraftQuery } from '../query'
 
 /*
  * Draft insight panels, worded from the Draft catalog (draft.recs / draft.weak / draft.roles / draft.balance).
@@ -52,7 +52,7 @@ export function Recommendations({ query, recs, heroes, hasPicks, alliesFull }: {
               <Badge tone={rec.confidence === 'high' ? 'primary' : 'neutral'} title={t(`rule.${rec.confidence}`)}>
                 {t(`confidence.${rec.confidence}`)}
               </Badge>
-              <Link href={draftHref(withHero(query, rec.hero.slug, 'allies'))} className="ml-auto inline-flex min-h-11 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:text-highlight">
+              <Link href={draftHref(withHero(query, rec.hero.slug, 'allies'))} rel={DRAFT_STATE_REL} className="ml-auto inline-flex min-h-11 items-center rounded-sm px-2 text-sm font-semibold text-primary hover:text-highlight">
                 {t('addToTeam')}
               </Link>
             </div>

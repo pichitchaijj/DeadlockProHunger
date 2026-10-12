@@ -1,7 +1,22 @@
 import { describe, expect, it } from 'vitest'
 import { primaryNav, secondaryNav } from '@/config/navigation'
 import { locales } from '@/i18n/config'
-import { getPathname, splitLocalePath, switchLocaleHref } from '@/i18n/navigation'
+import { getPathname, splitLocalePath, switchLocaleHref, switchLocaleRel } from '@/i18n/navigation'
+
+describe('language-switch link rel', () => {
+  it('is nofollow only when the link carries a query string', () => {
+    expect(switchLocaleRel('allies=haze,abrams&enemies=seven')).toBe('nofollow') // Draft state
+    expect(switchLocaleRel('?window=30d')).toBe('nofollow') // leading '?' accepted
+    expect(switchLocaleRel('utm_source=x')).toBe('nofollow')
+    expect(switchLocaleRel('')).toBeUndefined() // plain page: unchanged
+    expect(switchLocaleRel('?')).toBeUndefined()
+  })
+
+  it('leaves the switch URL itself unchanged (query kept)', () => {
+    expect(switchLocaleHref('/draft', 'allies=haze', 'ja')).toBe('/ja/draft?allies=haze')
+    expect(switchLocaleHref('/ja/draft', '', 'en')).toBe('/draft')
+  })
+})
 
 /** The language switcher's rule: same page, route params and query; English unprefixed. */
 const switchTo = (url: string, locale: (typeof locales)[number]) => {

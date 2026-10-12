@@ -14,6 +14,13 @@ export type DraftQuery = {
 
 export const TEAM_SIZE = 6
 
+/**
+ * `rel` for every link that changes the draft (add, remove, side, clear, recommendation, filters, retry): each
+ * one is a new query-string URL, so crawlers aren't invited to follow them (robots.txt and the page's
+ * noindex, nofollow cover the same URLs: src/features/draft/seo.ts). The URLs themselves are unchanged.
+ */
+export const DRAFT_STATE_REL = 'nofollow'
+
 type Raw = Record<string, string | string[] | undefined>
 const str = (v: string | string[] | undefined) => (typeof v === 'string' ? v : '')
 const slugs = (v: string) => [...new Set(v.split(',').filter((s) => /^[a-z0-9-]{1,40}$/.test(s)))].slice(0, TEAM_SIZE)

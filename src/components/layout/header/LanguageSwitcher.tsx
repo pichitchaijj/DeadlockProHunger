@@ -4,7 +4,7 @@ import { useLocale } from 'next-intl'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { Suspense, useId } from 'react'
 import { localeEndonyms, locales, type Locale } from '@/i18n/config'
-import { switchLocaleHref } from '@/i18n/navigation'
+import { switchLocaleHref, switchLocaleRel } from '@/i18n/navigation'
 import { cx } from '@/lib/cx'
 import { ChevronDownIcon, GlobeIcon } from '@/components/ui/icons'
 import { useDisclosureMenu } from '@/components/ui/useDisclosureMenu'
@@ -44,7 +44,8 @@ function SwitcherWithQuery(props: Props) {
 function Switcher({ labels, variant, search }: Props & { search: string }) {
   const locale = useLocale()
   const pathname = usePathname()
-  const options = locales.map((l) => ({ locale: l, href: switchLocaleHref(pathname, search, l), current: l === locale }))
+  const rel = switchLocaleRel(search)
+  const options = locales.map((l) => ({ locale: l, href: switchLocaleHref(pathname, search, l), rel, current: l === locale }))
   return variant === 'menu' ? (
     <SwitcherMenu labels={labels} locale={locale} options={options} />
   ) : (
@@ -52,7 +53,7 @@ function Switcher({ labels, variant, search }: Props & { search: string }) {
   )
 }
 
-type Option = { locale: Locale; href: string; current: boolean }
+type Option = { locale: Locale; href: string; rel: 'nofollow' | undefined; current: boolean }
 
 function LanguageName({ option, labels }: { option: Option; labels: LanguageSwitcherLabels }) {
   const translated = labels.names[option.locale]
@@ -102,6 +103,7 @@ function SwitcherMenu({ labels, locale, options }: { labels: LanguageSwitcherLab
               <a
                 data-language-link
                 href={o.href}
+                rel={o.rel}
                 hrefLang={o.locale}
                 aria-current={o.current ? 'true' : undefined}
                 className={cx(
@@ -132,6 +134,7 @@ function SwitcherList({ labels, options }: { labels: LanguageSwitcherLabels; opt
           <li key={o.locale}>
             <a
               href={o.href}
+              rel={o.rel}
               hrefLang={o.locale}
               aria-current={o.current ? 'true' : undefined}
               className={cx(

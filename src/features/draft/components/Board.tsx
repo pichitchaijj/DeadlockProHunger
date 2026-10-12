@@ -5,7 +5,7 @@ import { cx } from '@/lib/cx'
 import { formatPercent } from '@/lib/format'
 import { capitalize } from '@/features/meta/model'
 import { ROLE_ORDER, type DraftHero } from '../model'
-import { draftHref, TEAM_SIZE, withHero, withoutHero, type DraftQuery } from '../query'
+import { DRAFT_STATE_REL, draftHref, TEAM_SIZE, withHero, withoutHero, type DraftQuery } from '../query'
 
 /*
  * Draft board, worded from the Draft catalog (draft.board). Hero names and slugs, roles and win rates are data.
@@ -28,7 +28,7 @@ export function TeamSlots({ query, allies, enemies, base }: { query: DraftQuery;
               {active ? (
                 <span className="text-caption font-semibold text-primary">{t('addingHere')}</span>
               ) : (
-                <Link href={draftHref(query, { side })} className="inline-flex min-h-11 items-center text-caption text-text-muted hover:text-text">
+                <Link href={draftHref(query, { side })} rel={DRAFT_STATE_REL} className="inline-flex min-h-11 items-center text-caption text-text-muted hover:text-text">
                   {t('addHere')}
                 </Link>
               )}
@@ -39,7 +39,7 @@ export function TeamSlots({ query, allies, enemies, base }: { query: DraftQuery;
                 if (!hero) return <li key={i} aria-hidden="true" className="aspect-square rounded-sm border border-dashed border-border" />
                 return (
                   <li key={hero.id} className="flex flex-col items-center gap-1">
-                    <Link href={draftHref(withoutHero(query, hero.slug))} aria-label={t('remove', { hero: hero.name, side: t(`sidesLower.${side}`) })} className="group relative">
+                    <Link href={draftHref(withoutHero(query, hero.slug))} rel={DRAFT_STATE_REL} aria-label={t('remove', { hero: hero.name, side: t(`sidesLower.${side}`) })} className="group relative">
                       <HeroPortrait name={hero.name} src={hero.iconUrl ?? undefined} size="md" decorative />
                       <span aria-hidden="true" className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-pill border border-border-strong bg-surface-raised text-[0.7rem] text-text-muted group-hover:text-text">×</span>
                     </Link>
@@ -71,7 +71,7 @@ export function HeroPicker({ query, heroes }: { query: DraftQuery; heroes: Draft
           {full && <span className="text-text-muted"> · {t('teamFull')}</span>}
         </h2>
         {(query.allies.length > 0 || query.enemies.length > 0) && (
-          <Link href={draftHref({ ...query, allies: [], enemies: [] })} className="inline-flex min-h-11 items-center text-caption text-text-muted hover:text-text">{t('clear')}</Link>
+          <Link href={draftHref({ ...query, allies: [], enemies: [] })} rel={DRAFT_STATE_REL} className="inline-flex min-h-11 items-center text-caption text-text-muted hover:text-text">{t('clear')}</Link>
         )}
       </div>
       <div className="grid gap-4 lg:grid-cols-4">
@@ -92,7 +92,7 @@ export function HeroPicker({ query, heroes }: { query: DraftQuery; heroes: Draft
                     {isPicked || full ? (
                       <span title={isPicked ? t('picked', { hero: h.name }) : h.name} className={cx('block rounded-sm', isPicked ? 'opacity-30' : 'opacity-60')}>{tile}</span>
                     ) : (
-                      <Link href={draftHref(withHero(query, h.slug, query.side))} title={t('add', { hero: h.name })} aria-label={t('addToSide', { hero: h.name, side: sideName })} className="flex items-center justify-center rounded-sm transition-transform duration-150 hover:-translate-y-0.5 pointer-coarse:min-h-11 pointer-coarse:min-w-11">
+                      <Link href={draftHref(withHero(query, h.slug, query.side))} rel={DRAFT_STATE_REL} title={t('add', { hero: h.name })} aria-label={t('addToSide', { hero: h.name, side: sideName })} className="flex items-center justify-center rounded-sm transition-transform duration-150 hover:-translate-y-0.5 pointer-coarse:min-h-11 pointer-coarse:min-w-11">
                         {tile}
                       </Link>
                     )}

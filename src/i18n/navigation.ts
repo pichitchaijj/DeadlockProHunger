@@ -32,3 +32,11 @@ export function switchLocaleHref(pathname: string, search: string, locale: Local
   const query = search.replace(/^\?/, '')
   return getPathname({ href: query ? `${path}?${query}` : path, locale })
 }
+
+/**
+ * `rel` for a language-switch link: "nofollow" when it carries the page's query string (filter or Draft state,
+ * a near-unbounded set of URLs), none for a plain page. `search` is the query string, with or without '?'.
+ */
+export function switchLocaleRel(search: string): 'nofollow' | undefined {
+  return search.replace(/^\?/, '') ? 'nofollow' : undefined
+}

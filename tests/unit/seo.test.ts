@@ -108,9 +108,28 @@ describe('robots', () => {
     else process.env.SITE_URL = env
   })
 
-  it('disallows the design showcase in every locale and API routes', () => {
+  it('disallows the design showcase and Draft query strings in every locale, and API routes', () => {
     const rules = robotsRules(BASE).rules as { disallow: string[] }[]
-    expect(rules[0].disallow).toEqual(['/design', '/th/design', '/ja/design', '/ko/design', '/zh-CN/design', '/api/'])
+    expect(rules[0].disallow).toEqual([
+      '/design', '/th/design', '/ja/design', '/ko/design', '/zh-CN/design',
+      '/draft?', '/th/draft?', '/ja/draft?', '/ko/draft?', '/zh-CN/draft?',
+      '/api/',
+    ])
+  })
+
+  it('blocks Draft URLs with a query string but never the base Draft page (prefix matching)', () => {
+    const { disallow } = (robotsRules(BASE).rules as { disallow: string[] }[])[0]
+    // robots.txt rules are path prefixes matched against path + query; `allow: /` is shorter than every rule.
+    const blocked = (url: string) => disallow.some((rule) => url.startsWith(rule))
+    for (const l of locales) {
+      const base = localizedPath('/draft', l)
+      expect(blocked(base), base).toBe(false)
+      expect(blocked(`${base}?allies=haze,abrams&enemies=seven`), l).toBe(true)
+      expect(blocked(`${base}?utm_source=x`), l).toBe(true)
+    }
+    expect(blocked('/ja/draft?side=enemies&window=30d&rank=top')).toBe(true)
+    // Other pages and their filters are untouched.
+    for (const url of ['/meta?window=30d', '/ja/meta?rank=top', '/heroes/haze', '/ja/compare?type=heroes&a=haze&b=abrams']) expect(blocked(url), url).toBe(false)
   })
 
   it('links the sitemap only when SITE_URL is set', () => {
