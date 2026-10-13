@@ -153,7 +153,7 @@ Done when: all MVP routes meet budgets and pass checks; public launch.
 
 | Risk | Impact | Mitigation |
 |---|---|---|
-| Upstream analytics limit (200 req/min shared per IP; Vercel IPs shared) | Throttled pages | Presets, hour-rounded keys, 6h cache, snapshot fallback (partly built), token buckets (implemented, cache-first); request an API key before launch |
+| Upstream analytics limit (200 req/min shared per IP; Vercel IPs shared) | Throttled pages | Presets, 6h-step keys, 6h cache, snapshot fallback (partly built), token buckets (implemented, cache-first); request an API key before launch |
 | API schema drift | Broken parsing | zod at the boundary; `npm run api:verify` against the live spec (generated types and CI planned) |
 | Deprecated endpoints removed | Broken features | Never use them (`npm run api:verify` fails on any deprecated or MMR path; run after touching an endpoint) |
 | Vercel Hobby cron is daily only | No intra-day history | History is daily by design; everything else is on-demand ISR. Upgrade only if needed. |

@@ -10,6 +10,15 @@ import type { MetaWindow } from './query'
 const DAY = 86_400
 const HOUR = 3_600
 
+/**
+ * Step the analytics window end is rounded down to, aligned to UTC (00, 06, 12, 18). It is part of every
+ * analytics cache key, so a key is requested only within its own step and an entry is never served after its
+ * step ends. The step stays within TTL.analytics (6h) and divides a day (tests/unit/scope-cache-key.test.ts).
+ * Exact-timestamp endpoints (counters, synergies, build stats, ability orders, item flow) therefore end up
+ * to 6h before the request; hero-stats / item-stats include the whole current UTC day either way.
+ */
+export const ANALYTICS_KEY_STEP = 6 * HOUR
+
 export type ForumPatch = { title: string; /** unix seconds, UTC day start */ day: number; link: string | null }
 
 /**
@@ -18,11 +27,12 @@ export type ForumPatch = { title: string; /** unix seconds, UTC day start */ day
  */
 export type ResolvedScope = {
   today: number
-  hour: number
+  /** Window end for analytics: the current ANALYTICS_KEY_STEP start (unix seconds). */
+  asOf: number
   window: MetaWindow
   windowStart: number
   band: RankBand
-  /** Analytics filters for the selected window (hour-rounded end, so presets share cache keys). */
+  /** Analytics filters for the selected window (end rounded to ANALYTICS_KEY_STEP, so presets share cache keys). */
   statsQuery: HeroStatsQuery
   tierNames: Map<number, string>
   /** Every rank tier with its emblem (lib/deadlock/rankAssets): resolve ranks for display through it. */
@@ -52,7 +62,7 @@ export function forumPatches(feed: Awaited<ReturnType<typeof getPatchFeed>>): Fo
 
 export async function resolveScope(input: { window: MetaWindow; rank: RankBandId; mode: 'all' | 'ranked' }): Promise<ResolvedScope> {
   const nowSec = Math.floor(Date.now() / 1000)
-  const hour = Math.floor(nowSec / HOUR) * HOUR
+  const asOf = Math.floor(nowSec / ANALYTICS_KEY_STEP) * ANALYTICS_KEY_STEP
   const today = Math.floor(nowSec / DAY) * DAY
 
   const [ranks, feed] = await Promise.all([getRanks(), softFail(getPatchFeed(), null)]) // pages work without patch data, but not on refused access
@@ -74,13 +84,13 @@ export async function resolveScope(input: { window: MetaWindow; rank: RankBandId
 
   return {
     today,
-    hour,
+    asOf,
     window,
     windowStart,
     band,
     statsQuery: {
       minUnix: windowStart,
-      maxUnix: hour,
+      maxUnix: asOf,
       minBadge: badges?.min,
       maxBadge: badges?.max,
       matchMode: input.mode === 'ranked' ? 'ranked' : 'ranked,unranked',

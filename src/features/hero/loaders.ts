@@ -147,7 +147,7 @@ export const heroBuilds = cache(async (ctx: HeroContext) => {
 
 /** Overview: Insight Engine results plus a short preview of each deeper tab. */
 export async function getOverviewData(ctx: HeroContext) {
-  const { today, hour, statsQuery } = ctx.scope
+  const { today, asOf, statsQuery } = ctx.scope
   // Inputs used only by insights fail soft: a missing one drops its insight, not the overview.
   const [matchups, synergies, length, badges, rank, builds, orders, abilities, days, itemsNow, itemsBefore, shop] = await Promise.all([
     laneMatchups(ctx, true),
@@ -159,7 +159,7 @@ export async function getOverviewData(ctx: HeroContext) {
     getAbilityOrderStats(ctx.hero.id, statsQuery),
     abilityNames(ctx.hero.id),
     dayRows(ctx).catch(() => null),
-    getHeroItemStats(ctx.hero.id, { ...statsQuery, minUnix: today - 6 * DAY, maxUnix: hour }).catch(() => null),
+    getHeroItemStats(ctx.hero.id, { ...statsQuery, minUnix: today - 6 * DAY, maxUnix: asOf }).catch(() => null),
     getHeroItemStats(ctx.hero.id, { ...statsQuery, minUnix: today - 13 * DAY, maxUnix: throughDay(today - 7 * DAY) }).catch(() => null),
     shopMap(),
   ])

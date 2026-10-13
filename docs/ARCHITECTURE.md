@@ -128,7 +128,7 @@ Lifetimes per data class and per endpoint: [API § 9](./API.md#9-production-data
 
 ### Keys and presets
 
-- Analytics use **fixed presets** (rank band × window from `features/meta/scope.ts`). Timestamps are rounded (hour for analytics, minute for match lists), and whole-day windows end with `throughDay()`, so a preset maps to one stable cache key.
+- Analytics use **fixed presets** (rank band × window from `features/meta/scope.ts`). Timestamps are rounded (analytics: down to the 6h UTC step `ANALYTICS_KEY_STEP`; match lists: minute), and whole-day windows end with `throughDay()`, so a preset maps to one stable cache key.
 - Home sections cache their computed-at time and show **Stale** past their freshness budget.
 - A loader that throws writes nothing: `unstable_cache` stores a result only when its callback resolves. Optional inputs fall back through `softFail()` (`lib/deadlock/softFail.ts`), which rethrows 401/403, so a section built around a refused call fails (`forbidden`) instead of caching a result that silently lacks that input. During a render, Next serves an existing stale entry when its background revalidation throws and leaves it in place; outside a render a stale entry isn't served. Retention of old entries isn't guaranteed.
 
@@ -162,7 +162,7 @@ Lifetimes per data class and per endpoint: [API § 9](./API.md#9-production-data
 - **Refused access:** while the global access breaker is open the run sends nothing (one `skipped` result). Otherwise the first blocked task (401/403 or a breaker refusal) stops it: tasks already in flight finish, no new one starts, the rest are skipped with `backed off: upstream access refused`. Against an upstream refusing everything (unit test, mocked fetch): 3 requests, the three tasks of the first stage in flight together. Once the cooldown has ended the run goes ahead and its first call is the probe.
 - **Report** (JSON response + one `[prewarm]` log line): status `ok|partial|failed|blocked`; summary counts `ok`, `failed`, `rateLimited`, `blocked`, `skipped`; per-task result; upstream network requests, cache hits, budget waits and refusals, `accessRefused`, `circuitRejected`; `breaker` (global `state` and `retryAt` as of the end of the run); `retryAfterS` when blocked; duration. Counts and task names only; secrets are redacted from error text.
 - **Measured** (cold cache): 55 tasks ok, 120 upstream requests, ~13 s. Then every target page's first visit needed 0 upstream requests (`/builds` 0.04 s instead of ~3 s). A second run: 0 requests, 177 hits, 3 s.
-- **Schedule:** analytics keys roll over each hour (window end rounded to the hour), so warming must be hourly. Vercel Hobby crons are daily-only, so `.github/workflows/prewarm.yml` calls the endpoint at minute 7 of every hour; `vercel.json` adds a daily 06:15 UTC run as a backup.
+- **Schedule:** analytics keys roll over every 6 hours (window end rounded down to the UTC 00/06/12/18 step), so only the runs just after a step boundary fetch; the others are cache hits. Vercel Hobby crons are daily-only, so `.github/workflows/prewarm.yml` calls the endpoint at minute 7 of every hour; `vercel.json` adds a daily 06:15 UTC run as a backup.
 - **Cache keys across bundles:** `unstable_cache` keys on the callback's source text, which differs between bundles (cron route vs pages). Every call site wraps its callback in `stableKey()` (`lib/cache/stableKey.ts`) so the key depends only on the key parts; without it a warmed entry was invisible to pages.
 
 **Deployment (prewarm):**

@@ -115,7 +115,7 @@ const heroStatsRowSchema = z.object({
 export type HeroStatsDayRow = z.infer<typeof heroStatsRowSchema>
 
 export type HeroStatsQuery = {
-  /** Unix seconds, hour-rounded by the caller so presets share cache keys. */
+  /** Unix seconds, rounded by the caller (ANALYTICS_KEY_STEP in features/meta/scope.ts) so presets share cache keys. */
   minUnix: number
   maxUnix: number
   minBadge?: number

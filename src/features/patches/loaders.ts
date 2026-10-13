@@ -101,11 +101,11 @@ const patchContext = cache(async (heroSlug: string, itemSlug: string, rank: Patc
   return { scope, hero, item, rank: { ...scope.selected, ranked: scope.ranked } }
 })
 
-/** Analytics query for [from, to) (whole UTC days; see throughDay), end capped at the current hour. */
+/** Analytics query for [from, to) (whole UTC days; see throughDay), end capped at the scope's analytics step (asOf). */
 const rangeQuery = (ctx: PatchContext, w: { from: number; to: number }): HeroStatsQuery => ({
   ...ctx.scope.statsQuery,
   minUnix: w.from,
-  maxUnix: Math.min(throughDay(w.to - DAY), ctx.scope.hour),
+  maxUnix: Math.min(throughDay(w.to - DAY), ctx.scope.asOf),
 })
 
 // ── Before / after ───────────────────────────────────────────────────

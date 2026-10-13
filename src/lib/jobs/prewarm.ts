@@ -26,8 +26,9 @@ import { redact, retryAfterSeconds, runPrewarm, SKIP_REFUSED, summarize, type Pr
  * that is already fresh is a cache hit (no request, no budget), and the runner keeps half the
  * analytics burst free for users.
  *
- * Analytics keys roll over each hour (resolveScope rounds the window end to the hour), so the job is
- * meant to run hourly, a few minutes past the hour.
+ * Analytics keys roll over every 6 hours (resolveScope rounds the window end to ANALYTICS_KEY_STEP, UTC
+ * 00/06/12/18); the job runs hourly, so the runs just after a step boundary do the work and the rest are
+ * cache hits.
  */
 
 /** How many heroes get their Hero Detail / Analyze data warmed: the most picked in the default scope. */

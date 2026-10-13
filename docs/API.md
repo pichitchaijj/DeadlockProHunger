@@ -113,7 +113,7 @@ Every statistical view model carries a `StatScope` (window, patch, rank band / b
 | `game_mode` | `normal` \| `street_brawl` \| `explore_n_y_c` \| `internal`. Default **`normal`**. |
 | `match_mode` | `unranked` \| `private_lobby` \| `coop_bot` \| `ranked` \| `server_test` \| `tutorial` \| `hero_labs` (comma-separated). Default **`ranked,unranked`**. |
 | `min_unix_timestamp` / `max_unix_timestamp` | Descriptions say the default is "30 days ago", but the published schema default is a **fixed number (`1788566400` = 2026-09-05)**, captured when the spec was generated. **Always pass explicit timestamps.** |
-| Day rounding (verified 2026-10-07) | `hero-stats` and `item-stats` round both bounds to whole UTC days: a start anywhere in a day includes that whole day, and an end at the next day's 00:00 (or after ~23:00) includes the **whole next day**. A window of whole days must end mid-day on its last day (`throughDay()` in `lib/deadlock/endpoints.ts`). `hero-counter-stats` filters by the exact timestamp (half a day returns about half the matches). |
+| Day rounding (verified 2026-10-07) | `hero-stats` and `item-stats` round both bounds to whole UTC days: a start anywhere in a day includes that whole day, and an end at the next day's 00:00 (or after ~23:00) includes the **whole next day**. A window of whole days must end mid-day on its last day (`throughDay()` in `lib/deadlock/endpoints.ts`). `hero-counter-stats` filters by the exact timestamp (half a day returns about half the matches); so do `hero-synergy-stats`, `hero-build-stats`, `ability-order-stats` and `item-flow-stats` (verified 2026-10-13: ends at 6h / 12h / 18h of one past day returned proportionally more matches). |
 | `min_average_badge` / `max_average_badge` | Badge encoding below. Filters by match average badge. |
 | `min_duration_s` / `max_duration_s` | up to 7,000 s |
 | `min_networth` / `max_networth` | player final net worth |
@@ -531,7 +531,7 @@ Also deprecated as **parameters**: `include_corrupted_items` → use `corrupted_
   - Outcomes: 401/403 refused; 2xx and other 4xx (incl. 404) authorized; 429, 5xx, network errors and timeouts neutral (they neither count nor reset). Counters `accessRefused` (401/403 actually received) and `circuitRejected` (calls refused by the breaker) are in `apiCallStats()`.
 - zod validation of the fields we use (extra fields allowed). A mismatch throws "Unexpected response shape", classified as `invalid`.
 - Cache: Next data cache per call (`revalidate`, `tags`). Responses over the 2 MB fetch-cache entry limit are cached as zod projections with `unstable_cache` (shop items, match detail, match history).
-- Explicit `min_unix_timestamp` / `max_unix_timestamp`, rounded (hour for analytics, minute for match lists) so identical presets share cache keys. Arrays are comma-joined.
+- Explicit `min_unix_timestamp` / `max_unix_timestamp`, rounded (analytics: down to the 6h UTC step, `ANALYTICS_KEY_STEP` in `features/meta/scope.ts`; match lists: minute) so identical presets share cache keys. Arrays are comma-joined.
 - Errors: `DeadlockApiError` (`lib/deadlock/apiError.ts`) → `classifyError` (`lib/deadlock/errors.ts`) → `rate-limit | timeout | invalid | forbidden | not-found | unavailable` (`forbidden` = 401/403 or an open access breaker). Loaders that return `{ ok: false }` carry the kind across the boundary (`DataError`).
 - Never `force_refetch`; always `disable_steam=true` on match metadata (including the user-facing raw-JSON link).
 
