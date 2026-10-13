@@ -14,6 +14,7 @@ const TITLES: Record<DataErrorKind, string> = {
   'rate-limit': 'Rate limited',
   timeout: 'Data source is slow',
   invalid: 'Unexpected data',
+  forbidden: 'Access refused',
   'not-found': 'Not available',
   unavailable: 'Data unavailable',
 }
@@ -22,6 +23,7 @@ const DESCRIPTION_KEY = {
   'rate-limit': 'rateLimit',
   timeout: 'timeout',
   invalid: 'invalid',
+  forbidden: 'forbidden',
   'not-found': 'notFound',
   unavailable: 'unavailable',
 } as const satisfies Record<DataErrorKind, string>
