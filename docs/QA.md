@@ -4,6 +4,8 @@ Second audit, 2026-10-07, on the production build (`next build` + `next start`),
 
 Related: [PERFORMANCE](./PERFORMANCE.md) · [ACCESSIBILITY](./ACCESSIBILITY.md) · [API](./API.md) · [DATA_MODEL](./DATA_MODEL.md) · [DESIGN](./DESIGN.md)
 
+Sections 1–5 are the 2026-10-07 audit, kept as recorded (their gate numbers are from that run). A later, narrower check is in § 6 (2026-10-14).
+
 ## Gates (re-run after the fixes)
 
 | Gate | Result |
@@ -31,7 +33,7 @@ Each route was requested on the production server (status, time, `h1`, error not
 | 2 | UX principles | **PASS** | Insight-first pages, progressive disclosure, scope on every statistic |
 | 3 | Design system | **PASS** | Tokens only; the one hex value is the viewport `themeColor` (can't take CSS variables) |
 | 4 | API correctness | **PASS** | `api:verify` passes against the live spec |
-| 5 | Data correctness | **PASS** | Statistical rules unit-tested; a rate limit never reads as missing data |
+| 5 | Data correctness | **PASS** | Statistical rules unit-tested; a rate limit never reads as missing data (since 2026-10-14, neither does a refused request, 401/403: § 6) |
 | 6 | Database integrity | **WARN** | Schema and repository tested on PGlite (real Postgres); not yet run against a deployed database |
 | 7 | Responsive behavior | **PASS** | 0 overflow cases out of 56 (14 routes × 4 widths) |
 | 8 | Accessibility | **PASS** | 0 axe violations on 13 routes × 2 viewports. **Fixed:** two undersized touch targets on Compare |
@@ -110,7 +112,7 @@ Each route was requested on the production server (status, time, `h1`, error not
 ### 14. Rate-limit handling — PASS (token buckets added later the same day)
 - **PASS:**
   - Upstream 429s are retried once, honoring `Retry-After` (capped at 3 s).
-  - "Rate limited" is shown everywhere and never mistaken for missing data.
+  - "Rate limited" is shown everywhere and never mistaken for missing data. Since 2026-10-14 the same holds for a refused request (401/403 → "Access refused", § 6).
   - Analytics data is cached for 6 h; daily jobs keep within a request budget.
 - **Fixed:** our own `/api/search` was unthrottled, so a script sending random queries could spend the shared upstream budget. It now allows 40 queries per client per minute, then answers **429 with `Retry-After`** (`src/lib/rateLimit.ts`, unit-tested). Verified: requests 41–42 from one address got 429 with `retry-after: 50`, and another address still got 200. Real typing stays far below the limit (200 ms debounce plus a per-session answer cache). The limiter is in memory, so on a multi-instance host it bounds each instance separately.
 - **WARN:**
@@ -166,3 +168,42 @@ Before wider launch, in priority order:
 - Throttle: 42 searches from one `x-forwarded-for` address, then one search from another address.
 - Fault injection (first audit): a stub upstream answering 429 / 500 / hang / wrong JSON, with `DEADLOCK_API_BASE_URL=http://localhost:3999` and `.next/cache/fetch-cache` cleared.
 - Asset kill switch (first audit): `NEXT_PUBLIC_GAME_ASSETS=off npm run build`, then count requests to the asset host.
+
+## 6. Upstream access refusal — 2026-10-14
+
+Scope: the API client's handling of HTTP 401/403, on branch `release/draft-lab-crawler-fix`. Not a full re-audit: sections 1–5 were not re-run.
+
+### Observed (with evidence)
+- Before commits 1–4, a local `npm run build` at HEAD `cf53ddd` with no API key (and no database) received **HTTP 403 for every upstream request** (43 occurrences in the build log; `/v1/assets/ranks`, `/v2/patches`, `/v1/info`, `/v1/assets/items/by-type/upgrade`, `hero-counter-stats`, `hero-synergy-stats`). The build still exited 0 and generated 86/86 pages, with the affected sections showing error notices.
+- From the same machine, `GET /v1/info` returned **200** with curl's default User-Agent and **403** with `-A "deadlockprohunger"` (the client's User-Agent).
+- From reading the code before the fixes (`cf53ddd`), not from a run: a 403 was classified as `not-found`: `isMissing()` accepted it, so a refused rank or match could read as "no rank" / "not available"; nothing stopped repeated refused calls (prewarm and daily jobs ran to completion, each call refused).
+
+### Not established (assumptions)
+- Why upstream refuses that User-Agent (for example, whether it was blocked deliberately after high request volume) is **not confirmed**. Production was not checked.
+- Whether any endpoint we call returns 401/403 as normal behavior (e.g. private player data) is not confirmed: the OpenAPI spec was not fetched for this check.
+
+### Changes (commits on this branch)
+| Commit | Change |
+|---|---|
+| `df0652c` | 401/403 classify as `forbidden`, not `not-found`; `isMissing()` excludes 401/403/429; "Access refused" notice in all five locales |
+| `8f04681` | Access breaker in the client (API § 7): repeated 401/403 stop requests for a cooldown; refused calls send nothing and spend no budget |
+| `c44c45a` | Prewarm stops at the first refused task and skips while the breaker is open; jobs send one request when refused; cron answers 503 + `Retry-After` when blocked |
+| `c344252` | Home and its shared loaders: optional inputs use `softFail()`, so a refused input fails the section instead of being cached as a result missing that input |
+
+The User-Agent is unchanged. These changes stop the site from repeating refused calls and from reporting refusals as missing data; they do **not** fix the refusal.
+
+### Gates run after the changes (2026-10-14)
+| Gate | Result |
+|---|---|
+| Unit tests (`npx vitest run`) | ✓ 737 / 737 (58 files) |
+| TypeScript (`npx tsc --noEmit --incremental false`) | ✓ 0 errors |
+| Lint (`npm run lint`) | ✓ 0 errors |
+| Production build, offline (`DEADLOCK_API_BASE_URL=http://127.0.0.1:9`, `DATABASE_URL` and `DEADLOCK_API_KEY` empty) | ✓ exit 0, static generation 86/86. No request reached the upstream API (the log shows only local connection failures) and no database was used |
+
+Request counts with an upstream refusing everything (unit tests, mocked fetch): prewarm 3 requests (0 while the breaker is open, 1 probe after the cooldown); `daily`, `reference`, `builds` 1 request each (0 while the breaker is open).
+
+### Not tested or not confirmed
+- A production deployment, and any run against the real upstream after the changes (the build above was offline).
+- `npm run api:verify` and an OpenAPI check of which endpoints declare 401/403.
+- The root cause of the 403 (see above), and whether upstream accepts our requests again.
+- Accessibility, responsive and performance audits (§ 7–9) were not re-run.

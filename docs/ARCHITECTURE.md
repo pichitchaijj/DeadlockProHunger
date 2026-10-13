@@ -130,10 +130,18 @@ Lifetimes per data class and per endpoint: [API § 9](./API.md#9-production-data
 
 - Analytics use **fixed presets** (rank band × window from `features/meta/scope.ts`). Timestamps are rounded (hour for analytics, minute for match lists), and whole-day windows end with `throughDay()`, so a preset maps to one stable cache key.
 - Home sections cache their computed-at time and show **Stale** past their freshness budget.
+- A loader that throws writes nothing: `unstable_cache` stores a result only when its callback resolves. Optional inputs fall back through `softFail()` (`lib/deadlock/softFail.ts`), which rethrows 401/403, so a section built around a refused call fails (`forbidden`) instead of caching a result that silently lacks that input. During a render, Next serves an existing stale entry when its background revalidation throws and leaves it in place; outside a render a stale entry isn't served. Retention of old entries isn't guaranteed.
+
+### Upstream access refusal
+
+`lib/deadlock/accessBreaker.ts`, owned by the client (one per server instance; state is **not** shared across instances or build workers). After repeated 401/403 it refuses calls itself (403, `circuitOpen`, no request, no budget) until a cooldown ends, then lets one probe through: global level 3 refusals from 2+ templates in 60 s (cooldown 10 → 60 min); per endpoint template 2 refusals (player-scoped `/v1/players/{id}/…`: 3 accounts, 2 → 10 min, never counted globally). Thresholds and outcomes: [API § 7](./API.md#7-client-integration-rules). It stops repeated refused calls; it doesn't make upstream accept them. `effectiveStatus(status, now)` reports a breaker whose cooldown has ended as half-open without changing it (`status()` is the stored snapshot, which moves only when the next call is admitted).
 
 ### Scheduled jobs (Vercel Cron, daily)
 
 `reference` 02:50, `daily` 03:00, `builds` 03:30, `prune` 04:00, `prewarm` 06:15 UTC (backup; the hourly prewarm runs from GitHub Actions, see Cache prewarming). Request budgets are in [DATA_MODEL § Jobs](./DATA_MODEL.md#jobs-apicronjob-verceljson-daily).
+
+- **Refused access:** a job (except `prune`, database only) sends nothing while the global access breaker is open. Until one call succeeds, its calls go out one at a time, and after a 401/403 no further call is sent, so a refused job sends one request instead of one per pooled worker. The result is `blocked` with `retryAfterS`. `sync_runs` has no `blocked` status: such a run is stored as `failed`, its error text says "upstream access refused".
+- **Route status** (`app/api/cron/[job]/route.ts`, jobs and prewarm): 200 ok / partial, 500 failed, **503 + `Retry-After`** blocked (seconds until the breaker's `retryAt`, or its 10 min base cooldown when unknown).
 
 ### Cache prewarming — **Implemented**
 
@@ -150,8 +158,9 @@ Lifetimes per data class and per endpoint: [API § 9](./API.md#9-production-data
 
 - **Cache first, budget enforced:** every request goes through the normal client (cache → budget → API). Fresh keys are hits; nothing bypasses the token bucket.
 - **Pacing:** at most 3 tasks in flight, and a task starts only while the analytics bucket has at least half its burst (20 of 40) unspent, so warming never takes the whole budget from users; if it doesn't recover within 20 s the task is skipped. The run stops at 240 s (route limit 300 s).
-- **Circuit breaker:** after 3 rate-limited tasks in a row (upstream 429 or our budget), every remaining task is skipped. Measured against a 429 stub: 76 requests and 14 s instead of 218 and 57 s.
-- **Report** (JSON response + one `[prewarm]` log line): status `ok|partial|failed`, per-task result, upstream network requests, cache hits, budget waits and refusals, duration. Counts and task names only; secrets are redacted from error text.
+- **Circuit breaker:** after 3 rate-limited tasks in a row (upstream 429 or our budget), every remaining task is skipped. Measured against a 429 stub: 76 requests and 14 s instead of 218 and 57 s. A stage plan that fails rate-limited or refused counts too.
+- **Refused access:** while the global access breaker is open the run sends nothing (one `skipped` result). Otherwise the first blocked task (401/403 or a breaker refusal) stops it: tasks already in flight finish, no new one starts, the rest are skipped with `backed off: upstream access refused`. Against an upstream refusing everything (unit test, mocked fetch): 3 requests, the three tasks of the first stage in flight together. Once the cooldown has ended the run goes ahead and its first call is the probe.
+- **Report** (JSON response + one `[prewarm]` log line): status `ok|partial|failed|blocked`; summary counts `ok`, `failed`, `rateLimited`, `blocked`, `skipped`; per-task result; upstream network requests, cache hits, budget waits and refusals, `accessRefused`, `circuitRejected`; `breaker` (global `state` and `retryAt` as of the end of the run); `retryAfterS` when blocked; duration. Counts and task names only; secrets are redacted from error text.
 - **Measured** (cold cache): 55 tasks ok, 120 upstream requests, ~13 s. Then every target page's first visit needed 0 upstream requests (`/builds` 0.04 s instead of ~3 s). A second run: 0 requests, 177 hits, 3 s.
 - **Schedule:** analytics keys roll over each hour (window end rounded to the hour), so warming must be hourly. Vercel Hobby crons are daily-only, so `.github/workflows/prewarm.yml` calls the endpoint at minute 7 of every hour; `vercel.json` adds a daily 06:15 UTC run as a backup.
 - **Cache keys across bundles:** `unstable_cache` keys on the callback's source text, which differs between bundles (cron route vs pages). Every call site wraps its callback in `stableKey()` (`lib/cache/stableKey.ts`) so the key depends only on the key parts; without it a warmed entry was invisible to pages.
