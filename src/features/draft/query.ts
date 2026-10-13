@@ -58,6 +58,24 @@ export function draftHref(q: DraftQuery, changes: Partial<DraftQuery> = {}): str
   return `/draft${s ? `?${s}` : ''}`.replace(/%2C/g, ',')
 }
 
+/**
+ * The canonical URL of a Draft request, or null when its Draft parameters already are canonical. `shown` is the
+ * draft the page displays: the parsed query with the heroes the hero list doesn't know removed, so it is only
+ * known once that list has loaded. Default, duplicate, invalid and empty values and repeated keys differ from the
+ * canonical value; pick order is kept. Only DRAFT_PARAMS decide: other parameters (tracking, anything the host
+ * adds) never cause a redirect, so the target, whose Draft parameters are canonical, can't redirect again. They
+ * are dropped when a redirect happens for a Draft parameter.
+ */
+export function canonicalDraftHref(raw: Raw, shown: DraftQuery): string | null {
+  const href = draftHref(shown)
+  const canonical = new URLSearchParams(href.split('?')[1] ?? '')
+  const same = DRAFT_PARAMS.every((key) => {
+    const value = raw[key]
+    return value === undefined ? !canonical.has(key) : typeof value === 'string' && canonical.get(key) === value
+  })
+  return same ? null : href
+}
+
 /** Adds a hero to a side (removing it from the other side); no-op when that side is full. */
 export function withHero(q: DraftQuery, slug: string, side: DraftSide): DraftQuery {
   const other: DraftSide = side === 'allies' ? 'enemies' : 'allies'

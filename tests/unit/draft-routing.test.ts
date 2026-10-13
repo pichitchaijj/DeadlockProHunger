@@ -17,6 +17,10 @@ import { draftRedirects, draftRewrites } from '@/features/draft/routing'
 vi.mock('server-only', () => ({}))
 const getDraftData = vi.fn()
 vi.mock('@/features/draft/loaders', () => ({ getDraftData: (...args: unknown[]) => getDraftData(...args) }))
+const redirect = vi.fn((url: string) => {
+  throw new Error(`NEXT_REDIRECT ${url}`)
+})
+vi.mock('next/navigation', async (importOriginal) => ({ ...(await importOriginal<object>()), redirect: (url: string) => redirect(url) }))
 let currentLocale = 'en'
 vi.mock('next-intl/server', () => ({
   getTranslations: async () => (key: string) => key,
@@ -168,23 +172,61 @@ describe('cached board route', () => {
 })
 
 describe('dynamic Draft route', () => {
+  /** What getDraftData resolves for the heroes it knows (the page reads `allies`/`enemies` to find unknown ones). */
+  const known = new Set(['haze', 'abrams', 'seven'])
+  const dataFor = (q: { allies: string[]; enemies: string[] }) => ({
+    any: 'data',
+    allies: q.allies.filter((s) => known.has(s)).map((slug) => ({ slug })),
+    enemies: q.enemies.filter((s) => known.has(s)).map((slug) => ({ slug })),
+  })
+  const render = async (params: Record<string, string | string[]>) => {
+    const page = await import('@/app/[lang]/draft/page')
+    return page.default({ searchParams: Promise.resolve(params) })
+  }
+
   beforeEach(() => {
     getDraftData.mockReset()
+    redirect.mockClear()
+    currentLocale = 'en'
   })
 
   it('still renders the board for its Draft parameters', async () => {
-    getDraftData.mockResolvedValue({ any: 'data' })
-    const page = await import('@/app/[lang]/draft/page')
-    const el = (await page.default({ searchParams: Promise.resolve({ allies: 'haze', enemies: 'seven', window: '30d' }) })) as ReactElement<{ query: unknown }>
+    getDraftData.mockImplementation(async (q) => dataFor(q))
+    const el = (await render({ allies: 'haze', enemies: 'seven', window: '30d' })) as ReactElement<{ query: unknown }>
     expect(el.props.query).toEqual(parseDraftQuery({ allies: 'haze', enemies: 'seven', window: '30d' }))
+    expect(redirect).not.toHaveBeenCalled()
   })
 
   it('still shows the failure notice instead of throwing', async () => {
     getDraftData.mockImplementation(async () => {
       throw new Error('upstream down')
     })
-    const page = await import('@/app/[lang]/draft/page')
-    const el = (await page.default({ searchParams: Promise.resolve({ allies: 'haze' }) })) as ReactElement<{ data: unknown }>
+    const el = (await render({ allies: 'haze' })) as ReactElement<{ data: unknown }>
     expect(el.props.data).toBeNull()
+  })
+
+  it('redirects non-canonical Draft parameters to the canonical URL in the active locale', async () => {
+    getDraftData.mockImplementation(async (q) => dataFor(q))
+    await expect(render({ allies: 'haze,haze,zzz', window: '7d', utm_source: 'x' })).rejects.toThrow('NEXT_REDIRECT /draft?allies=haze')
+    currentLocale = 'ja'
+    await expect(render({ allies: 'zzz' })).rejects.toThrow('NEXT_REDIRECT /ja/draft')
+    await expect(render({ allies: ['haze', 'abrams'], enemies: 'seven' })).rejects.toThrow('NEXT_REDIRECT /ja/draft?enemies=seven')
+  })
+
+  it('never redirects when the data (and so the hero list) failed to load: unknown heroes are unknowable then', async () => {
+    getDraftData.mockImplementation(async () => {
+      throw new Error('upstream down')
+    })
+    const el = (await render({ allies: 'haze,haze,zzz', window: '7d' })) as ReactElement<{ data: unknown; query: unknown }>
+    expect(redirect).not.toHaveBeenCalled()
+    expect(el.props.data).toBeNull()
+    expect(el.props.query).toEqual(parseDraftQuery({ allies: 'haze,haze,zzz', window: '7d' }))
+  })
+
+  it('renders canonical URLs and tracking parameters on them without redirecting', async () => {
+    getDraftData.mockImplementation(async (q) => dataFor(q))
+    await render({ allies: 'abrams,haze', enemies: 'seven', side: 'enemies' })
+    await render({ allies: 'haze', utm_source: 'x' })
+    expect(redirect).not.toHaveBeenCalled()
   })
 })
