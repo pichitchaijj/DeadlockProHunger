@@ -94,7 +94,7 @@ Question: *"How is this hero really doing, and where does it stand?"*
 | Route | What it is |
 |---|---|
 | `/compare` | Hero, build or player vs. (`?type=heroes\|builds\|players&a=&b=`, plus `window`, `rank`). Reuses each detail page's loader; "Key differences" only from `features/compare/model.ts` |
-| `/draft` | Draft Lab (`?allies=&enemies=` slugs, `side`, `window`, `rank`). Only "clear" pair relationships are drawn or used |
+| `/draft` | Draft Lab (`?allies=&enemies=` slugs, `side`, `window`, `rank`). Only "clear" pair relationships are drawn or used. With none of those parameters (`DRAFT_PARAMS`), the empty board is served from the cached route `/[lang]/draft/board` (ISR, 15 min; rewritten in `next.config.ts`, the URL stays `/draft`; requesting `/draft/board` directly redirects to `/draft`). Any of them renders on request |
 
 ## Internal routes
 

@@ -15,6 +15,13 @@ export type DraftQuery = {
 export const TEAM_SIZE = 6
 
 /**
+ * Every query parameter that changes the Draft board: the only keys parseDraftQuery reads. A Draft URL with
+ * none of them is the empty board, served from the cached route (`/[lang]/draft/board`, rewritten in
+ * next.config.ts); any one of them keeps the dynamic route. A new Draft parameter must be added here.
+ */
+export const DRAFT_PARAMS = ['allies', 'enemies', 'side', 'window', 'rank'] as const
+
+/**
  * `rel` for every link that changes the draft (add, remove, side, clear, recommendation, filters, retry): each
  * one is a new query-string URL, so crawlers aren't invited to follow them (robots.txt and the page's
  * noindex, nofollow cover the same URLs: src/features/draft/seo.ts). The URLs themselves are unchanged.

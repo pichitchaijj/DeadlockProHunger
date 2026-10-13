@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next'
 import createNextIntlPlugin from 'next-intl/plugin'
+import { draftRedirects, draftRewrites } from './src/features/draft/routing'
 
 /**
  * Security headers on every response (docs/QA.md § Security). The CSP only uses directives that
@@ -24,6 +25,13 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }]
+  },
+  // The empty Draft board is served from a cached route; Draft URLs with picks or filters stay dynamic.
+  async rewrites() {
+    return { beforeFiles: draftRewrites(), afterFiles: [], fallback: [] }
+  },
+  async redirects() {
+    return draftRedirects()
   },
 }
 

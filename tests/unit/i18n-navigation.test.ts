@@ -16,6 +16,28 @@ describe('language-switch link rel', () => {
     expect(switchLocaleHref('/draft', 'allies=haze', 'ja')).toBe('/ja/draft?allies=haze')
     expect(switchLocaleHref('/ja/draft', '', 'en')).toBe('/draft')
   })
+
+  it('links the cached Draft board by its public path, never the internal one', () => {
+    // While prerendering, the cached board sees its own path (/{lang}/draft/board); the browser shows /{lang}/draft.
+    for (const l of locales) {
+      expect(switchLocaleHref('/ja/draft/board', '', l), l).toBe(switchLocaleHref('/ja/draft', '', l))
+      expect(switchLocaleHref('/draft/board', '', l), l).toBe(switchLocaleHref('/draft', '', l))
+      expect(switchLocaleHref('/ja/draft/board', '', l)).not.toContain('/board')
+      // The English board prerenders at /en/draft/board.
+      expect(switchLocaleHref('/en/draft/board', '', l), l).toBe(switchLocaleHref('/draft', '', l))
+    }
+  })
+
+  it('reads the internal English prefix of prerendered pages as English (Home, Patch, Community, the Draft board)', () => {
+    expect(splitLocalePath('/en')).toEqual({ locale: 'en', path: '/' })
+    expect(splitLocalePath('/en/patch')).toEqual({ locale: 'en', path: '/patch' })
+    expect(splitLocalePath('/english')).toEqual({ locale: 'en', path: '/english' })
+    for (const l of locales) {
+      expect(switchLocaleHref('/en', '', l), l).toBe(switchLocaleHref('/', '', l))
+      expect(switchLocaleHref('/en/patch', '', l), l).toBe(switchLocaleHref('/patch', '', l))
+      expect(switchLocaleHref('/en/patch', '', l)).not.toMatch(/\/en(\/|$)/)
+    }
+  })
 })
 
 /** The language switcher's rule: same page, route params and query; English unprefixed. */
