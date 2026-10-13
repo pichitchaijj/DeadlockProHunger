@@ -1,6 +1,7 @@
 # Hourly cache prewarm (docs/ARCHITECTURE.md § Cache prewarming).
-# Analytics cache keys roll over each hour, and Vercel Hobby only allows daily crons, so this workflow
-# calls the same protected endpoint Vercel Cron uses, a few minutes past every hour.
+# Analytics cache keys roll over every 6 hours (UTC 00:00, 06:00, 12:00, 18:00), and Vercel Hobby only allows
+# daily crons, so this workflow calls the same protected endpoint Vercel Cron uses, a few minutes past every
+# hour: the run just after each boundary warms the new keys, the others are mostly cache hits.
 #
 # Repository settings → Secrets and variables → Actions:
 #   secret   CRON_SECRET  the same value as CRON_SECRET in the Vercel project
