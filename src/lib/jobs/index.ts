@@ -11,17 +11,32 @@ import * as repo from '@/lib/db/repo'
 import { slugify } from '@/features/meta/model'
 import { patchExcerpt } from '@/features/home/model'
 import { heroIconUrl, heroCardUrl } from '@/lib/deadlock/heroImages'
+import { accessBreakerStatus } from '@/lib/deadlock/client'
+import { effectiveStatus, GLOBAL_BREAKER } from '@/lib/deadlock/accessBreaker'
+import { DataError, isAccessDenied } from '@/lib/deadlock/errors'
+import { retryAfterSeconds } from './prewarmRunner'
 
 /*
  * Scheduled ingestion (docs/DATA_MODEL.md § Jobs). Each job:
  *  - counts its upstream requests and stays within a fixed budget (well under the per-IP limits);
  *  - keeps going when one unit fails (status "partial"), so one bad hero doesn't lose a day;
- *  - is idempotent: re-running it upserts the same rows.
+ *  - is idempotent: re-running it upserts the same rows;
+ *  - stops on refused access (status "blocked"): nothing is sent while the client's access breaker is open,
+ *    calls go out one at a time until one succeeds, and after a 401/403 no further call is sent.
  */
 
 export type JobName = 'reference' | 'daily' | 'builds' | 'prune'
 export const JOBS: JobName[] = ['reference', 'daily', 'builds', 'prune']
-export type JobResult = { status: 'ok' | 'partial' | 'failed'; requests: number; rows: Record<string, number>; errors: string[] }
+export type JobResult = {
+  status: 'ok' | 'partial' | 'failed' | 'blocked'
+  requests: number
+  rows: Record<string, number>
+  errors: string[]
+  /** When blocked: seconds before trying again (the route's Retry-After). */
+  retryAfterS?: number
+}
+
+const REFUSED = 'upstream access refused'
 
 const DAY = 86_400
 /** Parallel upstream calls per job. Analytics share 200 req/min per IP; this keeps bursts small. */
@@ -33,10 +48,44 @@ class Run {
   requests = 0
   rows: Record<string, number> = {}
   errors: string[] = []
-  /** One upstream call, counted. */
+  /** Upstream refused access (401/403): no further call is sent. */
+  refused = false
+  /** Set by the first call that succeeds; until then calls go out one at a time. */
+  private proven = false
+  private gate: Promise<void> = Promise.resolve()
+
+  /**
+   * One upstream call, counted. Until a call has succeeded, calls are sent one at a time, so a job whose
+   * access is refused sends one request, not one per pooled worker; after that they run in parallel.
+   */
   async call<T>(fn: () => Promise<T>): Promise<T> {
+    if (this.proven) return this.send(fn)
+    const previous = this.gate
+    let release!: () => void
+    this.gate = new Promise<void>((resolve) => (release = resolve))
+    await previous
+    if (this.proven) {
+      release() // access proven while this call waited: no need to hold the queue
+      return this.send(fn)
+    }
+    try {
+      return await this.send(fn)
+    } finally {
+      release()
+    }
+  }
+
+  private async send<T>(fn: () => Promise<T>): Promise<T> {
+    if (this.refused) throw new DataError(REFUSED, 'forbidden')
     this.requests++
-    return fn()
+    try {
+      const value = await fn()
+      this.proven = true
+      return value
+    } catch (error) {
+      if (isAccessDenied(error)) this.refused = true
+      throw error
+    }
   }
   add(key: string, n: number) {
     this.rows[key] = (this.rows[key] ?? 0) + n
@@ -50,10 +99,13 @@ class Run {
     }
   }
   result(): JobResult {
-    const status = this.errors.length === 0 ? 'ok' : Object.keys(this.rows).length > 0 ? 'partial' : 'failed'
+    const status = this.refused ? 'blocked' : this.errors.length === 0 ? 'ok' : Object.keys(this.rows).length > 0 ? 'partial' : 'failed'
     return { status, requests: this.requests, rows: this.rows, errors: this.errors }
   }
 }
+
+/** The access breaker as of now: open means upstream refused access and the cooldown hasn't ended. */
+const globalBreaker = () => effectiveStatus(accessBreakerStatus().global, Date.now())
 
 async function inPool<T>(items: T[], n: number, fn: (item: T) => Promise<void>) {
   let i = 0
@@ -176,15 +228,26 @@ async function syncBuilds(db: repo.Db, run: Run) {
 export async function runJob(db: repo.Db, name: JobName, opts: { days?: number; now?: Date } = {}): Promise<JobResult> {
   const id = await repo.startRun(db, name)
   const run = new Run()
-  try {
-    if (name === 'reference') await reference(db, run)
-    else if (name === 'daily') await daily(db, run, { days: Math.min(30, Math.max(1, Math.round(opts.days ?? 3))), now: opts.now ?? new Date() })
-    else if (name === 'builds') await syncBuilds(db, run)
-    else run.rows = await repo.prune(db, opts.now)
-  } catch (error) {
-    run.errors.push(error instanceof Error ? error.message : String(error))
+  // Prune only touches the database; every other job needs upstream, which the breaker may be holding off.
+  if (name !== 'prune' && globalBreaker().state === 'open') {
+    run.refused = true
+    run.errors.push(`${REFUSED} (access breaker open)`)
+  } else {
+    try {
+      if (name === 'reference') await reference(db, run)
+      else if (name === 'daily') await daily(db, run, { days: Math.min(30, Math.max(1, Math.round(opts.days ?? 3))), now: opts.now ?? new Date() })
+      else if (name === 'builds') await syncBuilds(db, run)
+      else run.rows = await repo.prune(db, opts.now)
+    } catch (error) {
+      run.errors.push(error instanceof Error ? error.message : String(error))
+    }
   }
   const result = run.result()
-  await repo.finishRun(db, id, { status: result.status, requests: result.requests, rows: result.rows, error: result.errors.length ? result.errors.slice(0, 20).join('\n') : null })
+  if (result.status === 'blocked') {
+    const breaker = globalBreaker()
+    result.retryAfterS = retryAfterSeconds(breaker.state === 'open' ? breaker.retryAt : null, Date.now(), GLOBAL_BREAKER.baseCooldownMs)
+  }
+  // sync_runs keeps ok | partial | failed: a blocked run is stored as failed, its errors say why.
+  await repo.finishRun(db, id, { status: result.status === 'blocked' ? 'failed' : result.status, requests: result.requests, rows: result.rows, error: result.errors.length ? result.errors.slice(0, 20).join('\n') : null })
   return result
 }

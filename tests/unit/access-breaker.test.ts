@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   AccessGuard,
   Breaker,
+  effectiveStatus,
   ENDPOINT_BREAKER,
   endpointTemplate,
   GLOBAL_BREAKER,
@@ -225,6 +226,33 @@ describe('half-open, cooldown and generations', () => {
     b.settle(probe, 'authorized', 'a', T0 + 10 * MIN, T0 + 10 * MIN)
     b.settle(old, 'refused', 'z', T0, T0 + 12 * MIN)
     expect(b.status()).toMatchObject({ state: 'closed', refusals: 0 })
+  })
+})
+
+describe('effectiveStatus (status as of a time)', () => {
+  it('reports open until retryAt and half-open from then on, without changing the breaker', () => {
+    const b = new Breaker(GLOBAL_BREAKER)
+    openBreaker(b, ['a', 'b', 'c'], T0)
+    const retryAt = T0 + 10 * MIN
+    expect(effectiveStatus(b.status(), retryAt - 1)).toMatchObject({ state: 'open', probing: false })
+    expect(effectiveStatus(b.status(), retryAt)).toMatchObject({ state: 'half-open', probing: false, retryAt })
+    expect(b.status().state).toBe('open') // reading moved nothing
+    expect((b.admit(retryAt) as Pass).probeId).not.toBeNull() // and the next call is still the one probe
+    expect(b.admit(retryAt)).toMatchObject({ rejected: true })
+  })
+
+  it('reports a probe in flight, and a stale one as not probing', () => {
+    const b = new Breaker(GLOBAL_BREAKER)
+    openBreaker(b, ['a', 'b', 'c'], T0)
+    const t = T0 + 10 * MIN
+    b.admit(t)
+    expect(effectiveStatus(b.status(), t + MIN - 1)).toMatchObject({ state: 'half-open', probing: true, probeStartedAt: t })
+    expect(effectiveStatus(b.status(), t + MIN)).toMatchObject({ state: 'half-open', probing: false })
+  })
+
+  it('leaves a closed breaker as it is', () => {
+    const b = new Breaker(GLOBAL_BREAKER)
+    expect(effectiveStatus(b.status(), T0)).toEqual(b.status())
   })
 })
 

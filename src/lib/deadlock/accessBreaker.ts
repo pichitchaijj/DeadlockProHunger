@@ -63,8 +63,21 @@ export type BreakerStatus = {
   retryAt: number | null
   cooldownMs: number
   probing: boolean
+  /** When the probe in flight was let through, or null. */
+  probeStartedAt: number | null
   refusals: number
   lastAuthorizedAt: number | null
+}
+
+/**
+ * A status as of `now`. `status()` is a snapshot of the stored state, which moves from open to half-open only
+ * when the next call is admitted; this reports an open breaker whose cooldown has ended as half-open (a call
+ * would now be let through as the probe) and a stale probe as not probing. Reading it changes nothing.
+ */
+export function effectiveStatus(status: BreakerStatus, now: number): BreakerStatus {
+  const due = status.state === 'open' && status.retryAt !== null && now >= status.retryAt
+  const state = due ? 'half-open' : status.state
+  return { ...status, state, probing: state === 'half-open' && status.probing && (status.probeStartedAt === null || now - status.probeStartedAt < PROBE_STALE_MS) }
 }
 
 export class Breaker {
@@ -132,6 +145,7 @@ export class Breaker {
       retryAt: this.state === 'closed' ? null : this.retryAt,
       cooldownMs: this.cooldownMs,
       probing: this.probe !== null,
+      probeStartedAt: this.probe?.startedAt ?? null,
       refusals: this.refusals.length,
       lastAuthorizedAt: Number.isFinite(this.lastAuthorizedAt) ? this.lastAuthorizedAt : null,
     }

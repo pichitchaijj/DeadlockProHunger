@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { redact, runPrewarm, summarize, type PrewarmStage, type RunnerOptions } from '@/lib/jobs/prewarmRunner'
+import { redact, retryAfterSeconds, runPrewarm, SKIP_RATE_LIMITED, SKIP_REFUSED, summarize, type PrewarmStage, type RunnerOptions } from '@/lib/jobs/prewarmRunner'
 
 /* A fake clock: sleep advances time instantly, so budget waits and deadlines are deterministic. */
 function clock() {
@@ -16,7 +16,7 @@ function options(c: ReturnType<typeof clock>, over: Partial<RunnerOptions> = {})
     deadlineMs: 240_000,
     now: c.now,
     sleep: c.sleep,
-    classify: (e) => (e instanceof Error && /429|rate/.test(e.message) ? 'rate-limited' : 'failed'),
+    classify: (e) => (e instanceof Error && /403/.test(e.message) ? 'blocked' : e instanceof Error && /429|rate/.test(e.message) ? 'rate-limited' : 'failed'),
     secrets: [],
     stopAfterRateLimited: 3,
     ...over,
@@ -71,7 +71,7 @@ describe('runPrewarm', () => {
       ['(plan)', 'failed'],
       ['ok3', 'ok'],
     ])
-    expect(summarize(results)).toEqual({ tasks: 6, ok: 3, failed: 2, rateLimited: 1, skipped: 0 })
+    expect(summarize(results)).toEqual({ tasks: 6, ok: 3, failed: 2, rateLimited: 1, blocked: 0, skipped: 0 })
   })
 
   it('waits for budget headroom before starting a task, leaving the reserve for users', async () => {
@@ -112,6 +112,77 @@ describe('runPrewarm', () => {
     const stages: PrewarmStage[] = [{ name: 's', tasks: [fail('a', 'HTTP 429'), fail('b', 'HTTP 429'), task('ok'), fail('c', 'HTTP 429'), fail('d', 'HTTP 500'), fail('e', 'HTTP 500'), fail('f', 'HTTP 500'), task('g')] }]
     const { results } = await runPrewarm(stages, options(c, { concurrency: 1 }))
     expect(results.filter((r) => r.status === 'skipped')).toHaveLength(0)
+  })
+
+  it('starts no new task after a refused one (blocked) and says why in every skip', async () => {
+    const c = clock()
+    let calls = 0
+    const counted = (name: string, msg?: string) => task(name, async () => { calls++; if (msg) throw new Error(msg) })
+    const stages: PrewarmStage[] = [
+      { name: 'first', tasks: [counted('a'), counted('b', 'HTTP 403'), counted('c'), counted('d')] },
+      { name: 'later', tasks: [counted('e')] },
+    ]
+    const { results } = await runPrewarm(stages, options(c, { concurrency: 1 }))
+    expect(calls).toBe(2) // c, d and e never ran
+    expect(results.map((r) => [r.name, r.status])).toEqual([['a', 'ok'], ['b', 'blocked'], ['c', 'skipped'], ['d', 'skipped'], ['(stage)', 'skipped']])
+    for (const r of results.filter((x) => x.status === 'skipped')) expect(r.error).toBe(SKIP_REFUSED)
+    expect(summarize(results)).toMatchObject({ blocked: 1, skipped: 3 })
+  })
+
+  it('lets tasks already in flight finish, but starts no more once one is blocked', async () => {
+    const c = clock()
+    let calls = 0
+    const refused = (name: string) =>
+      task(name, async () => {
+        calls++
+        await new Promise((r) => setTimeout(r, 1))
+        throw new Error('HTTP 403')
+      })
+    const stages: PrewarmStage[] = [{ name: 's', tasks: Array.from({ length: 10 }, (_, i) => refused(`t${i}`)) }]
+    const { results } = await runPrewarm(stages, options(c, { concurrency: 3 }))
+    expect(calls).toBe(3) // the 3 started together; none after the first refusal came back
+    expect(results.filter((r) => r.status === 'blocked')).toHaveLength(3)
+    expect(results.filter((r) => r.status === 'skipped' && r.error === SKIP_REFUSED)).toHaveLength(7)
+  })
+
+  it('a refused stage plan stops the run too', async () => {
+    const c = clock()
+    let ran = false
+    const stages: PrewarmStage[] = [
+      { name: 'plan', tasks: async () => Promise.reject(new Error('HTTP 403')) },
+      { name: 'later', tasks: [task('x', async () => void (ran = true))] },
+    ]
+    const { results } = await runPrewarm(stages, options(c))
+    expect(ran).toBe(false)
+    expect(results.map((r) => [r.name, r.status, r.error])).toEqual([['(plan)', 'blocked', 'HTTP 403'], ['(stage)', 'skipped', SKIP_REFUSED]])
+  })
+
+  it('a rate-limited stage plan counts toward the rate-limit circuit breaker', async () => {
+    const c = clock()
+    const limited = (name: string) => task(name, async () => Promise.reject(new Error('HTTP 429')))
+    const stages: PrewarmStage[] = [
+      { name: 's1', tasks: [limited('a'), limited('b')] },
+      { name: 'plan', tasks: async () => Promise.reject(new Error('HTTP 429')) },
+      { name: 'later', tasks: [task('x')] },
+    ]
+    const { results } = await runPrewarm(stages, options(c, { concurrency: 1, stopAfterRateLimited: 3 }))
+    expect(results.at(-1)).toMatchObject({ stage: 'later', status: 'skipped', error: SKIP_RATE_LIMITED })
+  })
+
+  it('a plain plan failure still neither trips nor resets anything', async () => {
+    const c = clock()
+    const stages: PrewarmStage[] = [
+      { name: 'plan', tasks: async () => Promise.reject(new Error('HTTP 500')) },
+      { name: 'later', tasks: [task('x')] },
+    ]
+    const { results } = await runPrewarm(stages, options(c))
+    expect(results.map((r) => r.status)).toEqual(['failed', 'ok'])
+  })
+
+  it('retryAfterSeconds: time to retryAt, or the fallback, never below 1 s', () => {
+    expect(retryAfterSeconds(10_500, 1_000, 600_000)).toBe(10)
+    expect(retryAfterSeconds(null, 1_000, 600_000)).toBe(600)
+    expect(retryAfterSeconds(500, 1_000, 600_000)).toBe(1)
   })
 
   it('skips what remains after the deadline', async () => {

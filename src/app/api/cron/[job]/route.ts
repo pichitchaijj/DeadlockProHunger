@@ -10,9 +10,13 @@ import { runPrewarmJob } from '@/lib/jobs/prewarm'
  * (.github/workflows/prewarm.yml). Both send `Authorization: Bearer $CRON_SECRET`.
  * `prewarm` needs no database; the other jobs do. The daily job makes ~60 upstream requests at 4 in
  * parallel, so it needs more than the default time.
+ * Status: 200 ok/partial, 500 failed, 503 + Retry-After blocked (upstream refused access; nothing more was sent).
  */
 export const maxDuration = 300
 export const dynamic = 'force-dynamic'
+
+const statusFor = (status: string) => (status === 'blocked' ? 503 : status === 'failed' ? 500 : 200)
+const retryAfter = (seconds: number | undefined): Record<string, string> => (seconds === undefined ? {} : { 'Retry-After': String(seconds) })
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ job: string }> }) {
   if (!isCronAuthorized(request.headers.get('authorization'), process.env.CRON_SECRET)) {
@@ -21,12 +25,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const { job } = await params
   if (job === 'prewarm') {
     const report = await runPrewarmJob()
-    return NextResponse.json(report, { status: report.status === 'failed' ? 500 : 200, headers: { 'Cache-Control': 'no-store' } })
+    return NextResponse.json(report, { status: statusFor(report.status), headers: { 'Cache-Control': 'no-store', ...retryAfter(report.retryAfterS) } })
   }
   if (!JOBS.includes(job as JobName)) return NextResponse.json({ error: `unknown job; use one of ${[...JOBS, 'prewarm'].join(', ')}` }, { status: 404 })
   const db = getDb()
   if (!db) return NextResponse.json({ error: 'DATABASE_URL is not configured' }, { status: 503 })
   const days = Number(request.nextUrl.searchParams.get('days') ?? '') || undefined
   const result = await runJob(db, job as JobName, { days })
-  return NextResponse.json({ job, ...result }, { status: result.status === 'failed' ? 500 : 200 })
+  return NextResponse.json({ job, ...result }, { status: statusFor(result.status), headers: retryAfter(result.retryAfterS) })
 }

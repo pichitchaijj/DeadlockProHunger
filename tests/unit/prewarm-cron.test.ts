@@ -6,10 +6,19 @@ const SECRET = 'test-cron-secret-not-real-123'
 const report = { job: 'prewarm', status: 'ok', durationMs: 5, summary: { tasks: 1, ok: 1, failed: 0, rateLimited: 0, skipped: 0 }, upstream: { networkRequests: 0, cacheHits: 1, budgetWaits: 0, budgetExhausted: 0 }, results: [] }
 
 vi.mock('server-only', () => ({}))
-vi.mock('@/lib/db/client', () => ({ getDb: () => null }))
-vi.mock('@/lib/jobs', () => ({ JOBS: ['reference', 'daily', 'builds', 'prune'], runJob: vi.fn() }))
-const runPrewarmJob = vi.fn(async () => report)
+const getDb = vi.fn((): object | null => null)
+vi.mock('@/lib/db/client', () => ({ getDb: () => getDb() }))
+const runJob = vi.fn(async (..._args: unknown[]): Promise<Record<string, unknown>> => ({ status: 'ok', requests: 0, rows: {}, errors: [] }))
+vi.mock('@/lib/jobs', () => ({ JOBS: ['reference', 'daily', 'builds', 'prune'], runJob: (...args: unknown[]) => runJob(...args) }))
+const runPrewarmJob = vi.fn(async (): Promise<Record<string, unknown>> => report)
 vi.mock('@/lib/jobs/prewarm', () => ({ runPrewarmJob: () => runPrewarmJob() }))
+
+async function get(job: string) {
+  const { GET } = await import('@/app/api/cron/[job]/route')
+  const { NextRequest } = await import('next/server')
+  const res = await GET(new NextRequest(`http://localhost/api/cron/${job}`, { headers: { authorization: `Bearer ${SECRET}` } }), { params: Promise.resolve({ job }) })
+  return { status: res.status, retryAfter: res.headers.get('retry-after'), body: await res.json() }
+}
 
 describe('isCronAuthorized', () => {
   it('accepts exactly "Bearer <secret>"', () => {
@@ -69,5 +78,47 @@ describe('GET /api/cron/prewarm', () => {
     for (const auth of [`Bearer ${SECRET}`, 'Bearer nope', null]) {
       expect((await call(auth)).text).not.toContain(SECRET)
     }
+  })
+})
+
+describe('cron status codes', () => {
+  beforeEach(() => {
+    process.env.CRON_SECRET = SECRET
+    runPrewarmJob.mockReset()
+    runJob.mockReset()
+    getDb.mockReset()
+    getDb.mockReturnValue({})
+  })
+  afterEach(() => {
+    delete process.env.CRON_SECRET
+  })
+
+  it('prewarm blocked (upstream refused access): 503 with Retry-After', async () => {
+    runPrewarmJob.mockResolvedValue({ ...report, status: 'blocked', retryAfterS: 600 })
+    const res = await get('prewarm')
+    expect(res).toMatchObject({ status: 503, retryAfter: '600' })
+    expect(res.body).toMatchObject({ status: 'blocked' })
+  })
+
+  it('prewarm failed: still 500, ok and partial: 200, none with Retry-After', async () => {
+    for (const [status, code] of [['failed', 500], ['ok', 200], ['partial', 200]] as const) {
+      runPrewarmJob.mockResolvedValue({ ...report, status })
+      expect(await get('prewarm'), status).toMatchObject({ status: code, retryAfter: null })
+    }
+  })
+
+  it('a blocked daily job: 503 with Retry-After; failed: 500; ok: 200', async () => {
+    runJob.mockResolvedValue({ status: 'blocked', requests: 1, rows: {}, errors: ['HTTP 403'], retryAfterS: 42 })
+    expect(await get('daily')).toMatchObject({ status: 503, retryAfter: '42', body: { job: 'daily', status: 'blocked' } })
+    runJob.mockResolvedValue({ status: 'failed', requests: 3, rows: {}, errors: ['HTTP 500'] })
+    expect(await get('daily')).toMatchObject({ status: 500, retryAfter: null })
+    runJob.mockResolvedValue({ status: 'ok', requests: 3, rows: {}, errors: [] })
+    expect(await get('daily')).toMatchObject({ status: 200, retryAfter: null })
+  })
+
+  it('jobs still answer 503 without a database, before any upstream call', async () => {
+    getDb.mockReturnValue(null)
+    expect(await get('daily')).toMatchObject({ status: 503, retryAfter: null })
+    expect(runJob).not.toHaveBeenCalled()
   })
 })

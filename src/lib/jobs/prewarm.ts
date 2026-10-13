@@ -1,6 +1,7 @@
 import 'server-only'
 import { DataError, classifyError } from '@/lib/deadlock/errors'
-import { apiCallStats, budgetHeadroom } from '@/lib/deadlock/client'
+import { accessBreakerStatus, apiCallStats, budgetHeadroom } from '@/lib/deadlock/client'
+import { effectiveStatus, GLOBAL_BREAKER, type BreakerState } from '@/lib/deadlock/accessBreaker'
 import { getActiveHeroes, getPatchFeed, getRanks } from '@/lib/deadlock/endpoints'
 import { getHeroBuildStats } from '@/lib/deadlock/heroEndpoints'
 import { getItemPhases, getItemStatsByHero, getItemStatsByMinute } from '@/lib/deadlock/itemEndpoints'
@@ -16,7 +17,7 @@ import { getHomeBuilds, getHomeMatches, getHomeMeta, getHomePatch, getHomePerfor
 import { getMetaPageData } from '@/features/meta/loaders'
 import { DEFAULT_QUERY } from '@/features/meta/query'
 import { resolveScope } from '@/features/meta/scope'
-import { redact, runPrewarm, summarize, type PrewarmStage } from './prewarmRunner'
+import { redact, retryAfterSeconds, runPrewarm, SKIP_REFUSED, summarize, type PrewarmStage, type TaskResult } from './prewarmRunner'
 
 /*
  * Cache prewarming (docs/ARCHITECTURE.md § Cache prewarming). Loads, through the SAME loaders the pages
@@ -154,36 +155,56 @@ export function prewarmStages(): PrewarmStage[] {
 
 export type PrewarmReport = {
   job: 'prewarm'
-  status: 'ok' | 'partial' | 'failed'
+  /** 'blocked': upstream refused access (or the access breaker was open), so the run stopped early. */
+  status: 'ok' | 'partial' | 'failed' | 'blocked'
   durationMs: number
   summary: ReturnType<typeof summarize>
   /** Upstream activity during the run (this server instance; concurrent user traffic is included). */
-  upstream: { networkRequests: number; cacheHits: number; budgetWaits: number; budgetExhausted: number }
+  upstream: { networkRequests: number; cacheHits: number; budgetWaits: number; budgetExhausted: number; accessRefused: number; circuitRejected: number }
+  /** The client's access breaker (global level) at the end of the run, as of then. */
+  breaker: { state: BreakerState; retryAt: number | null }
+  /** When blocked: seconds before trying again (the route's Retry-After). */
+  retryAfterS?: number
   results: Array<{ stage: string; name: string; status: string; ms: number; error?: string }>
 }
 
-/** Runs the job once. Never throws; the report holds counts and names only (no URLs, keys or secrets). */
+const globalBreaker = () => effectiveStatus(accessBreakerStatus().global, Date.now())
+
+/**
+ * Runs the job once. Never throws; the report holds counts and names only (no URLs, keys or secrets).
+ * When the access breaker is open (upstream refused access and the cooldown hasn't ended) nothing is sent;
+ * once the cooldown has ended the run goes ahead and its first call is the breaker's probe.
+ */
 export async function runPrewarmJob(): Promise<PrewarmReport> {
   const secrets = [process.env.CRON_SECRET, process.env.DEADLOCK_API_KEY, process.env.DATABASE_URL].filter((s): s is string => Boolean(s))
   const before = apiCallStats()
   const analytics = budgetHeadroom(ANALYTICS_PATH)
-  const { results, durationMs } = await runPrewarm(prewarmStages(), {
-    concurrency: CONCURRENCY,
-    headroom: () => budgetHeadroom(ANALYTICS_PATH).available,
-    reserve: Math.floor(analytics.capacity / 2),
-    maxBudgetWaitMs: 20_000,
-    deadlineMs: 240_000, // the route allows 300 s
-    now: () => Date.now(),
-    sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
-    classify: (error) => (classifyError(error) === 'rate-limit' ? 'rate-limited' : 'failed'),
-    secrets,
-    stopAfterRateLimited: 3,
-  })
+  const refusedAtStart = globalBreaker().state === 'open'
+  const { results, durationMs }: { results: TaskResult[]; durationMs: number } = refusedAtStart
+    ? { results: [{ stage: '(run)', name: '(run)', status: 'skipped', ms: 0, error: SKIP_REFUSED }], durationMs: 0 }
+    : await runPrewarm(prewarmStages(), {
+        concurrency: CONCURRENCY,
+        headroom: () => budgetHeadroom(ANALYTICS_PATH).available,
+        reserve: Math.floor(analytics.capacity / 2),
+        maxBudgetWaitMs: 20_000,
+        deadlineMs: 240_000, // the route allows 300 s
+        now: () => Date.now(),
+        sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+        classify: (error) => {
+          const kind = classifyError(error)
+          return kind === 'forbidden' ? 'blocked' : kind === 'rate-limit' ? 'rate-limited' : 'failed'
+        },
+        secrets,
+        stopAfterRateLimited: 3,
+        stopAfterBlocked: 1,
+      })
   const after = apiCallStats()
   const summary = summarize(results)
+  const end = globalBreaker()
+  const blocked = refusedAtStart || summary.blocked > 0
   const report: PrewarmReport = {
     job: 'prewarm',
-    status: summary.ok === summary.tasks ? 'ok' : summary.ok === 0 ? 'failed' : 'partial',
+    status: blocked ? 'blocked' : summary.ok === summary.tasks ? 'ok' : summary.ok === 0 ? 'failed' : 'partial',
     durationMs,
     summary,
     upstream: {
@@ -191,9 +212,13 @@ export async function runPrewarmJob(): Promise<PrewarmReport> {
       cacheHits: after.hits - before.hits,
       budgetWaits: after.budgetWaits - before.budgetWaits,
       budgetExhausted: after.budgetExhausted - before.budgetExhausted,
+      accessRefused: after.accessRefused - before.accessRefused,
+      circuitRejected: after.circuitRejected - before.circuitRejected,
     },
+    breaker: { state: end.state, retryAt: end.retryAt },
+    ...(blocked && { retryAfterS: retryAfterSeconds(end.state === 'open' ? end.retryAt : null, Date.now(), GLOBAL_BREAKER.baseCooldownMs) }),
     results,
   }
-  console.info(redact(`[prewarm] ${JSON.stringify({ status: report.status, durationMs, ...summary, ...report.upstream })}`, secrets))
+  console.info(redact(`[prewarm] ${JSON.stringify({ status: report.status, durationMs, ...summary, ...report.upstream, breaker: report.breaker.state })}`, secrets))
   return report
 }
