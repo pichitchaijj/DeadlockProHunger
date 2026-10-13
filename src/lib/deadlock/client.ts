@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto'
 import { unstable_cache } from 'next/cache'
 import { stableKey } from '@/lib/cache/stableKey'
 import { z } from 'zod'
+import { AccessGuard, outcomeFor, type AccessStatus, type Outcome } from './accessBreaker'
 import { budgetClasses, classFor, TokenBucket, type BudgetClass } from './budget'
 
 /**
@@ -21,6 +22,8 @@ import { budgetClasses, classFor, TokenBucket, type BudgetClass } from './budget
  * - Concurrent misses for the same key share one request (in-flight coalescing).
  * - Optional X-API-KEY header from DEADLOCK_API_KEY (never the api_key query param).
  * - One retry on network errors, 429 and 502/503/504 (Retry-After honored, capped); timeouts aren't retried.
+ * - Access breaker (lib/deadlock/accessBreaker.ts): after repeated 401/403, calls fail as a refusal without a
+ *   request or budget until a cooldown ends; checked before the budget and again right before sending.
  * - `DEADLOCK_API_TRACE=1` logs every call: network requests with status and time, cache hits as `hit`,
  *   and budget waits (docs/PERFORMANCE.md).
  */
@@ -68,9 +71,27 @@ const buckets = new Map<BudgetClass, TokenBucket>()
  * Counters since the server instance started (for the prewarm job's report and audits). Counts only:
  * no URLs, headers or keys are kept.
  */
-const counters = { network: 0, hits: 0, budgetWaits: 0, budgetExhausted: 0 }
+const counters = { network: 0, hits: 0, budgetWaits: 0, budgetExhausted: 0, accessRefused: 0, circuitRejected: 0 }
 export type ApiCallStats = typeof counters
 export const apiCallStats = (): ApiCallStats => ({ ...counters })
+
+// ── Access breaker ───────────────────────────────────────────────────
+
+let access = new AccessGuard()
+
+/** Breaker state (global and per endpoint template), for reports. No URLs or ids. */
+export const accessBreakerStatus = (): AccessStatus => access.status()
+
+/** Test-only: a fresh breaker. */
+export function resetAccessBreakerForTests() {
+  access = new AccessGuard()
+}
+
+/** A call refused by the breaker itself: nothing was sent and no budget was spent. */
+function refusedByBreaker(path: string) {
+  counters.circuitRejected++
+  return new DeadlockApiError('Upstream access refused (circuit open)', 403, path, { circuitOpen: true })
+}
 
 /** Unspent tokens in the bucket that serves `path`, so background work can leave room for users. */
 export function budgetHeadroom(path: string): { available: number; capacity: number } {
@@ -111,35 +132,55 @@ async function request<S extends z.ZodType>(url: string, path: string, schema: S
 
   const started = performance.now()
   for (let attempt = 0; ; attempt++) {
-    await acquire(path, maxWaitMs) // every network attempt (retries too) spends budget
-    counters.network++
-    let response: Response
+    // Every attempt (retries too) is admitted by the breaker first: synchronous, before any await.
+    const ticket = access.admit(path, Date.now())
+    if ('rejected' in ticket) throw refusedByBreaker(path)
+    // Settled exactly once below, on every path: an attempt that sends nothing settles as 'none', which
+    // frees a half-open probe slot it may hold.
+    let outcome: Outcome = 'none'
     try {
-      // no-store: caching is done above, on the parsed result (inside unstable_cache Next treats
-      // fetch as no-store anyway).
-      response = await fetch(url, { headers, signal: AbortSignal.timeout(timeoutMs), cache: 'no-store' })
-    } catch (error) {
-      // A timeout isn't retried: the upstream is already slow, and a second full wait doubled the time
-      // to an answer (20–30 s measured, docs/QA.md § Error handling). Network errors get one retry.
-      const timedOut = error instanceof Error && error.name === 'TimeoutError'
-      if (retry && attempt === 0 && !timedOut) continue
-      throw new DeadlockApiError(`Request failed: ${(error as Error).message}`, null, path)
-    }
+      await acquire(path, maxWaitMs) // every network attempt (retries too) spends budget
+      // The breaker may have opened while this attempt waited for budget: then nothing is sent.
+      if (!access.isCurrent(ticket)) throw refusedByBreaker(path)
+      ticket.sentAt = Date.now()
+      counters.network++
+      outcome = 'neutral'
+      let response: Response
+      try {
+        // no-store: caching is done above, on the parsed result (inside unstable_cache Next treats
+        // fetch as no-store anyway).
+        response = await fetch(url, { headers, signal: AbortSignal.timeout(timeoutMs), cache: 'no-store' })
+      } catch (error) {
+        // A timeout isn't retried: the upstream is already slow, and a second full wait doubled the time
+        // to an answer (20–30 s measured, docs/QA.md § Error handling). Network errors get one retry.
+        const timedOut = error instanceof Error && error.name === 'TimeoutError'
+        if (retry && attempt === 0 && !timedOut) {
+          access.settle(ticket, outcome, Date.now())
+          continue
+        }
+        throw new DeadlockApiError(`Request failed: ${(error as Error).message}`, null, path)
+      }
 
-    if (retry && RETRYABLE.has(response.status) && attempt === 0) {
-      const retryAfter = Number(response.headers.get('retry-after'))
-      await new Promise((resolve) => setTimeout(resolve, Math.min(Number.isFinite(retryAfter) ? retryAfter * 1000 : 800, 3000)))
-      continue
-    }
-    // Path + query, so audits can tell true duplicates (same params) from distinct calls on one path.
-    if (TRACE) console.info(`[api] ${path}${new URL(url).search} ${response.status} ${Math.round(performance.now() - started)}ms${attempt ? ' retry' : ''}`)
-    if (!response.ok) throw new DeadlockApiError(`HTTP ${response.status}`, response.status, path)
+      outcome = outcomeFor(response.status)
+      if (outcome === 'refused') counters.accessRefused++
+      if (retry && RETRYABLE.has(response.status) && attempt === 0) {
+        access.settle(ticket, outcome, Date.now()) // before sleeping, so a probe slot isn't held through the wait
+        const retryAfter = Number(response.headers.get('retry-after'))
+        await new Promise((resolve) => setTimeout(resolve, Math.min(Number.isFinite(retryAfter) ? retryAfter * 1000 : 800, 3000)))
+        continue
+      }
+      // Path + query, so audits can tell true duplicates (same params) from distinct calls on one path.
+      if (TRACE) console.info(`[api] ${path}${new URL(url).search} ${response.status} ${Math.round(performance.now() - started)}ms${attempt ? ' retry' : ''}`)
+      if (!response.ok) throw new DeadlockApiError(`HTTP ${response.status}`, response.status, path)
 
-    const parsed = schema.safeParse(await response.json())
-    if (!parsed.success) {
-      throw new DeadlockApiError(`Unexpected response shape: ${parsed.error.issues[0]?.message ?? 'invalid'}`, response.status, path)
+      const parsed = schema.safeParse(await response.json())
+      if (!parsed.success) {
+        throw new DeadlockApiError(`Unexpected response shape: ${parsed.error.issues[0]?.message ?? 'invalid'}`, response.status, path)
+      }
+      return parsed.data
+    } finally {
+      access.settle(ticket, outcome, Date.now())
     }
-    return parsed.data
   }
 }
 
