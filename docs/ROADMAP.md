@@ -26,7 +26,7 @@ The phase lists below are the **original plan**, kept for reference. Where the b
 | P4 Players + Leaderboard | **Implemented** | Leaderboard is one route with `view`/`scope` params (Global + Performance from the scoreboard endpoint), not `/leaderboard/[region]` |
 | P5 Matches + Analyze | **Implemented** | Matches and Match Detail (stored after first open, read first after that). `/analyze` is a hero analysis workspace; the paste-an-ID input stays **Planned** (global search covers match IDs and names) |
 | P6 Builds | **Implemented** | |
-| P7 Launch hardening | **Partial** | Done: axe and keyboard audits, performance budgets, robots, error/empty/loading review, fault injection, mocks only on `/design` ([QA](./QA.md)). **Planned:** sitemap, OG images, NVDA pass, analytics and error monitoring. **Blocked:** CI (the project isn't a git repository yet) |
+| P7 Launch hardening | **Partial** | Done: axe and keyboard audits, performance budgets, robots, sitemap, error/empty/loading review, fault injection, mocks only on `/design` ([QA](./QA.md)). **Planned:** OG images, NVDA pass, analytics and error monitoring. **Blocked:** CI (the project isn't a git repository yet) |
 | Post-MVP 3 Compare | **Implemented** (early) | |
 | Post-MVP 5 Draft Lab | **Implemented** (early) | |
 | Post-MVP 1, 2, 4, 7, 8 (Items, Patch, Trends, Coach, Advanced) | **Planned** | Hero Detail already has a Trends tab |

@@ -9,10 +9,10 @@ Covers **3. Route map**, **as built** (re-verified 2026-10-07 against `src/app/`
 | Convention | Detail |
 |---|---|
 | Scope | Stats pages resolve their window and rank band through `features/meta/scope.ts`. `?rank=all\|low\|mid\|high\|top` (default `all`; bands in `lib/analytics/rankBands.ts`, filtering by **match average** badge). `?window=7d\|30d\|patch`; the default and allowed set vary by page (below). `patch` falls back to 7 days when the patch date is unknown. |
-| URL state | Filters live in the URL (`features/<page>/query.ts` parses and validates them), so every view is shareable. Unknown values fall back to defaults; they never error. |
+| URL state | Filters live in the URL (`features/<page>/query.ts` parses and validates them), so every view is shareable. Unknown values fall back to defaults; they never error. Canonicals and the sitemap use clean paths only; `robots.txt` disallows every query-string URL (`/*?`, except `/_next/` and the app icons) and player profiles (`/players/`, every locale prefix; the `/players` directory stays crawlable). Clean match detail URLs stay crawlable. |
 | Slugs | Hero slugs come from the hero name in `/v1/assets/heroes` (`slugify`). Unknown slug → 404. |
 | IDs | `matchId` (1–12 digits) and `accountId` are validated before any upstream call. Invalid → 404. |
-| Metadata | **Partial.** Titles use the template "Deadlockprohunger — %s", and pages set descriptions. **Planned:** an OG image per page (original brand art + text, never game art) and a sitemap. |
+| Metadata | **Partial.** Titles use the template "Deadlockprohunger — %s", and pages set descriptions. Canonical URLs and hreflang alternates per locale (`src/i18n/seo.ts`), and `/sitemap.xml` (`src/app/sitemap.ts`: the static pages plus hero, item and patch details, in every locale) when `SITE_URL` is set. **Planned:** an OG image per page (original brand art + text, never game art). |
 | States | Sections stream with `Suspense` skeletons. Failures render `DataNotice` with the classified reason (`attempt()`, [QA](./QA.md)). The root `error.tsx` catches render errors. There is **no** `loading.tsx`: it would start streaming before `notFound()` and turn 404s into 200s. |
 | Not built | Nav items with `built: false` (`src/config/navigation.ts`) resolve to `not-found.tsx` ("Nothing here yet") and aren't prefetched. |
 
@@ -70,6 +70,7 @@ Question: *"Find a player."*
 - Current rank (current rank endpoints only; "Unranked" when `badge = 0`), win rate, recent matches, per-hero stats on the `player` sample scale, mates and enemies.
 - Public profile fields only. Profiles state results, never skill ratings.
 - Private or protected accounts get a respectful "Player not found" state that says they aren't shown.
+- Search indexing: profiles are `noindex` and left out of the sitemap, and `robots.txt` disallows them (`/players/` in every locale prefix), so crawlers don't follow the unbounded profile-to-profile links. The `/players` directory stays crawlable.
 
 ### `/leaderboard` — Leaderboard
 - One route, with views selected by params (there is no `/leaderboard/[region]`):

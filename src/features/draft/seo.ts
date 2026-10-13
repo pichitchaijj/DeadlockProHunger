@@ -5,7 +5,7 @@ import { pageAlternates } from '@/i18n/seo'
 /*
  * Draft Lab indexing. The draft lives in the query string, and every pick order is its own URL, so only the
  * empty board (`/draft`) is indexable. Any query string, valid or not, is noindex + nofollow without
- * alternates; robots.txt also disallows those URLs (QUERY_DISALLOWED_PATHS in src/i18n/seo.ts). Pure.
+ * alternates; robots.txt also disallows those URLs (QUERY_STRING_RULE in src/i18n/seo.ts). Pure.
  */
 
 type SearchParams = Record<string, string | string[] | undefined>

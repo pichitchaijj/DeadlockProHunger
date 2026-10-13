@@ -72,21 +72,28 @@ export function sitemapEntries(paths: string[], base: URL | null = siteUrl()): M
 }
 
 /**
- * Pages whose query strings describe user state with no useful bound (Draft Lab: every pick order is its own
- * URL). Their query-string URLs are off limits to crawlers; the base page stays crawlable.
+ * Every URL with a query string, in every locale (RFC 9309 `*` wildcard). No indexable URL has one: canonicals,
+ * hreflang and the sitemap use clean paths only (pageAlternates rejects '?'). Query strings are filter, sort,
+ * page and Draft state, a combinatorial set of dynamic renders, so crawlers are kept off all of them.
  */
-export const QUERY_DISALLOWED_PATHS = ['/draft']
+export const QUERY_STRING_RULE = '/*?'
 
 /**
- * robots.txt: the design showcase (every locale prefix), query-string URLs of QUERY_DISALLOWED_PATHS (every
- * locale prefix; `/draft?` is a prefix rule, so `/draft` itself stays allowed) and API routes are off limits;
- * the sitemap when SITE_URL is set.
+ * Allowed despite QUERY_STRING_RULE (the longest matching rule wins): Next assets, which may carry a
+ * deployment query (`?dpl=`) and are needed to render pages, and the app icons, linked as `/icon.png?<hash>`.
+ */
+export const ROBOTS_ALLOW = ['/', '/_next/', '/icon.png', '/apple-icon.png']
+
+/**
+ * robots.txt: query-string URLs, the design showcase and player profiles (every locale prefix; profiles are
+ * noindex and link to each other without bound, `/players/` keeps the `/players` directory allowed) and API
+ * routes are off limits; the sitemap when SITE_URL is set. Clean match detail URLs stay crawlable.
  */
 export function robotsRules(base: URL | null = siteUrl()): MetadataRoute.Robots {
   const design = locales.map((l) => localizedPath('/design', l))
-  const queries = QUERY_DISALLOWED_PATHS.flatMap((path) => locales.map((l) => `${localizedPath(path, l)}?`))
+  const profiles = locales.map((l) => localizedPath('/players/', l))
   return {
-    rules: [{ userAgent: '*', allow: '/', disallow: [...design, ...queries, '/api/'] }],
+    rules: [{ userAgent: '*', allow: ROBOTS_ALLOW, disallow: [...design, ...profiles, QUERY_STRING_RULE, '/api/'] }],
     ...(base && { sitemap: absolute('/sitemap.xml', base) }),
   }
 }
