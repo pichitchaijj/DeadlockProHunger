@@ -1,6 +1,7 @@
 import 'server-only'
 import { cache } from 'react'
 import { attempt, DataError } from '@/lib/deadlock/errors'
+import { softFail } from '@/lib/deadlock/softFail'
 import type { StatScope } from '@/lib/analytics/scope'
 import { getActiveHeroes } from '@/lib/deadlock/endpoints'
 import { rankFromBadge, type RankDisplay } from '@/lib/deadlock/rankAssets'
@@ -78,7 +79,7 @@ const authorRank = (scope: ResolvedScope, r: { rank: number; subrank: number } |
 /** Tracked build stats per hero for the scope (one call per hero; cached and shared). */
 async function trackedStats(heroIds: number[], c: Common) {
   const entries = await Promise.all(
-    heroIds.map(async (id) => [id, (await getHeroBuildStats(id, c.scope.statsQuery).catch(() => [])).map((s) => ({ id: s.hero_build_id, stats: scoreBuild(s.wins, s.matches) }))] as const),
+    heroIds.map(async (id) => [id, (await softFail(getHeroBuildStats(id, c.scope.statsQuery), [])).map((s) => ({ id: s.hero_build_id, stats: scoreBuild(s.wins, s.matches) }))] as const),
   )
   return new Map(entries)
 }
@@ -118,8 +119,8 @@ export async function getBuildsListing(query: BuildsQuery): Promise<BuildsListin
   const stats = await trackedStats([...new Set(builds.map((b) => b.hero_build.hero_id))], c)
   const authorIds = builds.map((b) => b.hero_build.author_account_id)
   const [names, missingRanks] = await Promise.all([
-    getSteamNames(authorIds).catch(() => []),
-    ranks.size === 0 ? getAccountRanks(authorIds).catch(() => []) : Promise.resolve([]),
+    softFail(getSteamNames(authorIds), []),
+    ranks.size === 0 ? softFail(getAccountRanks(authorIds), []) : Promise.resolve([]),
   ])
   for (const r of missingRanks) ranks.set(r.account_id, r)
   const nameById = new Map(names.map((n) => [n.account_id, n.personaname]))

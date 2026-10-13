@@ -6,6 +6,7 @@ import { TTL } from '@/lib/cache/ttl'
 import { getApiInfo, getPatchFeed } from '@/lib/deadlock/endpoints'
 import { getHeroBans } from '@/lib/deadlock/heroEndpoints'
 import { classifyError, DataError, type DataErrorKind } from '@/lib/deadlock/errors'
+import { softFail } from '@/lib/deadlock/softFail'
 import { getBuildsListing } from '@/features/builds/loaders'
 import { DEFAULT_BUILDS_QUERY } from '@/features/builds/query'
 import { getMatchesPage } from '@/features/matches/loaders'
@@ -127,9 +128,9 @@ export const getHomePerformance = section<HeroPerformance>('performance', TTL.an
   if (!meta.ok) throw new DataError(meta.message, meta.kind)
   const now = Math.floor(Date.now() / 1000)
   const today = Math.floor(now / DAY) * DAY
-  const bans = await getHeroBans({ minUnix: today - 6 * DAY, maxUnix: Math.floor(now / HOUR) * HOUR }).catch((error) => {
+  // Refused access fails the section (nothing cached); any other failure drops only the bans tab.
+  const bans = await softFail(getHeroBans({ minUnix: today - 6 * DAY, maxUnix: Math.floor(now / HOUR) * HOUR }), null, (error) => {
     console.error('[home] bans failed', error)
-    return null
   })
   return heroPerformance(meta.model.heroes, bans)
 })

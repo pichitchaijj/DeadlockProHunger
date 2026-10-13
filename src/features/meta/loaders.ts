@@ -5,6 +5,7 @@ import type { ScopeRank, ScopeWindow, StatScope } from '@/lib/analytics/scope'
 import { badgeRange, RANK_BANDS, type RankBandId } from '@/lib/analytics/rankBands'
 import { DeadlockApiError } from '@/lib/deadlock/client'
 import { classifyError, type DataErrorKind } from '@/lib/deadlock/errors'
+import { softFail } from '@/lib/deadlock/softFail'
 import { utcDay } from '@/lib/db/mappers'
 import { heroStatsFromHistory } from '@/lib/db/store'
 import { getActiveHeroes, getBadgeDistribution, getHeroStatsByDay } from '@/lib/deadlock/endpoints'
@@ -48,7 +49,7 @@ const loadMetaPageData = cache(async (key: string): Promise<MetaPageData> => {
     const [scopeInfo, heroes, distribution] = await Promise.all([
       resolveScope(query),
       getActiveHeroes(),
-      getBadgeDistribution(Math.floor(Date.now() / 1000 / DAY) * DAY - 29 * DAY).catch(() => null),
+      softFail(getBadgeDistribution(Math.floor(Date.now() / 1000 / DAY) * DAY - 29 * DAY), null),
     ])
     const { today, window, windowStart, band, rankRefs, windows } = scopeInfo
     const latest = scopeInfo.patches[0] ?? null

@@ -2,6 +2,7 @@
 import { badgeRange, RANK_BANDS, rankBand, rankBandRef, type RankBand, type RankBandId } from '@/lib/analytics/rankBands'
 import type { ScopeRank, ScopeRef, ScopeWindow } from '@/lib/analytics/scope'
 import { getPatchFeed, getRanks, type HeroStatsQuery } from '@/lib/deadlock/endpoints'
+import { softFail } from '@/lib/deadlock/softFail'
 import { rankCatalog, type RankCatalog } from '@/lib/deadlock/rankAssets'
 import { patchDateFromTitle } from '@/lib/deadlock/patchDate'
 import type { MetaWindow } from './query'
@@ -54,7 +55,7 @@ export async function resolveScope(input: { window: MetaWindow; rank: RankBandId
   const hour = Math.floor(nowSec / HOUR) * HOUR
   const today = Math.floor(nowSec / DAY) * DAY
 
-  const [ranks, feed] = await Promise.all([getRanks(), getPatchFeed().catch(() => null)]) // pages work without patch data
+  const [ranks, feed] = await Promise.all([getRanks(), softFail(getPatchFeed(), null)]) // pages work without patch data, but not on refused access
   const patches = feed ? forumPatches(feed) : []
   const patchStart = patches[0]?.day ?? null
   const window: MetaWindow = input.window === 'patch' && patchStart === null ? '7d' : input.window
