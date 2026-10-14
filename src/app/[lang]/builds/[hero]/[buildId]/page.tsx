@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import { notFound, redirect } from 'next/navigation'
 import { Link } from '@/i18n/navigation'
 import { OG_LOCALE, type Locale } from '@/i18n/config'
+import { queryVariantIndexing } from '@/i18n/seo'
 import { localePath } from '@/i18n/server'
 import type { ReactNode } from 'react'
 import { ScopeLine } from '@/components/data/ScopeLine'
@@ -11,7 +12,7 @@ import { PageContainer } from '@/components/layout/PageContainer'
 import { CountUp } from '@/components/motion/CountUp'
 import { ButtonLink } from '@/components/ui/Button'
 import { RankBadge } from '@/components/game-assets/RankBadge'
-import { Filter } from '@/components/ui/Filter'
+import { Filter, FILTER_VARIANT_REL } from '@/components/ui/Filter'
 
 import { cx } from '@/lib/cx'
 import { formatDuration, formatInteger, formatPercent, formatPointDelta } from '@/lib/format'
@@ -37,7 +38,8 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>
  */
 export async function generateMetadata({ params, searchParams }: { params: Params; searchParams: SearchParams }): Promise<Metadata> {
   const { hero, buildId: rawId } = await params
-  const query = parseBuildsQuery(await searchParams)
+  const raw = await searchParams
+  const query = parseBuildsQuery(raw)
   const buildId = Number(rawId)
   const [t, detailT, locale] = await Promise.all([getTranslations('builds.meta'), getTranslations('builds.detail'), getLocale()])
   const load = Number.isInteger(buildId) && buildId > 0 ? await loadBuildDetail(hero, buildId, query.window, query.rank) : null
@@ -50,6 +52,7 @@ export async function generateMetadata({ params, searchParams }: { params: Param
     title,
     description,
     ...buildIndexing(`/builds/${data.hero.slug}/${data.build.id}`, locale, 'ok'),
+    ...queryVariantIndexing(raw),
     openGraph: { title, description, locale: OG_LOCALE[locale], type: 'website' },
   }
 }
@@ -163,9 +166,9 @@ export default async function BuildDetailPage({ params, searchParams }: { params
         </dl>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <Filter label={t('detail.window')} value={query.window} options={WINDOWS.map((value) => ({ value, label: t(`list.windows.${value}`), href: buildDetailHref(hero.slug, buildId, { ...query, window: value }) }))} />
+          <Filter rel={FILTER_VARIANT_REL} label={t('detail.window')} value={query.window} options={WINDOWS.map((value) => ({ value, label: t(`list.windows.${value}`), href: buildDetailHref(hero.slug, buildId, { ...query, window: value }) }))} />
           {scope && (
-            <Filter label={t('list.rank')} value={query.rank} options={rankBandOptions(scopeWords.rankLabels(scope.rankRefs), scope.ranks, (rank) => buildDetailHref(hero.slug, buildId, { ...query, rank }))} />
+            <Filter rel={FILTER_VARIANT_REL} label={t('list.rank')} value={query.rank} options={rankBandOptions(scopeWords.rankLabels(scope.rankRefs), scope.ranks, (rank) => buildDetailHref(hero.slug, buildId, { ...query, rank }))} />
           )}
         </div>
         <ScopeLine scope={{ ...data.statScope, sampleSize: stats?.matches }} />

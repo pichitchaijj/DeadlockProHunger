@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { OG_LOCALE } from '@/i18n/config'
-import { pageAlternates } from '@/i18n/seo'
+import { pageAlternates, queryVariantIndexing } from '@/i18n/seo'
 import { Suspense, type ReactNode } from 'react'
 import { DataNotice } from '@/components/data/DataState'
 import { ScopeLine } from '@/components/data/ScopeLine'
@@ -22,12 +22,13 @@ import { filterAndSort } from '@/features/items/model'
 import { itemsHref, parseItemsQuery, type ItemSort, type ItemsQuery } from '@/features/items/query'
 import { getScopeWording } from '@/components/data/scopeWording'
 
-export async function generateMetadata(): Promise<Metadata> {
-  const [t, locale] = await Promise.all([getTranslations('items.meta'), getLocale()])
+export async function generateMetadata({ searchParams }: { searchParams: SearchParams }): Promise<Metadata> {
+  const [t, locale, params] = await Promise.all([getTranslations('items.meta'), getLocale(), searchParams])
   return {
     title: t('listTitle'),
     description: t('listDescription'),
     alternates: pageAlternates('/items', locale),
+    ...queryVariantIndexing(params),
     openGraph: { title: t('listTitle'), description: t('listDescription'), locale: OG_LOCALE[locale], type: 'website' },
   }
 }

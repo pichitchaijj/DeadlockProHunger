@@ -3,7 +3,7 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import { useLocale, useTranslations } from 'next-intl'
 import { Suspense } from 'react'
 import { OG_LOCALE } from '@/i18n/config'
-import { pageAlternates } from '@/i18n/seo'
+import { pageAlternates, queryVariantIndexing } from '@/i18n/seo'
 import { WinRate } from '@/components/cards/WinRate'
 import { ConfidenceBadge } from '@/components/data/ConfidenceBadge'
 import { DataNotice } from '@/components/data/DataState'
@@ -24,12 +24,13 @@ import { peerComparison } from '@/features/analyze/model'
 import { analyzeHref, parseAnalyzeQuery } from '@/features/analyze/query'
 import { getScopeWording } from '@/components/data/scopeWording'
 
-export async function generateMetadata(): Promise<Metadata> {
-  const [t, locale] = await Promise.all([getTranslations('analyze.meta'), getLocale()])
+export async function generateMetadata({ searchParams }: { searchParams: SearchParams }): Promise<Metadata> {
+  const [t, locale, params] = await Promise.all([getTranslations('analyze.meta'), getLocale(), searchParams])
   return {
     title: t('title'),
     description: t('description'),
     alternates: pageAlternates('/analyze', locale),
+    ...queryVariantIndexing(params),
     openGraph: { title: t('title'), description: t('description'), locale: OG_LOCALE[locale], type: 'website' },
   }
 }

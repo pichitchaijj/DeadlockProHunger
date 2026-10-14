@@ -6,7 +6,7 @@ import { ScopeLine } from '@/components/data/ScopeLine'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { Reveal } from '@/components/motion/Reveal'
 import { ButtonLink } from '@/components/ui/Button'
-import { Filter } from '@/components/ui/Filter'
+import { Filter, FILTER_VARIANT_REL } from '@/components/ui/Filter'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState, LoadingState } from '@/components/ui/States'
@@ -22,16 +22,17 @@ import { rankBandOptions } from '@/features/meta/rankFilter'
 import { resolveScope } from '@/features/meta/scope'
 import { DataNotice } from '@/components/data/DataState'
 import { OG_LOCALE } from '@/i18n/config'
-import { pageAlternates } from '@/i18n/seo'
+import { pageAlternates, queryVariantIndexing } from '@/i18n/seo'
 import { attempt } from '@/lib/deadlock/errors'
 import { getScopeWording } from '@/components/data/scopeWording'
 
-export async function generateMetadata(): Promise<Metadata> {
-  const [t, locale] = await Promise.all([getTranslations('builds.meta'), getLocale()])
+export async function generateMetadata({ searchParams }: { searchParams: SearchParams }): Promise<Metadata> {
+  const [t, locale, params] = await Promise.all([getTranslations('builds.meta'), getLocale(), searchParams])
   return {
     title: t('listTitle'),
     description: t('listDescription'),
     alternates: pageAlternates('/builds', locale),
+    ...queryVariantIndexing(params),
     openGraph: { title: t('listTitle'), description: t('listDescription'), locale: OG_LOCALE[locale], type: 'website' },
   }
 }
@@ -98,9 +99,9 @@ export default async function BuildsPage({ searchParams }: { searchParams: Searc
           allLabel={t('list.allHeroes')}
         />
         <div className="grid gap-5 lg:grid-cols-2">
-          <Filter label={t('list.window')} value={query.window} options={WINDOWS.map((value) => ({ value, label: t(`list.windows.${value}`), href: buildsHref(query, { window: value }) }))} />
+          <Filter rel={FILTER_VARIANT_REL} label={t('list.window')} value={query.window} options={WINDOWS.map((value) => ({ value, label: t(`list.windows.${value}`), href: buildsHref(query, { window: value }) }))} />
           {scope && (
-            <Filter label={t('list.rank')} value={query.rank} options={rankBandOptions(scopeWords.rankLabels(scope.rankRefs), scope.ranks, (rank) => buildsHref(query, { rank }))} />
+            <Filter rel={FILTER_VARIANT_REL} label={t('list.rank')} value={query.rank} options={rankBandOptions(scopeWords.rankLabels(scope.rankRefs), scope.ranks, (rank) => buildsHref(query, { rank }))} />
           )}
         </div>
       </div>

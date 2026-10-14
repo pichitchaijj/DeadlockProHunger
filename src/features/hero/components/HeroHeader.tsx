@@ -9,7 +9,7 @@ import { TrendBadge } from '@/components/data/TrendBadge'
 import { HeroImage } from '@/components/game-assets/HeroImage'
 import { CountUp } from '@/components/motion/CountUp'
 import { Reveal } from '@/components/motion/Reveal'
-import { Filter } from '@/components/ui/Filter'
+import { Filter, FILTER_VARIANT_REL } from '@/components/ui/Filter'
 import { ArrowRightIcon } from '@/components/ui/icons'
 import type { Insight } from '@/lib/analytics/insights'
 import type { InsightWording } from '@/components/data/insightWording'
@@ -81,12 +81,12 @@ export function HeroHeader({ ctx, query }: { ctx: HeroContext; query: HeroQuery 
         )}
 
         <div className="grid gap-4 md:grid-cols-2">
-          <Filter
+          <Filter rel={FILTER_VARIANT_REL}
             label={t('list.window')}
             value={query.window}
             options={WINDOWS.map((value) => ({ value, label: t(`list.windows.${value}`), href: heroHref(hero.slug, query, { window: value }) }))}
           />
-          <Filter
+          <Filter rel={FILTER_VARIANT_REL}
             label={t('list.rank')}
             value={query.rank}
             options={rankBandOptions(scopeWords.rankLabels(ctx.scope.rankRefs), ctx.scope.ranks, (rank) => heroHref(hero.slug, query, { rank }))}

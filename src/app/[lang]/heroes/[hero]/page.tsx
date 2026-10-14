@@ -15,6 +15,7 @@ import { heroHref, parseHeroQuery, type HeroQuery } from '@/features/hero/query'
 import { DataNotice } from '@/components/data/DataState'
 import { attempt } from '@/lib/deadlock/errors'
 import { OG_LOCALE } from '@/i18n/config'
+import { queryVariantIndexing } from '@/i18n/seo'
 
 type Params = Promise<{ hero: string }>
 type SearchParams = Promise<Record<string, string | string[] | undefined>>
@@ -25,7 +26,8 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>
  */
 export async function generateMetadata({ params, searchParams }: { params: Params; searchParams: SearchParams }): Promise<Metadata> {
   const { hero: slug } = await params
-  const query = parseHeroQuery(await searchParams)
+  const raw = await searchParams
+  const query = parseHeroQuery(raw)
   const [load, t, detailT, locale] = await Promise.all([
     loadHeroContext(slug, query.window, query.rank),
     getTranslations('heroes.meta'),
@@ -37,7 +39,7 @@ export async function generateMetadata({ params, searchParams }: { params: Param
 
   const tr: HeroMetaTranslate = (key, values) => t(key as 'detailTitle', values)
   const { title, description } = heroMetaText(tr, ctx.hero.name)
-  return { title, description, ...heroIndexing(`/heroes/${ctx.hero.slug}`, locale, 'ok'), openGraph: { title, description, locale: OG_LOCALE[locale], type: 'website' } }
+  return { title, description, ...heroIndexing(`/heroes/${ctx.hero.slug}`, locale, 'ok'), ...queryVariantIndexing(raw), openGraph: { title, description, locale: OG_LOCALE[locale], type: 'website' } }
 }
 
 export default async function HeroPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {

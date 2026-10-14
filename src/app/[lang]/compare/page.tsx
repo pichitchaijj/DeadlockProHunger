@@ -2,12 +2,12 @@ import type { Metadata } from 'next'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { OG_LOCALE } from '@/i18n/config'
-import { pageAlternates } from '@/i18n/seo'
+import { pageAlternates, queryVariantIndexing } from '@/i18n/seo'
 import { localePath } from '@/i18n/server'
 import { Suspense } from 'react'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { Button, ButtonLink } from '@/components/ui/Button'
-import { Filter } from '@/components/ui/Filter'
+import { Filter, FILTER_VARIANT_REL } from '@/components/ui/Filter'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState, LoadingState } from '@/components/ui/States'
@@ -22,12 +22,13 @@ import { DataNotice } from '@/components/data/DataState'
 import { attempt } from '@/lib/deadlock/errors'
 import { getScopeWording } from '@/components/data/scopeWording'
 
-export async function generateMetadata(): Promise<Metadata> {
-  const [t, locale] = await Promise.all([getTranslations('compare.meta'), getLocale()])
+export async function generateMetadata({ searchParams }: { searchParams: SearchParams }): Promise<Metadata> {
+  const [t, locale, params] = await Promise.all([getTranslations('compare.meta'), getLocale(), searchParams])
   return {
     title: t('title'),
     description: t('description'),
     alternates: pageAlternates('/compare', locale),
+    ...queryVariantIndexing(params),
     openGraph: { title: t('title'), description: t('description'), locale: OG_LOCALE[locale], type: 'website' },
   }
 }
@@ -107,8 +108,8 @@ async function Pickers({ query, pickHero }: { query: CompareQuery; pickHero: str
   const heroes = heroLoad.value
   const scopeFilters = scope && (
     <div className="grid gap-4 md:grid-cols-2">
-      <Filter label={builds('detail.window')} value={query.window} options={(['patch', '7d', '30d'] as const).map((w) => ({ value: w, label: scopeWords.window(scope.windows[w], { short: true }), href: compareHref(query, { window: w }) }))} />
-      <Filter label={builds('list.rank')} value={query.rank} options={rankBandOptions(scopeWords.rankLabels(scope.rankRefs), scope.ranks, (rank) => compareHref(query, { rank }))} />
+      <Filter rel={FILTER_VARIANT_REL} label={builds('detail.window')} value={query.window} options={(['patch', '7d', '30d'] as const).map((w) => ({ value: w, label: scopeWords.window(scope.windows[w], { short: true }), href: compareHref(query, { window: w }) }))} />
+      <Filter rel={FILTER_VARIANT_REL} label={builds('list.rank')} value={query.rank} options={rankBandOptions(scopeWords.rankLabels(scope.rankRefs), scope.ranks, (rank) => compareHref(query, { rank }))} />
     </div>
   )
 

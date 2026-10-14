@@ -10,7 +10,7 @@ import { StatCard } from '@/components/data/StatCard'
 import { TierBadge } from '@/components/data/TierBadge'
 import { TrendBadge } from '@/components/data/TrendBadge'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
-import { Filter } from '@/components/ui/Filter'
+import { Filter, FILTER_VARIANT_REL } from '@/components/ui/Filter'
 import { DataNotice } from '@/components/data/DataState'
 import { getInsightWording } from '@/components/data/insightWording'
 import { attempt } from '@/lib/deadlock/errors'
@@ -223,7 +223,7 @@ export function ComparisonSection({ comparison, query, heroName }: { comparison:
         title={t('panelTitle', { hero: heroName, group: groupLabel })}
         description={sentence}
         actions={
-          <Filter
+          <Filter rel={FILTER_VARIANT_REL}
             label={t('with')}
             // The group actually shown; "Same role" is offered only when the hero has a role.
             value={comparison.group}

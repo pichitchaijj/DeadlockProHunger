@@ -11,12 +11,22 @@ export type FilterOption = {
   icon?: ReactNode
 }
 
+/**
+ * `rel` for filters on pages backed by expensive analytics (builds, hero detail, items, Analyze, Compare): every
+ * option is a query-string variant and each variant is a fresh set of upstream requests, so crawlers aren't invited
+ * to follow them (robots.txt and the variant's noindex, nofollow cover the same URLs: src/i18n/seo.ts).
+ */
+export const FILTER_VARIANT_REL = 'nofollow'
+
 type FilterProps = {
   /** Visible group label, e.g. "Rank" or "Window". */
   label: string
   options: FilterOption[]
   value: string
-  /** `rel` for every option link (Draft Lab passes "nofollow"); unset elsewhere, so other pages are unchanged. */
+  /**
+   * `rel` for every option link: pages whose variants each cost upstream analytics requests pass
+   * FILTER_VARIANT_REL (Draft Lab passes its own "nofollow"); unset elsewhere.
+   */
   rel?: string
   className?: string
 }

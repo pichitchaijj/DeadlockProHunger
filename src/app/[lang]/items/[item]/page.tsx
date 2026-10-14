@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { OG_LOCALE } from '@/i18n/config'
+import { queryVariantIndexing } from '@/i18n/seo'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { DataNotice } from '@/components/data/DataState'
@@ -38,14 +39,14 @@ const HERO_LIMIT = 9
  * canonical and hreflang, unless the item is confirmed without Normal-mode stats, unknown, or the catalog
  * failed (features/items/seo.ts). Loads are shared with the page and the Items list (request-cached).
  */
-export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const [itemLoad, withStats, t, locale] = await Promise.all([loadItem((await params).item), itemsWithStats(), getTranslations('items.meta'), getLocale()])
+export async function generateMetadata({ params, searchParams }: { params: Params; searchParams: SearchParams }): Promise<Metadata> {
+  const [itemLoad, withStats, t, locale, raw] = await Promise.all([loadItem((await params).item), itemsWithStats(), getTranslations('items.meta'), getLocale(), searchParams])
   const item = itemLoad.ok ? itemLoad.value : null
   const status = itemLoadStatus(itemLoad.ok ? { ok: true, item } : { ok: false }, withStats)
   if (!item) return { title: t('fallbackTitle'), ...itemIndexing(null, locale, status) }
   const title = t('detailTitle', { item: item.name })
   const description = t('detailDescription', { item: item.name })
-  return { title, description, ...itemIndexing(`/items/${item.slug}`, locale, status), openGraph: { title, description, locale: OG_LOCALE[locale], type: 'website' } }
+  return { title, description, ...itemIndexing(`/items/${item.slug}`, locale, status), ...queryVariantIndexing(raw), openGraph: { title, description, locale: OG_LOCALE[locale], type: 'website' } }
 }
 
 export default async function ItemPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {

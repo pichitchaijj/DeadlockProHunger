@@ -1,5 +1,5 @@
 import { useTranslations } from 'next-intl'
-import { Filter } from '@/components/ui/Filter'
+import { Filter, FILTER_VARIANT_REL } from '@/components/ui/Filter'
 import type { RankBandId } from '@/lib/analytics/rankBands'
 import type { RankCatalog } from '@/lib/deadlock/rankAssets'
 import { HeroSelect } from '@/features/builds/components/HeroSelect'
@@ -40,8 +40,8 @@ export function ItemFilters({ query, href, heroes, rankLabels, ranks, slot }: It
           allLabel={shared('allHeroes')}
         />
         <div className="grid gap-5 lg:grid-cols-2">
-          <Filter label={t('window')} value={query.window} options={WINDOWS.map((value) => ({ value, label: shared(`windows.${value}`), href: href({ window: value }) }))} />
-          <Filter
+          <Filter rel={FILTER_VARIANT_REL} label={t('window')} value={query.window} options={WINDOWS.map((value) => ({ value, label: shared(`windows.${value}`), href: href({ window: value }) }))} />
+          <Filter rel={FILTER_VARIANT_REL}
             label={t('matchType')}
             value={query.mode}
             options={[
@@ -51,10 +51,10 @@ export function ItemFilters({ query, href, heroes, rankLabels, ranks, slot }: It
           />
         </div>
       </div>
-      <Filter label={shared('rank')} value={query.rank} options={rankBandOptions(rankLabels, ranks, (rank) => href({ rank }))} />
+      <Filter rel={FILTER_VARIANT_REL} label={shared('rank')} value={query.rank} options={rankBandOptions(rankLabels, ranks, (rank) => href({ rank }))} />
       <div className="grid gap-5 md:grid-cols-2">
         {slot && (
-          <Filter
+          <Filter rel={FILTER_VARIANT_REL}
             label={t('slot')}
             value={slot.value}
             // Slot names (weapon / vitality / spirit) are the game's item categories: data, not UI text.

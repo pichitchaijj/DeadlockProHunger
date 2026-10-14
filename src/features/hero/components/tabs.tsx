@@ -3,7 +3,7 @@ import { useTranslations } from 'next-intl'
 import { MatchCard } from '@/components/cards/MatchCard'
 import { ConfidenceBadge } from '@/components/data/ConfidenceBadge'
 import { DataNotice } from '@/components/data/DataState'
-import { Filter } from '@/components/ui/Filter'
+import { Filter, FILTER_VARIANT_REL } from '@/components/ui/Filter'
 import { EmptyState } from '@/components/ui/States'
 import { attempt } from '@/lib/deadlock/errors'
 import { rankFromBadge } from '@/lib/deadlock/rankAssets'
@@ -171,7 +171,7 @@ export async function MatchupsTab({ ctx, query }: { ctx: HeroContext; query: Her
   const data = result.value
   return (
     <div className="flex flex-col gap-4">
-      <Filter
+      <Filter rel={FILTER_VARIANT_REL}
         label={t('opponents')}
         value={query.lane}
         options={[

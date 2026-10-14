@@ -2,7 +2,7 @@ import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { HeroPortrait } from '@/components/game-assets/HeroPortrait'
 import { Card } from '@/components/ui/Card'
-import { Filter } from '@/components/ui/Filter'
+import { Filter, FILTER_VARIANT_REL } from '@/components/ui/Filter'
 import type { RankBandId } from '@/lib/analytics/rankBands'
 import type { RankCatalog } from '@/lib/deadlock/rankAssets'
 import { cx } from '@/lib/cx'
@@ -42,12 +42,12 @@ export function Controls({ query, heroes, rankLabels, ranks, windowLabels, selec
         {t('scope')}
       </h2>
       <div className="grid gap-4 md:grid-cols-2">
-        <Filter
+        <Filter rel={FILTER_VARIANT_REL}
           label={builds('detail.window')}
           value={query.window}
           options={WINDOWS.map(([value]) => ({ value, label: windowLabels[value] ?? value, href: analyzeHref(query, { window: value }) }))}
         />
-        <Filter
+        <Filter rel={FILTER_VARIANT_REL}
           label={builds('list.rank')}
           value={query.rank}
           options={rankBandOptions(rankLabels, ranks, (rank) => analyzeHref(query, { rank }))}
@@ -76,7 +76,7 @@ function HeroPicker({ query, heroes }: { query: AnalyzeQuery; heroes: PickerHero
   const list = pickerHeroes(heroes, query.role)
   return (
     <div className="flex flex-col gap-4">
-      <Filter
+      <Filter rel={FILTER_VARIANT_REL}
         label={heroesT('role')}
         value={query.role}
         options={[{ value: 'all', label: t('controls.allRoles') }, ...ROLES.map((r) => ({ value: r, label: capitalize(r) }))].map((o) => ({

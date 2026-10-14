@@ -1,4 +1,4 @@
-import type { MetadataRoute } from 'next'
+import type { Metadata, MetadataRoute } from 'next'
 import { secondaryNav, primaryNav } from '@/config/navigation'
 import { defaultLocale, locales, type Locale } from './config'
 
@@ -77,6 +77,16 @@ export function sitemapEntries(paths: string[], base: URL | null = siteUrl()): M
  * page and Draft state, a combinatorial set of dynamic renders, so crawlers are kept off all of them.
  */
 export const QUERY_STRING_RULE = '/*?'
+
+/**
+ * The page-level counterpart of QUERY_STRING_RULE, for crawlers that fetch a disallowed URL anyway: a filter /
+ * sort / tab variant (any query string) is noindex + nofollow, so it isn't indexed and its links (more variants,
+ * each a fresh set of analytics requests) aren't followed. A clean URL is unchanged. Spread it after the page's
+ * own indexing; its canonical, if any, stays on the clean path. Pure.
+ */
+export function queryVariantIndexing(searchParams: Record<string, string | string[] | undefined>): Pick<Metadata, 'robots'> {
+  return Object.keys(searchParams).length > 0 ? { robots: { index: false, follow: false } } : {}
+}
 
 /**
  * Allowed despite QUERY_STRING_RULE (the longest matching rule wins): Next assets, which may carry a
