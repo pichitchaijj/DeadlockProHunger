@@ -469,14 +469,14 @@ That's 12.39 hero-slots per match, not exactly 12. The two endpoints don't count
 | Heroes | `/v1/assets/heroes` | 24h | ✔ `heroes` | No (job) | — |
 | Items | `/v1/assets/items` | 24h | ✔ `items` | No (job) | — |
 | Builds | `/v1/builds`, `/v1/builds/{hero_id}/{build_id}` | 1h | tags only | ✔ | GC fetch 20/min |
-| Ability orders | `/v1/analytics/ability-order-stats` | 6h | snapshot | ✔ presets | analytics 200/min |
+| Ability orders | `/v1/analytics/ability-order-stats` | 24h, daily key (§7) | snapshot | ✔ all ranks only (§7) | analytics 200/min |
 | Hero stats | `/v1/analytics/hero-stats` | 6h | ✔ daily + snapshot | ✔ presets | analytics |
 | Counters | `/v1/analytics/hero-counter-stats` | 6h | snapshot | ✔ presets | analytics |
 | Synergies | `/v1/analytics/hero-synergy-stats` | 6h | snapshot | ✔ presets | analytics |
 | Combinations | `/v1/analytics/hero-comb-stats` | 6h | — | post-MVP | analytics |
 | Lane matchups | `/v1/analytics/lane-*` (unstable) | 6h | — | post-MVP, flag | analytics |
-| Item stats | `/v1/analytics/item-stats` | 6h | snapshot | ✔ presets | analytics |
-| Item flow | `/v1/analytics/item-flow-stats` | 6h | — | post-MVP | analytics |
+| Item stats | `/v1/analytics/item-stats` | 24h, daily key (§7) | snapshot | ✔ presets; timing default scope only, cache-only (§7) | analytics |
+| Item flow | `/v1/analytics/item-flow-stats` | 24h, daily key (§7) | — | ✔ default scope only; Items timing cache-only (§7) | analytics |
 | Player stats | `/v1/players/hero-stats`, mate/enemy | 10 min | — | ✔ | 100/s |
 | Match history | `/v1/players/{id}/match-history` | 10 min | — | ✔ | never `force_refetch` |
 | Rank | `/v1/players/{id}/rank`, `/v1/players/rank` | 10 min | ✔ `players.badge` | ✔ | batch 20/min |
@@ -532,7 +532,14 @@ Also deprecated as **parameters**: `include_corrupted_items` → use `corrupted_
 - zod validation of the fields we use (extra fields allowed). A mismatch throws "Unexpected response shape", classified as `invalid`.
 - Cache: Next data cache per call (`revalidate`, `tags`). Responses over the 2 MB fetch-cache entry limit are cached as zod projections with `unstable_cache` (shop items, match detail, match history).
 - Explicit `min_unix_timestamp` / `max_unix_timestamp`, rounded (analytics: down to the 6h UTC step, `ANALYTICS_KEY_STEP` in `features/meta/scope.ts`; match lists: minute) so identical presets share cache keys. Arrays are comma-joined.
-- Errors: `DeadlockApiError` (`lib/deadlock/apiError.ts`) → `classifyError` (`lib/deadlock/errors.ts`) → `rate-limit | timeout | invalid | forbidden | not-found | unavailable` (`forbidden` = 401/403 or an open access breaker). Loaders that return `{ ok: false }` carry the kind across the boundary (`DataError`).
+- Costly analytics (`lib/deadlock/expensive.ts`; the endpoints the API maintainer named: `hero-build-stats`, `ability-order-stats`, `item-flow-stats`, `item-stats`):
+  - **Complete UTC days, daily keys.** Windows are cut to complete UTC days: exact-filter endpoints end at today's 00:00; `item-stats` ends at the last complete day's noon (`throughDay`), so today is never included. Keys change once a day, `TTL.expensiveAnalytics` = 24h. A window with no complete day yet (a `patch` window on the patch's own day) sends nothing and is `pending`.
+  - **Same days on both sides of a share.** Any share whose numerator is item-stats divides by hero-stats over the same complete days (`completeDaysQuery`, `getHeroTotalsCompleteDays`): Items buy rate and heroes, Hero Detail item progression, Build Detail phase items, Patch compare item buy rates; the weekly item shares use the per-day rows of the same days.
+  - **Scope limits, checked in the loaders before any request** (`limited`, no numbers): the all-heroes Builds listing (every category) 30d + all ranks only; Build Detail all ranks only, its item flow 30d + all ranks only; per-hero builds / ability orders / item stats on Hero Detail, Analyze and Compare all ranks only; Items purchase timing 7d, all ranks, all modes, all heroes only.
+  - **Cache-only reads** (`deadlockGet({ cacheOnly })`): the all-heroes Builds listing (also Home's builds section) and Items purchase timing read the entries the prewarm job fills and send nothing on a miss (`pending`; `forbidden` instead while the access breaker isn't closed). Nothing is cached for a miss. The prewarm job warms build stats for **active** heroes only, so the listing drops builds of inactive heroes before that read.
+  - **Not verified:** that Next's data cache is shared between the cron route that warms these entries and the instances that render pages in production; if it isn't, those views stay `pending`. Keys change at 00:00 UTC and the prewarm job runs at :07 past the hour, so these views are `pending` for at least that gap each day while the job is enabled, and always while it is off.
+  - **No cross-instance limit.** Budgets, coalescing and the breaker are per instance; daily keys and scope limits lower how many distinct requests exist, they don't cap the total across instances.
+- Errors: `DeadlockApiError` (`lib/deadlock/apiError.ts`) → `classifyError` (`lib/deadlock/errors.ts`) → `rate-limit | timeout | invalid | forbidden | not-found | unavailable`, plus `pending` / `limited` for data deliberately not requested (`forbidden` = 401/403 or an open access breaker; never turned into `pending`). Loaders that return `{ ok: false }` carry the kind across the boundary (`DataError`).
 - Never `force_refetch`; always `disable_steam=true` on match metadata (including the user-facing raw-JSON link).
 
 **Partial:** a Postgres fallback exists for Match Detail (stored match first), Meta (daily history) and Leaderboard (regional snapshot); see [DATA_MODEL](./DATA_MODEL.md#how-pages-use-the-database-as-built). **Implemented (rate limiting):** cache first (`unstable_cache` keyed on URL + schema, holding the parsed projection) → on a miss only, a per-class token bucket (`lib/deadlock/budget.ts`: analytics 160/min, 320 with a key; batch ranks 16/min; bulk match metadata 24/min; others 80/s; 80% of the spec's per-IP limits, in memory per instance) → API → cache. A request that would wait longer than half its timeout (max 3 s) fails as a 429 (`rate-limit`) instead of queuing; concurrent misses for one key share a request. **Planned:** fallbacks for the other pages, and `openapi-typescript` generated types. **Blocked:** every Postgres fallback is inactive in production until a database is deployed. `npm run api:verify` is the drift check.

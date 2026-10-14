@@ -16,7 +16,7 @@ import { BuildListCard, buildLabelText } from '@/features/builds/components/Buil
 import { HeroSelect } from '@/features/builds/components/HeroSelect'
 import { getBuildsListing, PRO_MIN_TIER } from '@/features/builds/loaders'
 import type { BuildLabel } from '@/features/builds/model'
-import { buildsHref, CATEGORIES, parseBuildsQuery, type BuildsQuery } from '@/features/builds/query'
+import { buildsHref, CATEGORIES, DEFAULT_BUILDS_QUERY, parseBuildsQuery, type BuildsQuery } from '@/features/builds/query'
 import { slugify } from '@/features/meta/model'
 import { rankBandOptions } from '@/features/meta/rankFilter'
 import { resolveScope } from '@/features/meta/scope'
@@ -140,7 +140,14 @@ async function BuildsResults({ query, ranks }: { query: BuildsQuery; ranks: { ra
   const failed = listingLoad.ok ? 'unavailable' : listingLoad.kind
 
   if (listing === undefined) {
-    return <DataNotice error={failed} what="Builds" action={<ButtonLink href={buildsHref(query)} variant="secondary" size="sm">{common('tryAgain')}</ButtonLink>} />
+    return (
+      <DataNotice
+        error={failed}
+        what="Builds"
+        action={<ButtonLink href={buildsHref(query)} variant="secondary" size="sm">{common('tryAgain')}</ButtonLink>}
+        defaultHref={buildsHref(query, { window: DEFAULT_BUILDS_QUERY.window, rank: DEFAULT_BUILDS_QUERY.rank })}
+      />
+    )
   }
   if (listing === null) {
     return <EmptyState title={t('unknownHero')} action={<ButtonLink href={buildsHref(query, { hero: 'all' })} variant="secondary" size="sm">{t('allHeroes')}</ButtonLink>} />

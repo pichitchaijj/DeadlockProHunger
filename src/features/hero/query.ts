@@ -36,6 +36,13 @@ export function parseHeroQuery(raw: Raw): HeroQuery {
   }
 }
 
+/**
+ * Per-hero costly analytics (hero-build-stats, ability-order-stats, the hero's item-stats; lib/deadlock/expensive.ts)
+ * are computed for every window but all ranks only; other rank bands show those sections as `limited`. Matrix data
+ * (hero-stats, counters, synergies: one call shared by every hero) keeps every rank band.
+ */
+export const perHeroInScope = (rank: RankBandId) => rank === DEFAULT_HERO_QUERY.rank
+
 export function heroHref(slug: string, query: HeroQuery, changes: Partial<HeroQuery> = {}): string {
   const next = { ...query, ...changes }
   const params = new URLSearchParams()

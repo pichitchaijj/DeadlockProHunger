@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { TTL } from '@/lib/cache/ttl'
 import { deadlockGet } from './client'
 import { scopeParams, type HeroStatsQuery } from './endpoints'
+import { expensiveQuery } from './expensive'
 
 /*
  * Builds pages. Shapes verified 2026-10-06:
@@ -59,9 +60,9 @@ export async function getBuildById(buildId: number) {
 }
 
 /** Item purchase flow for one hero: per-phase nodes with wealth-adjusted win rate, and transitions. */
-export function getItemFlow(heroId: number, query: HeroStatsQuery) {
+export async function getItemFlow(heroId: number, query: HeroStatsQuery) {
   return deadlockGet('/v1/analytics/item-flow-stats', {
-    params: { hero_ids: heroId, ...scopeParams(query), min_matches: 500 },
+    params: { hero_ids: heroId, ...scopeParams(expensiveQuery(query, true)), min_matches: 500 },
     schema: z.object({
       nodes: z.array(
         z.object({
@@ -77,7 +78,7 @@ export function getItemFlow(heroId: number, query: HeroStatsQuery) {
       reached_per_column: z.array(z.number()),
       baseline: z.object({ wins: z.number(), matches: z.number() }),
     }),
-    revalidate: TTL.analytics,
+    revalidate: TTL.expensiveAnalytics,
     tags: ['analytics:item-flow'],
     timeoutMs: 20_000,
   })

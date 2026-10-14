@@ -115,7 +115,12 @@ export default async function BuildDetailPage({ params, searchParams }: { params
     return (
       <PageContainer>
         <h1 className="sr-only">{t('detail.fallbackTitle', { id: buildId })}</h1>
-        <DataNotice error={failed} what="Build" action={<ButtonLink href={buildDetailHref(heroSlug, buildId, query)} variant="secondary" size="sm">{common('tryAgain')}</ButtonLink>} />
+        <DataNotice
+          error={failed}
+          what="Build"
+          action={<ButtonLink href={buildDetailHref(heroSlug, buildId, query)} variant="secondary" size="sm">{common('tryAgain')}</ButtonLink>}
+          defaultHref={buildDetailHref(heroSlug, buildId, { ...query, rank: DEFAULT_BUILDS_QUERY.rank })}
+        />
       </PageContainer>
     )
   }
@@ -242,7 +247,13 @@ export default async function BuildDetailPage({ params, searchParams }: { params
       </Panel>
 
       <Panel title={t('detail.flowTitle')} description={t('detail.flowDescription')}>
-        {data.flow && data.flow.items.length > 0 ? <FlowView flow={data.flow} /> : <p className="text-sm text-text-muted">{t('detail.noFlow')}</p>}
+        {data.flowIssue ? (
+          <DataNotice error={data.flowIssue} what="Item flow" defaultHref={buildDetailHref(hero.slug, buildId, DEFAULT_BUILDS_QUERY)} />
+        ) : data.flow && data.flow.items.length > 0 ? (
+          <FlowView flow={data.flow} />
+        ) : (
+          <p className="text-sm text-text-muted">{t('detail.noFlow')}</p>
+        )}
       </Panel>
     </PageContainer>
   )

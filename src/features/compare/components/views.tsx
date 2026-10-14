@@ -46,6 +46,7 @@ function TwoColumns({ children }: { children: [ReactNode, ReactNode] }) {
 
 export function HeroCompareView({ data }: { data: HeroData }) {
   const t = useTranslations('compare.heroes')
+  const source = useTranslations('errors.source')
   const scopeText = useScopeWording().scope(data.scope)
   const heroes = useTranslations('heroes.parts')
   const locale = useLocale()
@@ -109,7 +110,10 @@ export function HeroCompareView({ data }: { data: HeroData }) {
             {[A, B].map((side, i) => (
               <div key={side.ctx.hero.id} className="rounded-sm border border-border bg-surface-sunken p-3">
                 <p className={cx('text-caption font-semibold', i === 0 ? SIDE_TEXT.a : SIDE_TEXT.b)}>{side.ctx.hero.name}</p>
-                {side.overview.topBuild ? (
+                {side.overview.perHeroIssue === 'limited' || side.overview.perHeroIssue === 'pending' ? (
+                  // Builds aren't computed for this scope (or not prepared yet): said so, never "no build".
+                  <p className="text-sm text-text-muted">{source(side.overview.perHeroIssue)}</p>
+                ) : side.overview.topBuild ? (
                   <>
                     <p className="font-ui text-sm font-semibold text-text">{side.overview.topBuild.name}</p>
                     <BuildStatsLine build={side.overview.topBuild} labels={buildStats} />

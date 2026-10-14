@@ -2,7 +2,8 @@ import 'server-only'
 import { unstable_cache } from 'next/cache'
 import { cache } from 'react'
 import { stableKey } from '@/lib/cache/stableKey'
-import { getHeroStatsByDay, getHeroTotals, getPatchFeed, throughDay, type HeroStatsQuery } from '@/lib/deadlock/endpoints'
+import { getHeroStatsByDay, getHeroTotals, getHeroTotalsCompleteDays, getPatchFeed, throughDay, type HeroStatsQuery } from '@/lib/deadlock/endpoints'
+import { isAccessDenied } from '@/lib/deadlock/errors'
 import { getItemStatsByDay, getItemTotals } from '@/lib/deadlock/itemEndpoints'
 import { buildBefore, getAssetSnapshot } from '@/lib/deadlock/patchEndpoints'
 import { heroCatalog, itemCatalog } from '@/features/items/loaders'
@@ -152,13 +153,27 @@ export async function getPatchImpact(patches: PatchSummary[], index: number, ctx
 
 // ── Compare two patches ──────────────────────────────────────────────
 
+const totalsMap = <K extends string>(rows: Array<Record<K, number> & { wins: number; matches: number }>, key: K) => new Map(rows.map((r) => [r[key], { wins: r.wins, matches: r.matches }]))
+
+/**
+ * Item totals and the player-matches their buy rates divide by, both over the complete UTC days item-stats covers
+ * (lib/deadlock/expensive.ts: today is cut), so a current patch's buy rates don't divide by today's matches. Null
+ * when unavailable (e.g. no complete day yet on the patch's own day); refused access still fails.
+ */
+async function itemPeriod(q: HeroStatsQuery) {
+  try {
+    const [items, heroes] = await Promise.all([getItemTotals(q), getHeroTotalsCompleteDays(q)])
+    return { items: totalsMap(items, 'item_id'), heroes: totalsMap(heroes, 'hero_id') }
+  } catch (error) {
+    if (isAccessDenied(error)) throw error
+    return null
+  }
+}
+
 async function periodTotals(ctx: PatchContext, w: Window) {
   const q = rangeQuery(ctx, w)
-  const [heroes, items] = await Promise.all([getHeroTotals(q), getItemTotals(q).catch(() => null)])
-  return {
-    heroes: new Map(heroes.map((h) => [h.hero_id, { wins: h.wins, matches: h.matches }])),
-    items: items ? new Map(items.map((i) => [i.item_id, { wins: i.wins, matches: i.matches }])) : null,
-  }
+  const [heroes, items] = await Promise.all([getHeroTotals(q), itemPeriod(q)])
+  return { heroes: totalsMap(heroes, 'hero_id'), items }
 }
 
 /**
@@ -180,7 +195,7 @@ export async function getPatchCompare(patches: PatchSummary[], ia: number, ib: n
   const heroMoves = attach(movements([...heroes.keys()], ta.heroes, tb.heroes, { a: heroPickRates(ta.heroes), b: heroPickRates(tb.heroes) }), heroes)
   const itemMoves =
     ta.items && tb.items
-      ? attach(movements([...items.keys()], ta.items, tb.items, { a: itemBuyRates(ta.items, ta.heroes), b: itemBuyRates(tb.items, tb.heroes) }), items)
+      ? attach(movements([...items.keys()], ta.items.items, tb.items.items, { a: itemBuyRates(ta.items.items, ta.items.heroes), b: itemBuyRates(tb.items.items, tb.items.heroes) }), items)
       : null
   const diff = await diffBetween(fromBuild, toBuild).catch(() => null)
   return { older: patches[older], newer: patches[newer], periods: { older: pa, newer: pb }, heroes: heroMoves, items: itemMoves, diff, builds: { from: fromBuild, to: toBuild } }

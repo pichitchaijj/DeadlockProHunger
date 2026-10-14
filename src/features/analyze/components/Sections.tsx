@@ -28,7 +28,7 @@ import { partLabels } from '@/features/hero/components/tabs'
 import { TrendChart } from '@/features/hero/components/TrendChart'
 import { getAnalyzeTrends, heroQueryFor } from '../loaders'
 import { comparisonText, trendRangeText, type PeerComparison, type TrendRange } from '../model'
-import { analyzeHref, type AnalyzeQuery } from '../query'
+import { analyzeHref, DEFAULT_ANALYZE_QUERY, type AnalyzeQuery } from '../query'
 import { getScopeWording, type ScopeWording } from '@/components/data/scopeWording'
 
 /*
@@ -289,7 +289,7 @@ export async function BuildsSection({ ctx, query }: { ctx: HeroContext; query: A
       actions={<SeeMore href={heroHref(ctx.hero.slug, heroQueryFor(query, { tab: 'builds' }))}>{t('seeMore')}</SeeMore>}
     >
       {!result.ok ? (
-        <DataNotice error={result.kind} what="Builds" />
+        <DataNotice error={result.kind} what="Builds" defaultHref={analyzeHref(query, { rank: DEFAULT_ANALYZE_QUERY.rank })} />
       ) : !data || data.builds.length === 0 ? (
         <p className="rounded-md border border-border bg-surface p-4 text-sm text-text-muted">{t('none')}</p>
       ) : (

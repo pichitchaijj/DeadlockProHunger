@@ -14,8 +14,10 @@ const HOUR = 3_600
  * Step the analytics window end is rounded down to, aligned to UTC (00, 06, 12, 18). It is part of every
  * analytics cache key, so a key is requested only within its own step and an entry is never served after its
  * step ends. The step stays within TTL.analytics (6h) and divides a day (tests/unit/scope-cache-key.test.ts).
- * Exact-timestamp endpoints (counters, synergies, build stats, ability orders, item flow) therefore end up
- * to 6h before the request; hero-stats / item-stats include the whole current UTC day either way.
+ * Exact-timestamp endpoints (counters, synergies) therefore end up
+ * to 6h before the request; hero-stats includes the whole current UTC day either way.
+ * The costly endpoints (hero-build-stats, ability-order-stats, item-flow-stats, item-stats) cut this window to
+ * complete UTC days (today excluded; lib/deadlock/expensive.ts), so their keys change once a day.
  */
 export const ANALYTICS_KEY_STEP = 6 * HOUR
 

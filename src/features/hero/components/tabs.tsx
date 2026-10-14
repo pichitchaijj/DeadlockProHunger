@@ -18,7 +18,7 @@ import {
   type HeroContext,
 } from '../loaders'
 import { ABILITY_PREFIX, CORE_BUY_RATE, type HeroBuild } from '../model'
-import { heroHref, type HeroQuery } from '../query'
+import { DEFAULT_HERO_QUERY, heroHref, type HeroQuery } from '../query'
 import { SeeMore } from './HeroHeader'
 import { AbilitySequence, BuildItemSequence, BuildStatsLine, ItemProgressionView, PairingList, Panel, SplitBars, type AbilityLabels, type BuildItemLabels, type BuildStatsLabels } from './parts'
 import { TrendChart, type TrendChartLabels } from './TrendChart'
@@ -60,6 +60,7 @@ export function partLabels(t: HeroesT): PartLabels {
 
 export function OverviewTab({ ctx, query, data }: { ctx: HeroContext; query: HeroQuery; data: OverviewData }) {
   const link = (tab: HeroQuery['tab']) => heroHref(ctx.hero.slug, query, { tab })
+  const allRanks = heroHref(ctx.hero.slug, query, { rank: DEFAULT_HERO_QUERY.rank })
   const t = useTranslations('heroes.detail')
   const lengths = useLengthLabels()
   const labels = partLabels(useTranslations('heroes'))
@@ -75,10 +76,18 @@ export function OverviewTab({ ctx, query, data }: { ctx: HeroContext; query: Her
         <PairingList items={data.synergies} tone="positive" empty={t('emptyPartner')} />
       </Panel>
       <Panel title={t('bestBuild')} description={t('bestBuildDescription')} actions={<SeeMore href={link('builds')}>{t('allBuilds')}</SeeMore>}>
-        {data.topBuild ? <BuildPreview build={data.topBuild} labels={labels} /> : <p className="text-sm text-text-muted">{t('noBuilds')}</p>}
+        {data.perHeroIssue ? (
+          <DataNotice error={data.perHeroIssue} what="Builds" defaultHref={allRanks} />
+        ) : data.topBuild ? (
+          <BuildPreview build={data.topBuild} labels={labels} />
+        ) : (
+          <p className="text-sm text-text-muted">{t('noBuilds')}</p>
+        )}
       </Panel>
       <Panel title={t('opening')} description={t('openingDescription', { count: ABILITY_PREFIX })} actions={<SeeMore href={link('abilities')}>{t('allOpenings')}</SeeMore>}>
-        {data.opening ? (
+        {data.perHeroIssue ? (
+          <DataNotice error={data.perHeroIssue} what="Ability orders" defaultHref={allRanks} />
+        ) : data.opening ? (
           <div className="flex flex-col gap-3">
             <AbilitySequence order={data.opening} abilities={data.abilities} labels={labels.ability} />
             <OrderStats share={data.opening.share} winRate={data.opening.winRate} matches={data.opening.matches} interval={data.opening.interval} />
@@ -122,7 +131,7 @@ function OrderStats({ share, winRate, matches, interval }: { share: number; winR
 
 // ── Builds ───────────────────────────────────────────────────────────
 
-export async function BuildsTab({ ctx }: { ctx: HeroContext }) {
+export async function BuildsTab({ ctx, query }: { ctx: HeroContext; query: HeroQuery }) {
   const [result, t, cards, locale, heroes] = await Promise.all([
     attempt('[hero] builds failed', getBuildsData(ctx)),
     getTranslations('heroes.detail'),
@@ -130,7 +139,7 @@ export async function BuildsTab({ ctx }: { ctx: HeroContext }) {
     getLocale(),
     getTranslations('heroes'),
   ])
-  if (!result.ok) return <DataNotice error={result.kind} what="Builds" />
+  if (!result.ok) return <DataNotice error={result.kind} what="Builds" defaultHref={heroHref(ctx.hero.slug, query, { rank: DEFAULT_HERO_QUERY.rank })} />
   const data = result.value
   const labels = partLabels(heroes)
   return (
@@ -196,9 +205,9 @@ export async function MatchupsTab({ ctx, query }: { ctx: HeroContext; query: Her
 
 // ── Abilities ────────────────────────────────────────────────────────
 
-export async function AbilitiesTab({ ctx }: { ctx: HeroContext }) {
+export async function AbilitiesTab({ ctx, query }: { ctx: HeroContext; query: HeroQuery }) {
   const [result, t, heroes] = await Promise.all([attempt('[hero] abilities failed', getAbilitiesData(ctx)), getTranslations('heroes.detail'), getTranslations('heroes')])
-  if (!result.ok) return <DataNotice error={result.kind} what="Ability orders" />
+  if (!result.ok) return <DataNotice error={result.kind} what="Ability orders" defaultHref={heroHref(ctx.hero.slug, query, { rank: DEFAULT_HERO_QUERY.rank })} />
   const data = result.value
   const labels = partLabels(heroes)
   if (data.openings.length === 0) return <EmptyState title={t('abilitiesEmptyTitle')} description={t('abilitiesEmptyDescription')} />

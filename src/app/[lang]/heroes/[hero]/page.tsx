@@ -89,9 +89,9 @@ async function InsightsAndOverview({ ctx, query }: { ctx: HeroContext; query: He
               ) : (
                 <DataNotice error={result.ok ? 'unavailable' : result.kind} what="Overview" />
               ))}
-            {query.tab === 'builds' && <BuildsTab ctx={ctx} />}
+            {query.tab === 'builds' && <BuildsTab ctx={ctx} query={query} />}
             {query.tab === 'matchups' && <MatchupsTab ctx={ctx} query={query} />}
-            {query.tab === 'abilities' && <AbilitiesTab ctx={ctx} />}
+            {query.tab === 'abilities' && <AbilitiesTab ctx={ctx} query={query} />}
             {query.tab === 'trends' && <TrendsTab ctx={ctx} />}
             {query.tab === 'matches' && <MatchesTab ctx={ctx} />}
           </Suspense>

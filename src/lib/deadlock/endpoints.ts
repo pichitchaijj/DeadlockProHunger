@@ -3,6 +3,7 @@ import { cache } from 'react'
 import { z } from 'zod'
 import { TTL } from '@/lib/cache/ttl'
 import { deadlockGet } from './client'
+import { completeDaysQuery } from './expensive'
 
 /*
  * Typed endpoint functions. Schemas list only the fields we use, as verified
@@ -191,4 +192,12 @@ export function getHeroTotals(query: HeroStatsQuery) {
     tags: ['analytics:hero-stats'],
     timeoutMs: 15_000,
   })
+}
+
+/**
+ * Hero totals over the complete UTC days item-stats covers for `query` (`completeDaysQuery`): the denominator of
+ * any share whose numerator is item-stats. Async, so a window with no complete day yet rejects as `pending`.
+ */
+export async function getHeroTotalsCompleteDays(query: HeroStatsQuery) {
+  return getHeroTotals(completeDaysQuery(query))
 }

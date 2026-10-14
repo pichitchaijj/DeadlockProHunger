@@ -13,6 +13,9 @@
     "invalid": "The data source answered in a format we don’t recognize, so it isn’t shown rather than risk showing it wrong.",
     "forbidden": "The data source is refusing our requests right now. Nothing is shown in its place.",
     "notFound": "The data source has no data for this right now.",
-    "unavailable": "The data source didn’t respond. It may be a temporary problem; try again shortly."
+    "unavailable": "The data source didn’t respond. It may be a temporary problem; try again shortly.",
+    "pending": "This data is prepared in scheduled updates, not when the page loads, to limit load on the data source. It isn’t ready for this view yet; nothing is shown in its place.",
+    "limited": "To limit load on the data source, this section is only computed for the default filters. Nothing is shown for the filters selected.",
+    "useDefaultFilters": "Use default filters"
   }
 }

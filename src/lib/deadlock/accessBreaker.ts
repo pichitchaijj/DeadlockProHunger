@@ -220,6 +220,16 @@ export class AccessGuard {
     this.log('all endpoints', this.global, this.global.settle(ticket.global, globalOutcome, ticket.template, ticket.sentAt, now))
   }
 
+  /**
+   * Whether the last word from upstream on this path is a refusal (global or endpoint breaker not closed).
+   * Reading it changes nothing: for callers that send no request (cache-only reads), so a refusal still
+   * reads as refused rather than as "not prepared yet".
+   */
+  refusing(path: string, now: number): boolean {
+    const endpoint = this.endpoints.get(endpointTemplate(path))
+    return effectiveStatus(this.global.status(), now).state !== 'closed' || (endpoint !== undefined && effectiveStatus(endpoint.status(), now).state !== 'closed')
+  }
+
   status(): AccessStatus {
     return { global: this.global.status(), endpoints: Object.fromEntries([...this.endpoints].map(([t, b]) => [t, b.status()])) }
   }

@@ -1,9 +1,11 @@
 import 'server-only'
 import { cache } from 'react'
-import { attempt, DataError } from '@/lib/deadlock/errors'
+import { attempt, DataError, type DataErrorKind } from '@/lib/deadlock/errors'
+import { requireScope, type ExpensiveRead } from '@/lib/deadlock/expensive'
 import { softFail } from '@/lib/deadlock/softFail'
+import { mapLimit } from '@/lib/concurrency'
 import type { StatScope } from '@/lib/analytics/scope'
-import { getActiveHeroes } from '@/lib/deadlock/endpoints'
+import { getActiveHeroes, getHeroTotalsCompleteDays } from '@/lib/deadlock/endpoints'
 import { rankFromBadge, type RankDisplay } from '@/lib/deadlock/rankAssets'
 import { getAccountRanks, getBuildById, getItemFlow, getSteamNames, searchBuilds, type FullBuild } from '@/lib/deadlock/buildEndpoints'
 import { getAbilityOrderStats, getHeroBuildStats, getHeroItemStats } from '@/lib/deadlock/heroEndpoints'
@@ -26,7 +28,7 @@ import {
   type BuildStats,
   type PatchStatus,
 } from './model'
-import { buildDetailHref, type BuildsQuery } from './query'
+import { buildDetailHref, detailInScope, flowInScope, listingInScope, type BuildsQuery } from './query'
 import { UNTITLED_BUILD, type BuildLoadStatus } from './seo'
 import { heroIconUrl } from '@/lib/deadlock/heroImages'
 
@@ -76,10 +78,22 @@ async function common(query: Pick<BuildsQuery, 'window' | 'rank'>): Promise<Comm
 const authorRank = (scope: ResolvedScope, r: { rank: number; subrank: number } | undefined) =>
   r && r.rank > 0 ? rankFromBadge(scope.ranks, r.rank * 10 + r.subrank) : null
 
-/** Tracked build stats per hero for the scope (one call per hero; cached and shared). */
-async function trackedStats(heroIds: number[], c: Common) {
-  const entries = await Promise.all(
-    heroIds.map(async (id) => [id, (await softFail(getHeroBuildStats(id, c.scope.statsQuery), [])).map((s) => ({ id: s.hero_build_id, stats: scoreBuild(s.wins, s.matches) }))] as const),
+/**
+ * hero-build-stats calls one render may have in flight. The meta listing needs every active hero's stats (one
+ * call each, ~39 on a cold cache); sending them all at once let a single cold render spend an instance's whole
+ * analytics burst. Paced, a cold render sends the same calls a few at a time, and when upstream refuses access
+ * the breaker sees the first refusals before the rest go out.
+ */
+export const TRACKED_STATS_CONCURRENCY = 6
+
+/**
+ * Tracked build stats per hero for the scope (one call per distinct hero; cached and shared). `cacheOnly` for
+ * the all-heroes listing: it reads the entries the prewarm job fills and sends nothing on a miss, so a cold cache
+ * fails the listing as `pending` (softFail rethrows it) instead of fanning out or showing builds without stats.
+ */
+async function trackedStats(heroIds: number[], c: Common, read: ExpensiveRead) {
+  const entries = await mapLimit([...new Set(heroIds)], TRACKED_STATS_CONCURRENCY, async (id) =>
+    [id, (await softFail(getHeroBuildStats(id, c.scope.statsQuery, read), [])).map((s) => ({ id: s.hero_build_id, stats: scoreBuild(s.wins, s.matches) }))] as const,
   )
   return new Map(entries)
 }
@@ -87,9 +101,11 @@ async function trackedStats(heroIds: number[], c: Common) {
 export type BuildsListing = { rows: BuildRow[]; statScope: StatScope; heroes: HeroRef[]; heroFilter: HeroRef | null; candidates: number }
 
 export async function getBuildsListing(query: BuildsQuery): Promise<BuildsListing | null> {
+  requireScope(listingInScope(query), 'The all-heroes builds listing')
   const c = await common(query)
   const heroFilter = query.hero === 'all' ? null : ([...c.heroes.values()].find((h) => h.slug === query.hero) ?? null)
   if (query.hero !== 'all' && !heroFilter) return null
+  const read: ExpensiveRead = { cacheOnly: heroFilter === null }
 
   // Favorites order (also the candidate pool for Community and Pro).
   const favorites = heroFilter
@@ -108,15 +124,19 @@ export async function getBuildsListing(query: BuildsQuery): Promise<BuildsListin
     builds = favorites.filter((b) => (ranks.get(b.hero_build.author_account_id)?.rank ?? 0) >= PRO_MIN_TIER).slice(0, 30)
   } else {
     const heroIds = heroFilter ? [heroFilter.id] : [...c.heroes.keys()]
-    const stats = await trackedStats(heroIds, c)
+    const stats = await trackedStats(heroIds, c, read)
     const candidates = metaOrder(
       [...stats.entries()].flatMap(([heroId, list]) => list.map((b) => ({ heroId, id: b.id, stats: b.stats as BuildStats | null, heroWinRate: c.heroWinRates.get(heroId) ?? null }))),
     ).slice(0, 24)
     builds = (await Promise.all(candidates.map((b) => getBuildById(b.id).catch(() => null)))).filter((b): b is FullBuild => b !== null)
   }
 
+  // Only active heroes' builds are listed. Filtered before the stats read: the prewarm job warms stats for active
+  // heroes only, so a favorite build of an inactive hero must not make the whole cache-only listing `pending`.
+  builds = builds.filter((b) => c.heroes.has(b.hero_build.hero_id))
+
   // Stats + authors for whatever ended up in the list.
-  const stats = await trackedStats([...new Set(builds.map((b) => b.hero_build.hero_id))], c)
+  const stats = await trackedStats([...new Set(builds.map((b) => b.hero_build.hero_id))], c, read)
   const authorIds = builds.map((b) => b.hero_build.author_account_id)
   const [names, missingRanks] = await Promise.all([
     softFail(getSteamNames(authorIds), []),
@@ -126,30 +146,28 @@ export async function getBuildsListing(query: BuildsQuery): Promise<BuildsListin
   const nameById = new Map(names.map((n) => [n.account_id, n.personaname]))
   const patchStart = c.scope.patches[0] ? c.scope.patches[0].day * 1000 : null
 
-  const rows: BuildRow[] = builds
-    .filter((b) => c.heroes.has(b.hero_build.hero_id))
-    .map((b) => {
-      const hb = b.hero_build
-      const heroStats = stats.get(hb.hero_id) ?? []
-      const own = heroStats.find((s) => s.id === hb.hero_build_id)?.stats ?? null
-      const heroWinRate = c.heroWinRates.get(hb.hero_id) ?? null
-      const updatedAt = hb.last_updated_timestamp ? hb.last_updated_timestamp * 1000 : null
-      const hero = c.heroes.get(hb.hero_id)!
-      return {
-        id: hb.hero_build_id,
-        href: buildDetailHref(hero.slug, hb.hero_build_id, query),
-        hero,
-        name: hb.name.trim() || 'Untitled build',
-        authorName: nameById.get(hb.author_account_id) ?? null,
-        authorRank: authorRank(c.scope, ranks.get(hb.author_account_id)),
-        updatedAt,
-        weeklyFavorites: b.num_weekly_favorites || null,
-        stats: own,
-        heroWinRate,
-        patch: patchStatus(updatedAt, patchStart),
-        labels: labelsFor({ stats: own, heroWinRate, heroBuildStats: heroStats, buildId: hb.hero_build_id, favoritesRank: favoritesRank.get(hb.hero_build_id) ?? null }),
-      }
-    })
+  const rows: BuildRow[] = builds.map((b) => {
+    const hb = b.hero_build
+    const heroStats = stats.get(hb.hero_id) ?? []
+    const own = heroStats.find((s) => s.id === hb.hero_build_id)?.stats ?? null
+    const heroWinRate = c.heroWinRates.get(hb.hero_id) ?? null
+    const updatedAt = hb.last_updated_timestamp ? hb.last_updated_timestamp * 1000 : null
+    const hero = c.heroes.get(hb.hero_id)!
+    return {
+      id: hb.hero_build_id,
+      href: buildDetailHref(hero.slug, hb.hero_build_id, query),
+      hero,
+      name: hb.name.trim() || 'Untitled build',
+      authorName: nameById.get(hb.author_account_id) ?? null,
+      authorRank: authorRank(c.scope, ranks.get(hb.author_account_id)),
+      updatedAt,
+      weeklyFavorites: b.num_weekly_favorites || null,
+      stats: own,
+      heroWinRate,
+      patch: patchStatus(updatedAt, patchStart),
+      labels: labelsFor({ stats: own, heroWinRate, heroBuildStats: heroStats, buildId: hb.hero_build_id, favoritesRank: favoritesRank.get(hb.hero_build_id) ?? null }),
+    }
+  })
 
   return {
     rows,
@@ -163,6 +181,7 @@ export async function getBuildsListing(query: BuildsQuery): Promise<BuildsListin
 // ── Detail ───────────────────────────────────────────────────────────
 
 export async function getBuildDetail(heroSlug: string, buildId: number, query: Pick<BuildsQuery, 'window' | 'rank'>) {
+  requireScope(detailInScope(query), 'Build detail')
   const [c, build] = await Promise.all([common(query), getBuildById(buildId)])
   if (!build) return null
   const hb = build.hero_build
@@ -170,11 +189,14 @@ export async function getBuildDetail(heroSlug: string, buildId: number, query: P
   if (!hero) return null
   if (hero.slug !== heroSlug) return { kind: 'redirect' as const, href: buildDetailHref(hero.slug, buildId, query) }
 
-  const [heroBuildStatsRaw, shop, itemStats, flow, abilities, orders, heroFavorites, names, ranks] = await Promise.all([
+  const [heroBuildStatsRaw, shop, itemStats, itemHeroTotals, flow, abilities, orders, heroFavorites, names, ranks] = await Promise.all([
     getHeroBuildStats(hero.id, c.scope.statsQuery),
     shopMap(),
     getHeroItemStats(hero.id, c.scope.statsQuery),
-    getItemFlow(hero.id, c.scope.statsQuery).catch(() => null),
+    // Buy-rate denominator over the same complete UTC days as the item-stats above (lib/deadlock/expensive.ts).
+    getHeroTotalsCompleteDays(c.scope.statsQuery),
+    // Item flow is its own section: a failure (or a scope it isn't computed for) is stated there, not as "no data".
+    flowInScope(query) ? attempt('[build] item flow failed', getItemFlow(hero.id, c.scope.statsQuery)) : ({ ok: false, kind: 'limited' } as const),
     abilityNames(hero.id),
     getAbilityOrderStats(hero.id, c.scope.statsQuery).catch(() => []),
     searchBuilds({ heroId: hero.id, limit: 100 }),
@@ -195,8 +217,9 @@ export async function getBuildDetail(heroSlug: string, buildId: number, query: P
   const seen = new Set<number>()
   const items = sections.flatMap((s) => s.items).filter((i) => !seen.has(i.id) && seen.add(i.id))
 
-  const phases = phaseItems(items, itemStats, heroMatches)
-  const flowView = flow ? flowForBuild(items.map((i) => i.id), flow, shop) : null
+  const phases = phaseItems(items, itemStats, itemHeroTotals.find((t) => t.hero_id === hero.id)?.matches ?? 0)
+  const flowView = flow.ok ? flowForBuild(items.map((i) => i.id), flow.value, shop) : null
+  const flowIssue: DataErrorKind | null = flow.ok ? null : flow.kind
   const plan = abilityPlan(hb.details.ability_order?.currency_changes ?? [], new Set(abilities.keys()))
   const updatedAt = hb.last_updated_timestamp ? hb.last_updated_timestamp * 1000 : null
 
@@ -223,6 +246,7 @@ export async function getBuildDetail(heroSlug: string, buildId: number, query: P
     sections,
     phases,
     flow: flowView,
+    flowIssue,
     plan,
     abilities,
     opening: abilityOpenings(orders, 1)[0] ?? null,

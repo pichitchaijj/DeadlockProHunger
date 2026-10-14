@@ -1,7 +1,7 @@
 import 'server-only'
 import { cache } from 'react'
 import type { StatScope } from '@/lib/analytics/scope'
-import { getActiveHeroes, getHeroStatsByDay, throughDay } from '@/lib/deadlock/endpoints'
+import { getActiveHeroes, getHeroStatsByDay, getHeroTotalsCompleteDays, throughDay } from '@/lib/deadlock/endpoints'
 import {
   getAbilityOrderStats,
   getHeroAbilities,
@@ -15,7 +15,8 @@ import {
   getShopItems,
   getTopBuilds,
 } from '@/lib/deadlock/heroEndpoints'
-import { attempt } from '@/lib/deadlock/errors'
+import { attempt, classifyError, isWithheld, type DataErrorKind } from '@/lib/deadlock/errors'
+import { requireScope } from '@/lib/deadlock/expensive'
 import { getMetaPageData } from '@/features/meta/loaders'
 import { slugify, type MetaHero } from '@/features/meta/model'
 import { DEFAULT_QUERY } from '@/features/meta/query'
@@ -27,6 +28,7 @@ import {
   byRank,
   dailySeries,
   heroInsights,
+  heroMatchesInDays,
   itemProgression,
   MATCH_LENGTHS,
   matchupsFor,
@@ -36,7 +38,7 @@ import {
   type HeroRef,
   type ShopItemRef,
 } from './model'
-import { DEFAULT_HERO_QUERY, type HeroQuery } from './query'
+import { DEFAULT_HERO_QUERY, perHeroInScope, type HeroQuery } from './query'
 import type { HeroLoadStatus } from './seo'
 import { heroIconUrl, heroCardUrl } from '@/lib/deadlock/heroImages'
 
@@ -139,30 +141,76 @@ export const abilityNames = cache(async (heroId: number) =>
   new Map((await getHeroAbilities(heroId)).filter((a) => a.type === 'ability').map((a) => [a.id, { name: a.name ?? 'Ability', icon: a.image ?? null, kind: a.ability_type ?? null }])),
 )
 
+/** Throws `limited` (before any request) outside the scopes per-hero costly analytics are computed for. */
+const requirePerHero = (ctx: HeroContext, what: string) => requireScope(perHeroInScope(ctx.scope.band.id), what)
+
 /** This week's most-favorited builds joined with their tracked results. */
 export const heroBuilds = cache(async (ctx: HeroContext) => {
+  requirePerHero(ctx, 'Hero builds')
   const [builds, stats, shop] = await Promise.all([getTopBuilds(ctx.hero.id), getHeroBuildStats(ctx.hero.id, ctx.scope.statsQuery), shopMap()])
   return buildsWithStats(builds, stats, shop)
 })
 
-/** Overview: Insight Engine results plus a short preview of each deeper tab. */
-export async function getOverviewData(ctx: HeroContext) {
+/**
+ * The hero's matches over the complete UTC days item-stats covers for this scope (`completeDaysQuery`): the
+ * denominator of its item shares, so numerator and denominator cover the same days.
+ */
+const heroCompleteMatches = cache(async (ctx: HeroContext) => {
+  const totals = await getHeroTotalsCompleteDays(ctx.scope.statsQuery)
+  return totals.find((t) => t.hero_id === ctx.hero.id)?.matches ?? 0
+})
+
+/**
+ * The two weeks of the weekly item shares, as complete UTC days [from, to): item-stats cuts today
+ * (lib/deadlock/expensive.ts), so "this week" is the 6 complete days before today and the week before it 7 days.
+ * The hero's matches for each come from the same days of the per-day rows.
+ */
+const itemWeeks = (today: number) => ({ current: { from: today - 6 * DAY, to: today }, previous: { from: today - 13 * DAY, to: today - 6 * DAY } })
+
+/** The overview's per-hero costly inputs (builds, ability orders, weekly item stats). */
+async function perHeroInputs(ctx: HeroContext) {
+  requirePerHero(ctx, 'Per-hero analytics')
   const { today, asOf, statsQuery } = ctx.scope
+  const weeks = itemWeeks(today)
   // Inputs used only by insights fail soft: a missing one drops its insight, not the overview.
-  const [matchups, synergies, length, badges, rank, builds, orders, abilities, days, itemsNow, itemsBefore, shop] = await Promise.all([
+  const [builds, orders, itemsNow, itemsBefore] = await Promise.all([
+    heroBuilds(ctx),
+    getAbilityOrderStats(ctx.hero.id, statsQuery),
+    // Cut to complete days by the wrapper: [current.from, today) and [previous.from, previous.to) (itemWeeks).
+    getHeroItemStats(ctx.hero.id, { ...statsQuery, minUnix: weeks.current.from, maxUnix: asOf }).catch(() => null),
+    getHeroItemStats(ctx.hero.id, { ...statsQuery, minUnix: weeks.previous.from, maxUnix: throughDay(weeks.previous.to - DAY) }).catch(() => null),
+  ])
+  return { builds, orders, itemsNow, itemsBefore }
+}
+
+/**
+ * Overview: Insight Engine results plus a short preview of each deeper tab. Withheld per-hero inputs (`limited`
+ * rank band, `pending` window) leave the rest of the overview standing and are stated in their own panels
+ * (`perHeroIssue`); any other failure still fails the overview, as before.
+ */
+export async function getOverviewData(ctx: HeroContext) {
+  const [matchups, synergies, length, badges, rank, perHero, abilities, days, shop] = await Promise.all([
     laneMatchups(ctx, true),
     heroSynergies(ctx),
     lengthSplit(ctx),
     badgeRows(ctx),
     rankSplit(ctx),
-    heroBuilds(ctx),
-    getAbilityOrderStats(ctx.hero.id, statsQuery),
+    perHeroInputs(ctx).then(
+      (value) => ({ ok: true as const, ...value }),
+      (error: unknown) => {
+        if (isWithheld(error)) return { ok: false as const, kind: classifyError(error) }
+        throw error
+      },
+    ),
     abilityNames(ctx.hero.id),
     dayRows(ctx).catch(() => null),
-    getHeroItemStats(ctx.hero.id, { ...statsQuery, minUnix: today - 6 * DAY, maxUnix: asOf }).catch(() => null),
-    getHeroItemStats(ctx.hero.id, { ...statsQuery, minUnix: today - 13 * DAY, maxUnix: throughDay(today - 7 * DAY) }).catch(() => null),
     shopMap(),
   ])
+  const builds = perHero.ok ? perHero.builds : []
+  const orders = perHero.ok ? perHero.orders : []
+  const itemsNow = perHero.ok ? perHero.itemsNow : null
+  const itemsBefore = perHero.ok ? perHero.itemsBefore : null
+  const perHeroIssue: DataErrorKind | null = perHero.ok ? null : perHero.kind
   const s = ctx.stats
   return {
     insights: s
@@ -180,7 +228,7 @@ export async function getOverviewData(ctx: HeroContext) {
           matchups,
           synergies,
           builds,
-          items: s.weeks && itemsNow && itemsBefore ? weeklyItems(itemsNow, itemsBefore, shop, s.weeks) : [],
+          items: days && itemsNow && itemsBefore ? weeklyItems(itemsNow, itemsBefore, shop, weekMatches(ctx, days)) : [],
         })
       : [],
     best: matchups.best.slice(0, 3),
@@ -188,6 +236,7 @@ export async function getOverviewData(ctx: HeroContext) {
     synergies: synergies.slice(0, 3),
     topBuild: builds.find((b) => b.stats) ?? builds[0] ?? null,
     opening: abilityOpenings(orders, 1)[0] ?? null,
+    perHeroIssue,
     abilities,
     length,
     rank,
@@ -202,12 +251,21 @@ function latestPatchShift(ctx: HeroContext, rows: Array<{ hero_id: number; bucke
   return impact ? { title: impact.title, before: impact.before, after: impact.after, inWeeks: impact.day >= today - 13 * DAY } : null
 }
 
+/** The hero's matches in each item week (same complete days as the item-stats of that week). */
+function weekMatches(ctx: HeroContext, rows: Array<{ hero_id: number; bucket: number; matches: number }>) {
+  const w = itemWeeks(ctx.scope.today)
+  return {
+    current: { matches: heroMatchesInDays(rows, ctx.hero.id, w.current.from, w.current.to) },
+    previous: { matches: heroMatchesInDays(rows, ctx.hero.id, w.previous.from, w.previous.to) },
+  }
+}
+
 /** Shop items present in both weeks (upstream lists items with 200+ buyers), with the hero's matches each week. */
 function weeklyItems(
   now: Array<{ item_id: number; matches: number }>,
   before: Array<{ item_id: number; matches: number }>,
   shop: Map<number, ShopItemRef>,
-  weeks: NonNullable<MetaHero['weeks']>,
+  weeks: { current: { matches: number }; previous: { matches: number } },
 ) {
   const previous = new Map(before.map((r) => [r.item_id, r.matches]))
   return now.flatMap((r) => {
@@ -219,8 +277,9 @@ function weeklyItems(
 }
 
 export async function getBuildsData(ctx: HeroContext) {
-  const [builds, itemRows, shop] = await Promise.all([heroBuilds(ctx), getHeroItemStats(ctx.hero.id, ctx.scope.statsQuery), shopMap()])
-  return { builds, progression: itemProgression(itemRows, shop, ctx.stats?.matches ?? 0) }
+  requirePerHero(ctx, 'Hero builds')
+  const [builds, itemRows, shop, heroMatches] = await Promise.all([heroBuilds(ctx), getHeroItemStats(ctx.hero.id, ctx.scope.statsQuery), shopMap(), heroCompleteMatches(ctx)])
+  return { builds, progression: itemProgression(itemRows, shop, heroMatches) }
 }
 
 export async function getMatchupsData(ctx: HeroContext, lane: 'lane' | 'any') {
@@ -229,6 +288,7 @@ export async function getMatchupsData(ctx: HeroContext, lane: 'lane' | 'any') {
 }
 
 export async function getAbilitiesData(ctx: HeroContext) {
+  requirePerHero(ctx, 'Ability orders')
   const [orders, abilities] = await Promise.all([getAbilityOrderStats(ctx.hero.id, ctx.scope.statsQuery), abilityNames(ctx.hero.id)])
   return { openings: abilityOpenings(orders, 5), abilities }
 }

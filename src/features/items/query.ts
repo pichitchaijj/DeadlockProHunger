@@ -70,6 +70,13 @@ export function itemsHref(query: ItemsQuery, changes: Partial<ItemsQuery> = {}, 
 }
 
 /** Item detail URL; carries the scope (window, rank, mode, hero) so both pages show the same population. */
+/**
+ * Purchase timing (item-stats by minute ~2.3 MB, item-flow-stats ~4.7 MB; lib/deadlock/expensive.ts) is computed
+ * for the Items default scope only (7 days, all ranks, all modes, all heroes) and read from the cache the prewarm
+ * job fills; other scopes show it as `limited`. Totals and the heroes breakdown keep every filter.
+ */
+export const TIMING_SCOPE: Pick<ItemScopeQuery, 'window' | 'rank' | 'mode' | 'hero'> = { window: '7d', rank: 'all', mode: 'all', hero: 'all' }
+
 export function itemHref(slug: string, query: ItemScopeQuery, changes: Partial<ItemScopeQuery> = {}): string {
   const search = scopeParams({ ...query, ...changes }).toString()
   return `/items/${slug}${search ? `?${search}` : ''}`

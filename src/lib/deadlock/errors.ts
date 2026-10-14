@@ -9,8 +9,12 @@ import { DeadlockApiError } from './apiError'
  *   forbidden    upstream refused our requests (401/403): nothing says the data doesn't exist
  *   not-found    4xx other than 401/403/429 (e.g. unknown id)
  *   unavailable  network failure or 5xx
+ * Two kinds are not failures of a request, because no request was sent (lib/deadlock/expensive.ts):
+ *   pending      cache-only data that hasn't been prepared yet (not in the cache), or a window that has no
+ *                complete day of data yet; it appears after the next scheduled update
+ *   limited      a view this scope doesn't compute, to limit load on the data source (default scope only)
  */
-export type DataErrorKind = 'rate-limit' | 'timeout' | 'invalid' | 'forbidden' | 'not-found' | 'unavailable'
+export type DataErrorKind = 'rate-limit' | 'timeout' | 'invalid' | 'forbidden' | 'not-found' | 'unavailable' | 'pending' | 'limited'
 
 /** Carries an already-classified failure across a loader boundary (e.g. a loader that returns { ok: false }). */
 export class DataError extends Error {
@@ -31,6 +35,11 @@ export function classifyError(error: unknown): DataErrorKind {
   if (/Unexpected response shape/.test(error.message)) return 'invalid'
   if (/timeout|aborted/i.test(error.message)) return 'timeout'
   return 'unavailable'
+}
+
+/** Data deliberately not requested (pending / limited): never replaced by a fallback, never cached. */
+export function isWithheld(error: unknown): boolean {
+  return error instanceof DataError && (error.kind === 'pending' || error.kind === 'limited')
 }
 
 /** Upstream refused our requests (401/403). It says nothing about whether the data exists. */
@@ -55,7 +64,10 @@ export async function attempt<T>(label: string, promise: Promise<T>): Promise<{ 
   try {
     return { ok: true, value: await promise }
   } catch (error) {
-    console.error(label, error)
-    return { ok: false, kind: classifyError(error) }
+    const kind = classifyError(error)
+    // Withheld data is expected (nothing was sent): logged quietly, not as a failure.
+    if (kind === 'pending' || kind === 'limited') console.info(label, kind)
+    else console.error(label, error)
+    return { ok: false, kind }
   }
 }

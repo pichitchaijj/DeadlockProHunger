@@ -65,3 +65,14 @@ export function buildDetailHref(heroSlug: string, buildId: number, query: Pick<B
   const search = scopeSearch(query)
   return `/builds/${heroSlug}/${buildId}${search ? `?${search}` : ''}`
 }
+
+/*
+ * Scopes the costly analytics are computed for (lib/deadlock/expensive.ts; checked in the loaders, before any
+ * request, so a typed URL can't bypass them). Outside them the view is `limited` and shows no numbers.
+ * - The all-heroes listing (any category) needs hero-build-stats for every hero: default scope only (30d, all ranks).
+ * - A build's detail (build stats, item stats, ability orders per hero): every window, all ranks only.
+ * - Its item flow (item-flow-stats): default scope only.
+ */
+export const listingInScope = (q: Pick<BuildsQuery, 'hero' | 'window' | 'rank'>) => q.hero !== 'all' || (q.window === DEFAULT_BUILDS_QUERY.window && q.rank === DEFAULT_BUILDS_QUERY.rank)
+export const detailInScope = (q: Pick<BuildsQuery, 'rank'>) => q.rank === DEFAULT_BUILDS_QUERY.rank
+export const flowInScope = (q: Pick<BuildsQuery, 'window' | 'rank'>) => q.window === DEFAULT_BUILDS_QUERY.window && q.rank === DEFAULT_BUILDS_QUERY.rank

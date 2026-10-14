@@ -25,7 +25,7 @@ import { getItemContext, getItemHeroes, getItemPerformance, getItemTiming, heroO
 import { itemIndexing, itemLoadStatus } from '@/features/items/seo'
 import { purchaseTimingInsight, type ItemRef } from '@/features/items/model'
 import { capitalize } from '@/features/meta/model'
-import { itemHref, itemsHref, parseItemScope, DEFAULT_ITEMS_QUERY, type ItemScopeQuery } from '@/features/items/query'
+import { itemHref, itemsHref, parseItemScope, DEFAULT_ITEMS_QUERY, TIMING_SCOPE, type ItemScopeQuery } from '@/features/items/query'
 import { getScopeWording } from '@/components/data/scopeWording'
 
 type Params = Promise<{ item: string }>
@@ -165,7 +165,7 @@ async function Performance({ item, query, ctx }: { item: ItemRef; query: ItemSco
 
 async function Timing({ item, query, ctx }: { item: ItemRef; query: ItemScopeQuery; ctx: ItemContext }) {
   const [load, { t, tryAgain }, wording] = await Promise.all([attempt('[item] timing failed', getItemTiming(item, ctx)), sectionText(), getInsightWording()])
-  if (!load.ok) return <DataNotice error={load.kind} what="Purchase timing" action={retry(itemHref(item.slug, query), tryAgain)} />
+  if (!load.ok) return <DataNotice error={load.kind} what="Purchase timing" action={retry(itemHref(item.slug, query), tryAgain)} defaultHref={itemHref(item.slug, query, TIMING_SCOPE)} />
   const { points, typical, phases, standout } = load.value
   if (points.length === 0 && phases.every((p) => p.stats === null)) {
     return <EmptyState title={t('detail.noTimingsTitle')} description={t('detail.noTimingsDescription', { item: item.name })} />

@@ -82,8 +82,9 @@ export function prewarmStages(): PrewarmStage[] {
       ],
     },
     {
-      // /builds default view fires one build-stats call per hero at once on a cold cache (the worst
-      // burst on the site). Warm them one task each, paced, so the page itself then reads only hits.
+      // The /builds all-heroes listing (and Home's builds section) reads these entries cache-only: a page sends
+      // no build-stats request, so without this stage it is `pending`. One task per active hero, paced.
+      // (Home's builds section runs in the "home" stage above, before this one.)
       name: 'builds tracked stats (30d, all ranks)',
       tasks: async () => {
         const [scope, heroes] = await Promise.all([resolveScope({ window: DEFAULT_BUILDS_QUERY.window, rank: DEFAULT_BUILDS_QUERY.rank, mode: 'all' }), getActiveHeroes()])

@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { TTL } from '@/lib/cache/ttl'
 import { deadlockGet } from './client'
 import { scopeParams, type HeroStatsQuery } from './endpoints'
+import { expensiveQuery, type ExpensiveRead } from './expensive'
 
 /*
  * Endpoints used by the Hero Detail page. Shapes verified against live responses on
@@ -77,33 +78,34 @@ export function getHeroSynergies(query: HeroStatsQuery) {
 }
 
 /** Outcomes per build selected at game start (demo analysis; samples are often small). No game_mode filter upstream. */
-export function getHeroBuildStats(heroId: number, query: HeroStatsQuery) {
-  const { game_mode: _gameMode, ...params } = scopeParams(query)
+export async function getHeroBuildStats(heroId: number, query: HeroStatsQuery, read: ExpensiveRead = {}) {
+  const { game_mode: _gameMode, ...params } = scopeParams(expensiveQuery(query, true))
   return deadlockGet(`/v1/analytics/hero-build-stats/${heroId}`, {
     params: { ...params, min_matches: 20 },
     schema: z.array(z.object({ hero_build_id: z.number(), ...winLoss })),
-    revalidate: TTL.analytics,
+    revalidate: TTL.expensiveAnalytics,
     tags: ['analytics:builds'],
+    cacheOnly: read.cacheOnly,
   })
 }
 
 /** Full ability upgrade sequences with outcomes. */
-export function getAbilityOrderStats(heroId: number, query: HeroStatsQuery) {
+export async function getAbilityOrderStats(heroId: number, query: HeroStatsQuery) {
   return deadlockGet('/v1/analytics/ability-order-stats', {
-    params: { hero_id: heroId, ...scopeParams(query), min_matches: 100 },
+    params: { hero_id: heroId, ...scopeParams(expensiveQuery(query, true)), min_matches: 100 },
     schema: z.array(z.object({ abilities: z.array(z.number()), ...winLoss })),
-    revalidate: TTL.analytics,
+    revalidate: TTL.expensiveAnalytics,
     tags: ['analytics:ability-order'],
     timeoutMs: 15_000,
   })
 }
 
 /** Items bought by players of one hero, with average buy time. */
-export function getHeroItemStats(heroId: number, query: HeroStatsQuery) {
+export async function getHeroItemStats(heroId: number, query: HeroStatsQuery) {
   return deadlockGet('/v1/analytics/item-stats', {
-    params: { hero_id: heroId, ...scopeParams(query), min_matches: 200, corrupted_items: 'exclude' },
+    params: { hero_id: heroId, ...scopeParams(expensiveQuery(query, false)), min_matches: 200, corrupted_items: 'exclude' },
     schema: z.array(z.object({ item_id: z.number(), ...winLoss, players: z.number(), avg_buy_time_s: z.number() })),
-    revalidate: TTL.analytics,
+    revalidate: TTL.expensiveAnalytics,
     tags: ['analytics:items'],
     timeoutMs: 15_000,
   })

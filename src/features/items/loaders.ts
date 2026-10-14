@@ -2,14 +2,15 @@ import 'server-only'
 import { cache } from 'react'
 import type { StatScope } from '@/lib/analytics/scope'
 import { attempt } from '@/lib/deadlock/errors'
-import { getActiveHeroes, getHeroTotals } from '@/lib/deadlock/endpoints'
+import { requireScope } from '@/lib/deadlock/expensive'
+import { getActiveHeroes, getHeroTotalsCompleteDays } from '@/lib/deadlock/endpoints'
 import { getShopItems } from '@/lib/deadlock/heroEndpoints'
 import { heroIconUrl } from '@/lib/deadlock/heroImages'
 import { getItemPhases, getItemStatsByHero, getItemStatsByMinute, getItemTotals } from '@/lib/deadlock/itemEndpoints'
 import { slugify } from '@/features/meta/model'
 import { resolveScope, type ResolvedScope } from '@/features/meta/scope'
 import { heroBreakdown, itemRows, minuteSeries, purchasePhases, standoutPhase, typicalWindow, type HeroRef, type ItemRef, type ItemRow } from './model'
-import { DEFAULT_ITEMS_QUERY, type ItemScopeQuery } from './query'
+import { DEFAULT_ITEMS_QUERY, TIMING_SCOPE, type ItemScopeQuery } from './query'
 import { indexableItems, type ItemsWithStats } from './seo'
 
 /*
@@ -72,11 +73,12 @@ export const itemContext = cache(async (window: ItemScopeQuery['window'], rank: 
 export const getItemContext = (query: ItemScopeQuery) => itemContext(query.window, query.rank, query.mode, query.hero)
 
 /**
- * Buy-rate denominator: all player-matches in scope (Σ hero matches), or the selected hero's matches.
- * Null if hero-stats fails: the page then says buy rate is unavailable instead of failing.
+ * Buy-rate denominator: all player-matches in scope (Σ hero matches), or the selected hero's matches, over the
+ * same complete UTC days as the item-stats numerator (`completeDaysQuery`). Null if hero-stats fails: the page then
+ * says buy rate is unavailable instead of failing.
  */
 const playerMatches = cache(async (ctx: ItemContext): Promise<number | null> => {
-  const totals = await getHeroTotals(ctx.scope.statsQuery).catch(() => null)
+  const totals = await getHeroTotalsCompleteDays(ctx.scope.statsQuery).catch(() => null)
   if (!totals) return null
   const n = ctx.hero ? (totals.find((t) => t.hero_id === ctx.hero!.id)?.matches ?? 0) : totals.reduce((sum, t) => sum + t.matches, 0)
   return n > 0 ? n : null
@@ -122,19 +124,25 @@ export async function getItemPerformance(item: ItemRef, ctx: ItemContext) {
   return rows.find((r) => r.id === item.id) ?? null
 }
 
+/**
+ * Purchase timing: TIMING_SCOPE only (checked on the resolved scope, before any request), read cache-only (a miss
+ * is `pending`: the prewarm job fills these entries; a page never sends the two heaviest item calls).
+ */
 export async function getItemTiming(item: ItemRef, ctx: ItemContext) {
+  const { scope } = ctx
+  requireScope(scope.window === TIMING_SCOPE.window && scope.band.id === TIMING_SCOPE.rank && !scope.ranked && ctx.hero === null, 'Purchase timing')
   const [byMinute, phases] = await Promise.all([
-    getItemStatsByMinute(ctx.scope.statsQuery, ctx.hero?.id ?? null),
-    getItemPhases(ctx.scope.statsQuery, ctx.hero?.id ?? null),
+    getItemStatsByMinute(scope.statsQuery, null, { cacheOnly: true }),
+    getItemPhases(scope.statsQuery, null, { cacheOnly: true }),
   ])
   const points = minuteSeries(byMinute.filter((r) => r[0] === item.id).map(([, minute, wins, matches]) => ({ minute, wins, matches })))
   const phaseRows = purchasePhases(phases.nodes.filter((n) => n[0] === item.id).map(([, column, wins, matches, adjustedWinRate]) => ({ column, wins, matches, adjustedWinRate })))
   return { points, typical: typicalWindow(points), phases: phaseRows, standout: standoutPhase(phaseRows), reached: phases.reached }
 }
 
-/** Heroes whose players buy the item (only for the all-heroes scope). */
+/** Heroes whose players buy the item (only for the all-heroes scope). Each hero's share uses the same complete days. */
 export async function getItemHeroes(item: ItemRef, ctx: ItemContext) {
-  const [rows, totals, heroes] = await Promise.all([getItemStatsByHero(ctx.scope.statsQuery), getHeroTotals(ctx.scope.statsQuery), heroCatalog()])
+  const [rows, totals, heroes] = await Promise.all([getItemStatsByHero(ctx.scope.statsQuery), getHeroTotalsCompleteDays(ctx.scope.statsQuery), heroCatalog()])
   return heroBreakdown(
     rows.filter((r) => r[0] === item.id).map(([, heroId, wins, matches]) => ({ heroId, wins, matches })),
     new Map(totals.map((t) => [t.hero_id, t.matches])),

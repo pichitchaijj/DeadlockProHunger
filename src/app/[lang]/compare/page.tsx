@@ -190,7 +190,7 @@ async function Comparison({ query }: { query: CompareQuery }) {
   const result = await attempt('[compare] failed', load(query))
   const loaded = result.ok ? result.value : null
   const failed = result.ok ? 'unavailable' : result.kind
-  if (!loaded) return <DataNotice error={failed} what="Comparison" />
+  if (!loaded) return <DataNotice error={failed} what="Comparison" defaultHref={compareHref(query, { rank: 'all' })} />
   if (loaded.kind === 'heroes') return loaded.data ? <HeroCompareView data={loaded.data} /> : <EmptyState title={t('heroNotFound')} />
   if (loaded.kind === 'builds') return loaded.data ? <BuildCompareView data={loaded.data} /> : <EmptyState title={t('buildNotFound')} description={t('buildNotFoundDescription')} />
   return loaded.data ? <PlayerCompareView data={loaded.data} /> : <EmptyState title={t('playerNotFound')} description={t('playerNotFoundDescription')} />

@@ -3,9 +3,10 @@ import { unstable_cache } from 'next/cache'
 import { stableKey } from '@/lib/cache/stableKey'
 import { z } from 'zod'
 import { TTL } from '@/lib/cache/ttl'
-import { deadlockGet } from './client'
+import { deadlockGet, notWarmed } from './client'
 import { ITEM_MIN_MATCHES } from './constants'
 import { scopeParams, type HeroStatsQuery } from './endpoints'
+import { expensiveQuery, type ExpensiveRead } from './expensive'
 
 /*
  * Item analytics (/v1/analytics/item-stats). Shapes verified against the live spec and responses on
@@ -17,16 +18,17 @@ import { scopeParams, type HeroStatsQuery } from './endpoints'
  *   ~2.3 MB / ~8 s for all items over 7 days: over the 2 MB fetch-cache limit, so it is fetched
  *   uncached and a compact projection is cached instead (same for bucket=hero, ~1.5 MB).
  * - Corrupted purchases (build 6712+) are excluded, as on Hero Detail.
+ * - Expensive analytics (lib/deadlock/expensive.ts): window ends round to UTC days, entries live TTL.expensiveAnalytics.
  */
 
 const winLoss = { wins: z.number(), losses: z.number(), matches: z.number() }
 
 /** Per-item totals for the scope (optionally one hero's players). ~40 KB for all items. */
-export function getItemTotals(query: HeroStatsQuery, heroId?: number) {
+export async function getItemTotals(query: HeroStatsQuery, heroId?: number) {
   return deadlockGet('/v1/analytics/item-stats', {
-    params: { hero_id: heroId, ...scopeParams(query), min_matches: ITEM_MIN_MATCHES, corrupted_items: 'exclude' },
+    params: { hero_id: heroId, ...scopeParams(expensiveQuery(query, false)), min_matches: ITEM_MIN_MATCHES, corrupted_items: 'exclude' },
     schema: z.array(z.object({ item_id: z.number(), ...winLoss, players: z.number(), avg_buy_time_s: z.number() })),
-    revalidate: TTL.analytics,
+    revalidate: TTL.expensiveAnalytics,
     tags: ['analytics:items'],
     timeoutMs: 15_000,
   })
@@ -59,21 +61,38 @@ async function bucketed(bucket: 'game_time_min' | 'hero', query: HeroStatsQuery,
 }
 
 /**
- * Outcomes by purchase minute for every item (optionally one hero's players). Errors are thrown inside
- * the cache, so they are never cached. Arguments are part of the cache key.
+ * A projection cached with unstable_cache, plus a cache-only reader of the same entry (same key parts and fixed
+ * callback text): a miss there sends nothing and fails as `pending` (lib/deadlock/client.ts `notWarmed`).
+ * Errors are thrown inside the cache, so they are never cached. Arguments are part of the cache key.
  */
-export const getItemStatsByMinute = unstable_cache(
-  stableKey('item-stats-by-minute', (query: HeroStatsQuery, heroId: number | null) => bucketed('game_time_min', query, heroId)),
-  ['item-stats-by-minute-v1'],
-  { revalidate: TTL.analytics, tags: ['analytics:items'] },
+function cachedProjection<A extends unknown[], T>(name: string, keyParts: string[], tags: string[], path: string, load: (...args: A) => Promise<T>) {
+  const options = { revalidate: TTL.expensiveAnalytics, tags }
+  const fetching = unstable_cache(stableKey(name, load), keyParts, options)
+  const reading = unstable_cache(
+    stableKey(name, async (..._args: A): Promise<T> => {
+      throw notWarmed(path)
+    }),
+    keyParts,
+    options,
+  )
+  return (read: ExpensiveRead, ...args: A): Promise<T> => (read.cacheOnly ? reading : fetching)(...args)
+}
+
+const byMinute = cachedProjection('item-stats-by-minute', ['item-stats-by-minute-v1'], ['analytics:items'], '/v1/analytics/item-stats', (query: HeroStatsQuery, heroId: number | null) =>
+  bucketed('game_time_min', query, heroId),
 )
 
+/** Outcomes by purchase minute for every item (optionally one hero's players). */
+export async function getItemStatsByMinute(query: HeroStatsQuery, heroId: number | null, read: ExpensiveRead = {}) {
+  return byMinute(read, expensiveQuery(query, false), heroId)
+}
+
+const byHero = cachedProjection('item-stats-by-hero', ['item-stats-by-hero-v1'], ['analytics:items'], '/v1/analytics/item-stats', (query: HeroStatsQuery) => bucketed('hero', query, null))
+
 /** Outcomes per hero for every item (bucket = hero id). */
-export const getItemStatsByHero = unstable_cache(
-  stableKey('item-stats-by-hero', (query: HeroStatsQuery) => bucketed('hero', query, null)),
-  ['item-stats-by-hero-v1'],
-  { revalidate: TTL.analytics, tags: ['analytics:items'] },
-)
+export async function getItemStatsByHero(query: HeroStatsQuery, read: ExpensiveRead = {}) {
+  return byHero(read, expensiveQuery(query, false))
+}
 
 /*
  * Purchase phases from /v1/analytics/item-flow-stats. In `normal` mode the API uses fixed phases
@@ -87,8 +106,7 @@ export const getItemStatsByHero = unstable_cache(
 export type ItemPhaseRow = [itemId: number, column: number, wins: number, matches: number, adjustedWinRate: number]
 export type ItemPhases = { nodes: ItemPhaseRow[]; /** Players still in the match in each phase (survivorship). */ reached: number[] }
 
-export const getItemPhases = unstable_cache(
-  stableKey('item-phases', async (query: HeroStatsQuery, heroId: number | null): Promise<ItemPhases> => {
+const phases = cachedProjection('item-phases', ['item-phases-v1'], ['analytics:item-flow'], '/v1/analytics/item-flow-stats', async (query: HeroStatsQuery, heroId: number | null): Promise<ItemPhases> => {
     const flow = await deadlockGet('/v1/analytics/item-flow-stats', {
       params: { hero_ids: heroId ?? undefined, ...scopeParams(query), min_matches: ITEM_MIN_MATCHES },
       schema: z.object({
@@ -99,7 +117,8 @@ export const getItemPhases = unstable_cache(
       timeoutMs: 25_000,
     })
     return { nodes: flow.nodes.map((n) => [n.item_id, n.column, n.wins, n.matches, n.adjusted_win_rate]), reached: flow.reached_per_column }
-  }),
-  ['item-phases-v1'],
-  { revalidate: TTL.analytics, tags: ['analytics:item-flow'] },
-)
+})
+
+export async function getItemPhases(query: HeroStatsQuery, heroId: number | null, read: ExpensiveRead = {}) {
+  return phases(read, expensiveQuery(query, true), heroId)
+}

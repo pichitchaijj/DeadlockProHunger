@@ -5,6 +5,7 @@ import { stableKey } from '@/lib/cache/stableKey'
 import { z } from 'zod'
 import { AccessGuard, outcomeFor, type AccessStatus, type Outcome } from './accessBreaker'
 import { budgetClasses, classFor, TokenBucket, type BudgetClass } from './budget'
+import { DataError } from './errors'
 
 /**
  * Server-only Deadlock API client (docs/API.md § 7). Every call follows one path:
@@ -24,6 +25,8 @@ import { budgetClasses, classFor, TokenBucket, type BudgetClass } from './budget
  * - One retry on network errors, 429 and 502/503/504 (Retry-After honored, capped); timeouts aren't retried.
  * - Access breaker (lib/deadlock/accessBreaker.ts): after repeated 401/403, calls fail as a refusal without a
  *   request or budget until a cooldown ends; checked before the budget and again right before sending.
+ * - `cacheOnly` reads (lib/deadlock/expensive.ts): the same cache entry, but a miss sends nothing and fails as
+ *   `pending` (or as refused while the breaker reports a refusal); nothing is cached for it.
  * - `DEADLOCK_API_TRACE=1` logs every call: network requests with status and time, cache hits as `hit`,
  *   and budget waits (docs/PERFORMANCE.md).
  */
@@ -51,6 +54,11 @@ type GetOptions<S extends z.ZodType> = {
   timeoutMs?: number
   /** One retry on network errors, 429 and 5xx. Interactive lookups (search) turn it off to stay fast. */
   retry?: boolean
+  /**
+   * Read the cached entry only: a miss sends no request, spends no budget, caches nothing and fails as
+   * `pending` (refused, if the access breaker reports a refusal). The entry is the one a normal call fills.
+   */
+  cacheOnly?: boolean
 }
 
 export function buildUrl(path: string, params: Record<string, QueryValue> = {}): string {
@@ -71,7 +79,7 @@ const buckets = new Map<BudgetClass, TokenBucket>()
  * Counters since the server instance started (for the prewarm job's report and audits). Counts only:
  * no URLs, headers or keys are kept.
  */
-const counters = { network: 0, hits: 0, budgetWaits: 0, budgetExhausted: 0, accessRefused: 0, circuitRejected: 0 }
+const counters = { network: 0, hits: 0, budgetWaits: 0, budgetExhausted: 0, accessRefused: 0, circuitRejected: 0, notWarmed: 0 }
 export type ApiCallStats = typeof counters
 export const apiCallStats = (): ApiCallStats => ({ ...counters })
 
@@ -215,29 +223,57 @@ function coalesce<T>(key: string, run: () => Promise<T>): Promise<T> {
   return promise
 }
 
+/** A cache-only miss: nothing was sent. A refusal stays a refusal; otherwise the data isn't prepared yet. */
+export function notWarmed(path: string): Error {
+  if (access.refusing(path, Date.now())) return refusedByBreaker(path)
+  counters.notWarmed++
+  if (TRACE) console.info(`[api] ${path} not warmed (cache-only)`)
+  return new DataError('Not in the cache yet (cache-only)', 'pending')
+}
+
+/**
+ * The cache layer for `path`: Next's data cache under the URL + schema key. Normal and cache-only reads use the
+ * same key parts and the same fixed callback text (stableKey), so they read the same entry.
+ */
+function cachedEntry<T>(url: string, sKey: string, revalidate: number, tags: string[] | undefined, onMiss: () => Promise<T>) {
+  // Fixed source text: the key is the URL + schema below, the same in every bundle (cron route and pages).
+  return unstable_cache(stableKey('deadlock-api', onMiss), ['deadlock', CACHE_VERSION, url, sKey], { revalidate, tags })
+}
+
 // ── Public ───────────────────────────────────────────────────────────
 
 export async function deadlockGet<S extends z.ZodType>(
   path: string,
-  { params, schema, revalidate, tags, timeoutMs = 10_000, retry = true }: GetOptions<S>,
+  { params, schema, revalidate, tags, timeoutMs = 10_000, retry = true, cacheOnly = false }: GetOptions<S>,
 ): Promise<z.infer<S>> {
   const url = buildUrl(path, params)
   const sKey = schemaKey(schema)
   const load = () => request(url, path, schema, timeoutMs, retry)
 
+  if (cacheOnly) {
+    // Uncached calls (revalidate false: the caller caches its own projection) have no entry to read here.
+    if (revalidate === false || sKey === null) throw notWarmed(path)
+    // A normal call already fetching this key: share its result (no extra request).
+    const fetching = inFlight.get(`${url}|${sKey}`) as Promise<z.infer<S>> | undefined
+    if (fetching) return fetching
+    return coalesce(`${url}|${sKey}|cache-only`, async () => {
+      const data = (await cachedEntry(url, sKey, revalidate, tags, async () => {
+        throw notWarmed(path)
+      })()) as z.infer<S>
+      counters.hits++
+      if (TRACE) console.info(`[api] ${path}${new URL(url).search} hit (cache-only)`)
+      return data
+    })
+  }
+
   if (revalidate === false || sKey === null) return coalesce(`${url}|${sKey}|direct`, load)
 
   return coalesce(`${url}|${sKey}`, async () => {
     let missed = false
-    const cached = unstable_cache(
-      // Fixed source text: the key is the URL + schema below, the same in every bundle (cron route and pages).
-      stableKey('deadlock-api', () => {
-        missed = true
-        return load()
-      }),
-      ['deadlock', CACHE_VERSION, url, sKey],
-      { revalidate, tags },
-    )
+    const cached = cachedEntry(url, sKey, revalidate, tags, () => {
+      missed = true
+      return load()
+    })
     const data = (await cached()) as z.infer<S>
     if (!missed) counters.hits++
     if (TRACE && !missed) console.info(`[api] ${path}${new URL(url).search} hit`)

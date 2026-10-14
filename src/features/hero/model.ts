@@ -130,9 +130,15 @@ export const ITEM_PHASES = [
 /** Items bought in at least this share of the hero's matches count as "core". */
 export const CORE_BUY_RATE = 0.15
 
+/** A hero's matches over UTC days [from, to) from per-day rows (bucket = day start, unix seconds). */
+export function heroMatchesInDays(rows: Array<{ hero_id: number; bucket: number; matches: number }>, heroId: number, from: number, to: number): number {
+  return rows.reduce((n, r) => (r.hero_id === heroId && r.bucket >= from && r.bucket < to ? n + r.matches : n), 0)
+}
+
 /**
  * Item progression: commonly bought shop items, ordered by average buy time and grouped by phase.
- * Buy rate = matches with the item ÷ the hero's matches in the same scope.
+ * Buy rate = matches with the item ÷ the hero's matches in the same scope, over the same days (the loader
+ * passes hero-stats over item-stats' complete UTC days).
  */
 export function itemProgression(
   rows: Array<{ item_id: number; wins: number; matches: number; avg_buy_time_s: number }>,
