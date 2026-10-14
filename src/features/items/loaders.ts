@@ -3,6 +3,7 @@ import { cache } from 'react'
 import type { StatScope } from '@/lib/analytics/scope'
 import { attempt } from '@/lib/deadlock/errors'
 import { requireScope } from '@/lib/deadlock/expensive'
+import { softFail } from '@/lib/deadlock/softFail'
 import { getActiveHeroes, getHeroTotalsCompleteDays } from '@/lib/deadlock/endpoints'
 import { getShopItems } from '@/lib/deadlock/heroEndpoints'
 import { heroIconUrl } from '@/lib/deadlock/heroImages'
@@ -75,10 +76,10 @@ export const getItemContext = (query: ItemScopeQuery) => itemContext(query.windo
 /**
  * Buy-rate denominator: all player-matches in scope (Σ hero matches), or the selected hero's matches, over the
  * same complete UTC days as the item-stats numerator (`completeDaysQuery`). Null if hero-stats fails: the page then
- * says buy rate is unavailable instead of failing.
+ * says buy rate is unavailable instead of failing. Refused access (and withheld data) still fails (softFail).
  */
 const playerMatches = cache(async (ctx: ItemContext): Promise<number | null> => {
-  const totals = await getHeroTotalsCompleteDays(ctx.scope.statsQuery).catch(() => null)
+  const totals = await softFail(getHeroTotalsCompleteDays(ctx.scope.statsQuery), null)
   if (!totals) return null
   const n = ctx.hero ? (totals.find((t) => t.hero_id === ctx.hero!.id)?.matches ?? 0) : totals.reduce((sum, t) => sum + t.matches, 0)
   return n > 0 ? n : null

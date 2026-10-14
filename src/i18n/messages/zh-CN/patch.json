@@ -133,6 +133,7 @@
     "changedItems": "本补丁中有变化的物品",
     "itemCaption": "补丁前后物品的胜率和购买率",
     "itemsUnavailable": "物品统计暂时不可用。",
+    "itemsThrough": "物品统计只计入已结束的 UTC 日期（截至 {date}）。",
     "itemLowPurchases": "补丁前后此物品的购买次数不足。",
     "noChangedItems": "有变化的商店物品在补丁前后的购买次数都不足。",
     "up": "胜率上升",

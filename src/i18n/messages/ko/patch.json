@@ -133,6 +133,7 @@
     "changedItems": "이 패치에서 바뀐 아이템",
     "itemCaption": "패치 전후 아이템의 승률과 구매율",
     "itemsUnavailable": "지금은 아이템 통계를 사용할 수 없습니다.",
+    "itemsThrough": "아이템 통계는 UTC 기준으로 끝난 날만 집계합니다({date}까지).",
     "itemLowPurchases": "패치 전후 이 아이템의 구매가 충분하지 않습니다.",
     "noChangedItems": "바뀐 상점 아이템 중 패치 전후 구매가 충분한 아이템이 없습니다.",
     "up": "승률 상승",

@@ -151,9 +151,9 @@ Lifetimes per data class and per endpoint: [API § 9](./API.md#9-production-data
 |---|---|---|
 | shared reference | hero list, rank tiers, patch feed | every page |
 | meta model | 7d and 30d, all ranks | Home/Meta/Heroes/Hero/Analyze defaults (7d), Builds default (30d) |
-| home | the six Home sections (their own section caches too) | most-visited page |
-| builds tracked stats | one `hero-build-stats` call per hero (30d, all ranks), one task each | `/builds` default fires all of them at once on a cold cache: the site's worst burst |
-| builds page | the default listing (then only hits) | |
+| home | five Home sections (their own section caches too); the builds section runs with the builds page | most-visited page |
+| builds tracked stats | one `hero-build-stats` call per hero (30d, all ranks), one task each | the all-heroes listing and Home builds read these cache-only |
+| builds page | the default listing and Home's builds section (then only hits) | they read the stats above cache-only, so they run after them |
 | hero detail + analyze | overview data for the **3 most-picked heroes** in the 7d model (non-Low sample); the first also warms the all-hero matrix data every hero page shares | chosen from measured pick rate, never assumed |
 
 - **Cache first, budget enforced:** every request goes through the normal client (cache → budget → API). Fresh keys are hits; nothing bypasses the token bucket.

@@ -21,7 +21,7 @@ import { PatchFilters } from '@/features/patches/components/PatchFilters'
 import { findPatch, getPatchContext, patchDiffById, patchImpactById, patchNotes, type PatchContext } from '@/features/patches/loaders'
 import { changeMarks, diffCounts, groupChanges, mostImpacted, noteCounts, type PatchSummary } from '@/features/patches/model'
 import { compareHref, parsePatchQuery, patchHref, patchListHref, type PatchQuery } from '@/features/patches/query'
-import { patchDate, patchTitle, windowRange, type PatchTranslate } from '@/features/patches/text'
+import { itemsThroughNote, patchDate, patchTitle, windowRange, type PatchTranslate } from '@/features/patches/text'
 import { getScopeWording } from '@/components/data/scopeWording'
 
 type Params = Promise<{ id: string }>
@@ -286,7 +286,7 @@ async function Impact({ patch, ctx }: { patch: PatchSummary; ctx: PatchContext }
   ])
   if (!load.ok) return <DataNotice error={load.kind} what="Patch statistics" />
   if (!load.value) return null
-  const { before, after, heroes, items } = load.value
+  const { before, after, itemsAfter, heroes, items } = load.value
   if (!heroes) {
     return <EmptyState title={t('impact.noAfterTitle')} description={t('impact.noAfterDescription')} />
   }
@@ -300,6 +300,7 @@ async function Impact({ patch, ctx }: { patch: PatchSummary; ctx: PatchContext }
   const heroRows = heroes.filter((h) => !ctx.hero || h.id === ctx.hero.id)
   const changedHeroes = heroRows.filter((h) => marks.heroes.has(h.id))
   const itemRows = items?.filter((i) => (ctx.item ? i.id === ctx.item.id : marks.items.has(i.id))) ?? null
+  const itemsThrough = itemRows && itemsThroughNote(after, itemsAfter, 'short', locale, tr)
   const sample = heroes.reduce((n, h) => n + (h.after?.matches ?? 0), 0)
 
   return (
@@ -343,6 +344,7 @@ async function Impact({ patch, ctx }: { patch: PatchSummary; ctx: PatchContext }
 
       <div className="flex flex-col gap-3">
         <h3 className="font-ui text-title font-semibold text-text">{ctx.item ? ctx.item.name : t('impact.changedItems')}</h3>
+        {itemsThrough && <p className="text-sm text-text-muted">{itemsThrough}</p>}
         {itemRows === null ? (
           <p className="text-sm text-text-muted">{t('impact.itemsUnavailable')}</p>
         ) : itemRows.length > 0 ? (

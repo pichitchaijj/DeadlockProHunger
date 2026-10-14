@@ -17,6 +17,7 @@ import {
 } from '@/lib/deadlock/heroEndpoints'
 import { attempt, classifyError, isWithheld, type DataErrorKind } from '@/lib/deadlock/errors'
 import { requireScope } from '@/lib/deadlock/expensive'
+import { softFail } from '@/lib/deadlock/softFail'
 import { getMetaPageData } from '@/features/meta/loaders'
 import { slugify, type MetaHero } from '@/features/meta/model'
 import { DEFAULT_QUERY } from '@/features/meta/query'
@@ -177,8 +178,8 @@ async function perHeroInputs(ctx: HeroContext) {
     heroBuilds(ctx),
     getAbilityOrderStats(ctx.hero.id, statsQuery),
     // Cut to complete days by the wrapper: [current.from, today) and [previous.from, previous.to) (itemWeeks).
-    getHeroItemStats(ctx.hero.id, { ...statsQuery, minUnix: weeks.current.from, maxUnix: asOf }).catch(() => null),
-    getHeroItemStats(ctx.hero.id, { ...statsQuery, minUnix: weeks.previous.from, maxUnix: throughDay(weeks.previous.to - DAY) }).catch(() => null),
+    softFail(getHeroItemStats(ctx.hero.id, { ...statsQuery, minUnix: weeks.current.from, maxUnix: asOf }), null),
+    softFail(getHeroItemStats(ctx.hero.id, { ...statsQuery, minUnix: weeks.previous.from, maxUnix: throughDay(weeks.previous.to - DAY) }), null),
   ])
   return { builds, orders, itemsNow, itemsBefore }
 }
@@ -203,7 +204,7 @@ export async function getOverviewData(ctx: HeroContext) {
       },
     ),
     abilityNames(ctx.hero.id),
-    dayRows(ctx).catch(() => null),
+    softFail(dayRows(ctx), null),
     shopMap(),
   ])
   const builds = perHero.ok ? perHero.builds : []

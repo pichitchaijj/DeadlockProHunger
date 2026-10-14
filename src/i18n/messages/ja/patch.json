@@ -133,6 +133,7 @@
     "changedItems": "このパッチで変更されたアイテム",
     "itemCaption": "パッチ前後のアイテムの勝率と購入率",
     "itemsUnavailable": "現在アイテムの統計を利用できません。",
+    "itemsThrough": "アイテムの統計は UTC で終わった日だけを集計します（{date} まで）。",
     "itemLowPurchases": "パッチ前後でこのアイテムの購入数が足りません。",
     "noChangedItems": "変更されたショップアイテムのうち、パッチ前後で十分に購入されたものはありません。",
     "up": "勝率上昇",

@@ -94,6 +94,12 @@ export function patchPeriod(patches: PatchSummary[], index: number, today: numbe
   return patchWindows(patches, index, today).after
 }
 
+/** The complete UTC days of a window (today cut): what item-stats covers (lib/deadlock/expensive.ts). */
+export function completeDaysOf(w: Window, today: number): Window {
+  const to = Math.min(w.to, today)
+  return { from: w.from, to, days: Math.max(0, (to - w.from) / DAY) }
+}
+
 // ── Before / after statistics ────────────────────────────────────────
 
 export type Stat = { wins: number; matches: number; winRate: number; interval: Interval; sample: SampleTier }

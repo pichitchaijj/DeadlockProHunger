@@ -52,3 +52,10 @@ export const patchDate = (unix: number, style: PatchDateStyle, locale: Locale) =
 /** A window's days, first to last inclusive (`to` is exclusive): "Sep 22–Sep 28". */
 export const windowRange = (w: Window, style: 'short' | 'day', locale: Locale, t: PatchTranslate) =>
   t('impact.range', { from: patchDate(w.from, style, locale), to: patchDate(w.to - DAY, style, locale) })
+
+/**
+ * The note for item statistics when they end before the window shown (item-stats counts complete UTC days only,
+ * so an open window's item side stops at yesterday): "…through Oct 13". Null when the item side covers the window.
+ */
+export const itemsThroughNote = (shown: Window, items: Window, style: 'short' | 'day', locale: Locale, t: PatchTranslate) =>
+  items.days > 0 && items.to < shown.to ? t('impact.itemsThrough', { date: patchDate(items.to - DAY, style, locale) }) : null

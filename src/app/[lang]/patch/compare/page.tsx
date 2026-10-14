@@ -21,7 +21,7 @@ import { PatchFilters } from '@/features/patches/components/PatchFilters'
 import { getPatchCompare, getPatchContext, patchList, type PatchContext } from '@/features/patches/loaders'
 import { changeMarks, groupChanges, mostImpacted, type PatchSummary } from '@/features/patches/model'
 import { compareHref, parseCompareQuery, patchHref, patchListHref, type CompareQuery } from '@/features/patches/query'
-import { patchTitle, windowRange, type PatchTranslate } from '@/features/patches/text'
+import { itemsThroughNote, patchTitle, windowRange, type PatchTranslate } from '@/features/patches/text'
 import { getScopeWording } from '@/components/data/scopeWording'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -154,11 +154,15 @@ async function Comparison({ patches, ia, ib, ctx }: { patches: PatchSummary[]; i
   ])
   if (!load.ok) return <DataNotice error={load.kind} what="Patch comparison" />
   const tr: PatchTranslate = (key, values) => t(key as 'untitled', values)
-  const { older, newer, periods, heroes, items, diff, builds } = load.value
-  const labels = {
-    a: t('impact.period', { id: older.id, range: windowRange(periods.older, 'day', locale as Locale, tr) }),
-    b: t('impact.period', { id: newer.id, range: windowRange(periods.newer, 'day', locale as Locale, tr) }),
-  }
+  const { older, newer, periods, itemPeriods, heroes, items, diff, builds } = load.value
+  const periodLabels = (p: typeof periods) => ({
+    a: t('impact.period', { id: older.id, range: windowRange(p.older, 'day', locale as Locale, tr) }),
+    b: t('impact.period', { id: newer.id, range: windowRange(p.newer, 'day', locale as Locale, tr) }),
+  })
+  const labels = periodLabels(periods)
+  // Item statistics count complete UTC days only: their caption names the days they cover.
+  const itemLabels = itemPeriods.newer.days > 0 ? periodLabels(itemPeriods) : labels
+  const itemsThrough = items && itemsThroughNote(periods.newer, itemPeriods.newer, 'day', locale as Locale, tr)
   const grouped = diff ? groupChanges(diff.changes, diff.heroNames) : null
   const marks = grouped ? changeMarks(grouped.heroes, grouped.items) : { heroes: new Map(), items: new Map() }
   const heroRows = heroes.filter((h) => !ctx.hero || h.id === ctx.hero.id).sort((a, b) => (b.winDelta ?? -1) - (a.winDelta ?? -1))
@@ -184,10 +188,11 @@ async function Comparison({ patches, ia, ib, ctx }: { patches: PatchSummary[]; i
 
       <section aria-labelledby="cmp-items" className="flex flex-col gap-5">
         <SectionHeader id="cmp-items" title={t('compare.itemsTitle')} description={t('compare.itemsDescription')} />
+        {itemsThrough && <p className="text-sm text-text-muted">{itemsThrough}</p>}
         {itemRows === null ? (
           <p className="text-sm text-text-muted">{t('impact.itemsUnavailable')}</p>
         ) : itemRows.length > 0 ? (
-          <MovementTable rows={itemRows} rateLabel={itemsT('buyRate')} marks={marks.items} caption={t('compare.itemCaption', labels)} />
+          <MovementTable rows={itemRows} rateLabel={itemsT('buyRate')} marks={marks.items} caption={t('compare.itemCaption', itemLabels)} />
         ) : (
           <p className="text-sm text-text-muted">{t('compare.noItems')}</p>
         )}

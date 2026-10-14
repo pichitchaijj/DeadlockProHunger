@@ -4,13 +4,14 @@ import { cache } from 'react'
 import { stableKey } from '@/lib/cache/stableKey'
 import { getHeroStatsByDay, getHeroTotals, getHeroTotalsCompleteDays, getPatchFeed, throughDay, type HeroStatsQuery } from '@/lib/deadlock/endpoints'
 import { isAccessDenied } from '@/lib/deadlock/errors'
+import { softFail } from '@/lib/deadlock/softFail'
 import { getItemStatsByDay, getItemTotals } from '@/lib/deadlock/itemEndpoints'
 import { buildBefore, getAssetSnapshot } from '@/lib/deadlock/patchEndpoints'
 import { heroCatalog, itemCatalog } from '@/features/items/loaders'
 import type { HeroRef, ItemRef } from '@/features/items/model'
 import { resolveScope, type ResolvedScope } from '@/features/meta/scope'
 import { diffSnapshots, snapshotEntities, splitBroadChanges, type BroadChange, type EntityChange } from './diff'
-import { heroPickRates, itemBuyRates, movements, patchPeriod, patchesFromFeed, patchWindows, sumWindow, type Movement, type PatchSummary, type Window } from './model'
+import { completeDaysOf, heroPickRates, itemBuyRates, movements, patchPeriod, patchesFromFeed, patchWindows, sumWindow, type Movement, type PatchSummary, type Window } from './model'
 import { parseNotes, type NoteLine } from './notes'
 import type { PatchQuery } from './query'
 import type { ScopeRef } from '@/lib/analytics/scope'
@@ -132,9 +133,18 @@ export const patchImpactById = cache(async (id: string, ctx: PatchContext) => {
 
 export async function getPatchImpact(patches: PatchSummary[], index: number, ctx: PatchContext) {
   const { before, after } = patchWindows(patches, index, ctx.scope.today)
-  if (before.days === 0 || after.days === 0) return { before, after, heroes: null, items: null }
+  // item-stats covers complete UTC days only (getItemStatsByDay): the item side's "after" ends before today, and
+  // nothing is requested while it has no complete day (the patch day itself). One boundary for both: the scope's day
+  // cuts this window and the item-stats query alike, even if the request runs past 00:00 UTC.
+  const itemsAfter = completeDaysOf(after, ctx.scope.today)
+  if (before.days === 0 || after.days === 0) return { before, after, itemsAfter, heroes: null, items: null }
   const q = rangeQuery(ctx, { from: before.from, to: after.to })
-  const [heroRows, itemRows, heroes, items] = await Promise.all([getHeroStatsByDay(q), getItemStatsByDay(q).catch(() => null), heroCatalog(), itemCatalog()])
+  const [heroRows, itemRows, heroes, items] = await Promise.all([
+    getHeroStatsByDay(q),
+    itemsAfter.days > 0 ? softFail(getItemStatsByDay(q, ctx.scope.today), null) : null,
+    heroCatalog(),
+    itemCatalog(),
+  ])
   const hRows = heroRows.map((r) => ({ id: r.hero_id, day: r.bucket, wins: r.wins, matches: r.matches }))
   const hb = sumWindow(hRows, before)
   const ha = sumWindow(hRows, after)
@@ -144,11 +154,11 @@ export async function getPatchImpact(patches: PatchSummary[], index: number, ctx
   if (itemRows) {
     const iRows = itemRows.map((r) => ({ id: r.item_id, day: r.bucket, wins: r.wins, matches: r.matches }))
     const ib = sumWindow(iRows, before)
-    const ia = sumWindow(iRows, after)
-    // Each period's buy rates use that period's own player-matches.
-    itemMoves = attach(movements([...items.keys()], ib, ia, { a: itemBuyRates(ib, hb), b: itemBuyRates(ia, ha) }), items)
+    const ia = sumWindow(iRows, itemsAfter)
+    // Each period's buy rates use that period's own player-matches, over the same days as its item rows.
+    itemMoves = attach(movements([...items.keys()], ib, ia, { a: itemBuyRates(ib, hb), b: itemBuyRates(ia, sumWindow(hRows, itemsAfter)) }), items)
   }
-  return { before, after, heroes: heroMoves, items: itemMoves }
+  return { before, after, itemsAfter, heroes: heroMoves, items: itemMoves }
 }
 
 // ── Compare two patches ──────────────────────────────────────────────
@@ -197,6 +207,8 @@ export async function getPatchCompare(patches: PatchSummary[], ia: number, ib: n
     ta.items && tb.items
       ? attach(movements([...items.keys()], ta.items.items, tb.items.items, { a: itemBuyRates(ta.items.items, ta.items.heroes), b: itemBuyRates(tb.items.items, tb.items.heroes) }), items)
       : null
-  const diff = await diffBetween(fromBuild, toBuild).catch(() => null)
-  return { older: patches[older], newer: patches[newer], periods: { older: pa, newer: pb }, heroes: heroMoves, items: itemMoves, diff, builds: { from: fromBuild, to: toBuild } }
+  const diff = await softFail(diffBetween(fromBuild, toBuild), null)
+  // The days the item side covers (itemPeriod: complete UTC days), for its labels.
+  const itemPeriods = { older: completeDaysOf(pa, ctx.scope.today), newer: completeDaysOf(pb, ctx.scope.today) }
+  return { older: patches[older], newer: patches[newer], periods: { older: pa, newer: pb }, itemPeriods, heroes: heroMoves, items: itemMoves, diff, builds: { from: fromBuild, to: toBuild } }
 }

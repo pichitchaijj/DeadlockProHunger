@@ -10,7 +10,7 @@ import zhCN from '@/i18n/messages/zh-CN'
 import { direction } from '@/features/patches/direction'
 import { diffSnapshots, snapshotEntities, splitBroadChanges, type EntityChange, type PropChange } from '@/features/patches/diff'
 import { changeMarks, diffCounts, groupChanges, patchesFromFeed, patchPeriod, patchWindows, type Mark, type Verdict } from '@/features/patches/model'
-import { markLabel, patchDate, patchTitle, propertyText, valueText, verdictLabel, windowRange, type PatchTranslate } from '@/features/patches/text'
+import { itemsThroughNote, markLabel, patchDate, patchTitle, propertyText, valueText, verdictLabel, windowRange, type PatchTranslate } from '@/features/patches/text'
 import { formatInteger } from '@/lib/format'
 import * as v1 from './legacy/patchTextV1'
 import * as diffV1 from './legacy/patchDiffV1'
@@ -266,6 +266,28 @@ describe('every locale', () => {
     const range = windowRange({ from: day('2026-09-22'), to: day('2026-09-29'), days: 7 }, 'short', locale, (_k, v) => `${v!.from}|${v!.to}`)
     expect(range.split('|').map((s) => s.match(/\d+/g)!.at(-1))).toEqual(['22', '28'])
     expect(patchDate(day('2026-10-04') + DAY - 60, 'build', locale).match(/\d+/g)).toEqual(expect.arrayContaining(['4', '23', '59']))
+  })
+})
+
+describe('item statistics date note', () => {
+  // A window open through today (Oct 12–14, today Oct 14) whose item side counts complete days only (Oct 12–13).
+  const shown = { from: day('2026-10-12'), to: day('2026-10-15'), days: 3 }
+  const items = { from: day('2026-10-12'), to: day('2026-10-14'), days: 2 }
+
+  it('names the last complete day when the item side ends before the window shown', () => {
+    expect(itemsThroughNote(shown, items, 'short', 'en', EN)).toBe(`Item statistics count complete UTC days only, through ${patchDate(day('2026-10-13'), 'short', 'en')}.`)
+  })
+
+  it('says nothing when the item side covers the whole window, or has no day at all', () => {
+    expect(itemsThroughNote(items, items, 'short', 'en', EN)).toBeNull()
+    expect(itemsThroughNote(shown, { from: shown.from, to: shown.from, days: 0 }, 'short', 'en', EN)).toBeNull()
+  })
+
+  it.each(LOCALES)('%s states the UTC day it ends on', (locale, messages) => {
+    const note = itemsThroughNote(shown, items, 'day', locale, translator(locale, messages).tr)
+    expect(note).toContain('UTC')
+    expect(note!.match(/\d+/g)).toContain('13')
+    expect(note!.match(/\d+/g)).not.toContain('14')
   })
 })
 

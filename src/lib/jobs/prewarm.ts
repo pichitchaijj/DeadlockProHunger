@@ -77,14 +77,13 @@ export function prewarmStages(): PrewarmStage[] {
         { name: 'home patch', run: () => section(getHomePatch) },
         { name: 'home source counters', run: () => section(getHomeSource) },
         { name: 'home hero performance', run: () => section(getHomePerformance) },
-        { name: 'home builds', run: () => section(getHomeBuilds) },
         { name: 'home matches', run: () => section(getHomeMatches) },
       ],
     },
     {
       // The /builds all-heroes listing (and Home's builds section) reads these entries cache-only: a page sends
       // no build-stats request, so without this stage it is `pending`. One task per active hero, paced.
-      // (Home's builds section runs in the "home" stage above, before this one.)
+      // Both readers run in the next stage, after this one.
       name: 'builds tracked stats (30d, all ranks)',
       tasks: async () => {
         const [scope, heroes] = await Promise.all([resolveScope({ window: DEFAULT_BUILDS_QUERY.window, rank: DEFAULT_BUILDS_QUERY.rank, mode: 'all' }), getActiveHeroes()])
@@ -92,8 +91,13 @@ export function prewarmStages(): PrewarmStage[] {
       },
     },
     {
+      // The cache-only readers of the stage above: the listing and Home's builds section (a Home section, run here
+      // so it finds the build stats warm instead of failing as `pending` on a cold day).
       name: 'builds page',
-      tasks: [{ name: 'builds default listing', run: () => getBuildsListing(DEFAULT_BUILDS_QUERY) }],
+      tasks: [
+        { name: 'builds default listing', run: () => getBuildsListing(DEFAULT_BUILDS_QUERY) },
+        { name: 'home builds', run: () => section(getHomeBuilds) },
+      ],
     },
     {
       // /items and every item page's default view (7d, all ranks, all heroes). The timing calls return

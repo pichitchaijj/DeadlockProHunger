@@ -133,6 +133,7 @@
     "changedItems": "Items changed in this patch",
     "itemCaption": "Item win and buy rates before and after the patch",
     "itemsUnavailable": "Item statistics are unavailable right now.",
+    "itemsThrough": "Item statistics count complete UTC days only, through {date}.",
     "itemLowPurchases": "Not enough purchases of this item around the patch.",
     "noChangedItems": "No changed shop item has enough purchases around the patch.",
     "up": "Win rate up",

@@ -128,7 +128,7 @@ export async function getBuildsListing(query: BuildsQuery): Promise<BuildsListin
     const candidates = metaOrder(
       [...stats.entries()].flatMap(([heroId, list]) => list.map((b) => ({ heroId, id: b.id, stats: b.stats as BuildStats | null, heroWinRate: c.heroWinRates.get(heroId) ?? null }))),
     ).slice(0, 24)
-    builds = (await Promise.all(candidates.map((b) => getBuildById(b.id).catch(() => null)))).filter((b): b is FullBuild => b !== null)
+    builds = (await Promise.all(candidates.map((b) => softFail(getBuildById(b.id), null)))).filter((b): b is FullBuild => b !== null)
   }
 
   // Only active heroes' builds are listed. Filtered before the stats read: the prewarm job warms stats for active
@@ -180,8 +180,22 @@ export async function getBuildsListing(query: BuildsQuery): Promise<BuildsListin
 
 // ── Detail ───────────────────────────────────────────────────────────
 
+/**
+ * Outside the scopes a build's analytics are computed for, the build itself is still looked up first (one builds
+ * call, no analytics): a build that doesn't exist is missing (404) at every scope, a wrong hero slug redirects,
+ * and only a real build is `limited`. A failed lookup (refused, rate limited, …) throws as itself, never as missing.
+ */
+async function limitedBuildDetail(heroSlug: string, buildId: number, query: Pick<BuildsQuery, 'window' | 'rank'>) {
+  const [build, heroes] = await Promise.all([getBuildById(buildId), getActiveHeroes()])
+  const hero = build ? heroes.find((h) => h.id === build.hero_build.hero_id) : undefined
+  if (!hero) return null
+  const slug = slugify(hero.name)
+  if (slug !== heroSlug) return { kind: 'redirect' as const, href: buildDetailHref(slug, buildId, query) }
+  throw new DataError('Build detail is computed for the default scope only', 'limited')
+}
+
 export async function getBuildDetail(heroSlug: string, buildId: number, query: Pick<BuildsQuery, 'window' | 'rank'>) {
-  requireScope(detailInScope(query), 'Build detail')
+  if (!detailInScope(query)) return limitedBuildDetail(heroSlug, buildId, query)
   const [c, build] = await Promise.all([common(query), getBuildById(buildId)])
   if (!build) return null
   const hb = build.hero_build
@@ -198,10 +212,10 @@ export async function getBuildDetail(heroSlug: string, buildId: number, query: P
     // Item flow is its own section: a failure (or a scope it isn't computed for) is stated there, not as "no data".
     flowInScope(query) ? attempt('[build] item flow failed', getItemFlow(hero.id, c.scope.statsQuery)) : ({ ok: false, kind: 'limited' } as const),
     abilityNames(hero.id),
-    getAbilityOrderStats(hero.id, c.scope.statsQuery).catch(() => []),
+    softFail(getAbilityOrderStats(hero.id, c.scope.statsQuery), []),
     searchBuilds({ heroId: hero.id, limit: 100 }),
-    getSteamNames([hb.author_account_id]).catch(() => []),
-    getAccountRanks([hb.author_account_id]).catch(() => []),
+    softFail(getSteamNames([hb.author_account_id]), []),
+    softFail(getAccountRanks([hb.author_account_id]), []),
   ])
 
   const heroBuildStats = heroBuildStatsRaw.map((s) => ({ id: s.hero_build_id, stats: scoreBuild(s.wins, s.matches) }))
