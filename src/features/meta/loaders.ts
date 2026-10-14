@@ -11,7 +11,7 @@ import { heroStatsFromHistory } from '@/lib/db/store'
 import { getActiveHeroes, getBadgeDistribution, getHeroStatsByDay } from '@/lib/deadlock/endpoints'
 import { buildMetaModel, type MetaModel } from './model'
 import type { MetaQuery, MetaWindow } from './query'
-import { resolveScope } from './scope'
+import { ANALYTICS_KEY_STEP, resolveScope } from './scope'
 import { heroIconUrl } from '@/lib/deadlock/heroImages'
 
 const DAY = 86_400
@@ -43,7 +43,78 @@ export function getMetaPageData(query: MetaQuery): Promise<MetaPageData> {
   return loadMetaPageData(JSON.stringify(Object.fromEntries(Object.entries(query).sort(([a], [b]) => a.localeCompare(b)))))
 }
 
-const loadMetaPageData = cache(async (key: string): Promise<MetaPageData> => {
+/*
+ * Short process-local reuse of a successful live result: at most MEMO_MS, within one analytics key step and UTC day
+ * (the buckets every input's cache key and the scope's dates come from). React `cache` above memoizes only inside a
+ * React render; in route handlers (cron prewarm, /api/search) it is a pass-through, so each caller rebuilt the same
+ * model from the same cached inputs.
+ * - Concurrent callers of one key share one computation (the promise is stored before it settles).
+ * - Failures (`ok: false`), database snapshots and rejections are dropped once settled: the next call retries.
+ * - A computation whose start straddles a bucket boundary is never stored (it read the clock in both buckets).
+ * - Results are deep-frozen before any caller sees them: one object now reaches several requests, so an in-place
+ *   change must fail loudly instead of leaking into other requests. None of its objects is shared with another cache.
+ */
+const MEMO_MS = 30_000
+const MEMO_MAX = 64
+type MemoEntry = { at: number; value: Promise<MetaPageData> }
+const memo = new Map<string, MemoEntry>()
+
+/** The time bucket a result belongs to: the analytics key step and the UTC day (both read from the clock). */
+const timeBucket = (ms: number) => `${Math.floor(ms / 1000 / ANALYTICS_KEY_STEP)}|${Math.floor(ms / 1000 / DAY)}`
+
+/** For tests: clear the memo between cases that change upstream fixtures within one module instance. */
+export function resetMetaMemoForTests(): void {
+  memo.clear()
+}
+
+/** For tests: how many entries the memo holds. */
+export function metaMemoSizeForTests(): number {
+  return memo.size
+}
+
+const loadMetaPageData = cache((key: string): Promise<MetaPageData> => {
+  const started = Date.now()
+  const bucket = timeBucket(started)
+  const memoKey = `${key}|${bucket}`
+  const hit = memo.get(memoKey)
+  if (hit && started - hit.at < MEMO_MS) return hit.value
+
+  // Starts synchronously: every clock read of the computation (resolveScope, the distribution day) happens here.
+  const value = computeMetaPageData(key).then(deepFreeze)
+  if (timeBucket(Date.now()) !== bucket) return value // straddled a boundary: not stored under either bucket
+
+  // Expired entries are removed, not just skipped; the key is re-inserted last, so eviction stays oldest-first.
+  for (const [k, entry] of memo) if (started - entry.at >= MEMO_MS) memo.delete(k)
+  memo.delete(memoKey)
+  while (memo.size >= MEMO_MAX) {
+    const oldest = memo.keys().next()
+    if (oldest.done) break
+    memo.delete(oldest.value)
+  }
+  const entry: MemoEntry = { at: started, value }
+  memo.set(memoKey, entry)
+
+  // Only this entry is ever removed here, so a settled old computation can't remove a newer one for the same key.
+  const drop = () => {
+    if (memo.get(memoKey) === entry) memo.delete(memoKey)
+  }
+  value.then((result) => {
+    if (!result.ok || result.scope.source !== 'live') drop()
+  }, drop)
+  return value
+})
+
+/** Freezes a freshly built result and every object in it. */
+function deepFreeze<T>(value: T): T {
+  if (value !== null && typeof value === 'object' && !Object.isFrozen(value)) {
+    Object.freeze(value)
+    for (const nested of Object.values(value)) deepFreeze(nested)
+  }
+  return value
+}
+
+/** Failures are returned as `{ ok: false }` (below), so this settles with a value in every expected case. */
+async function computeMetaPageData(key: string): Promise<MetaPageData> {
   const query = JSON.parse(key) as MetaQuery
   try {
     const [scopeInfo, heroes, distribution] = await Promise.all([
@@ -113,7 +184,7 @@ const loadMetaPageData = cache(async (key: string): Promise<MetaPageData> => {
     console.error(`[meta] data load failed${detail}`, error)
     return { ok: false, message: 'The Deadlock data source didn’t respond as expected.', kind: classifyError(error) }
   }
-})
+}
 
 /** Share of ranked players per band, from badge-distribution `unique_players` (badge 0 = unranked, excluded). */
 function bandShares(distribution: Awaited<ReturnType<typeof getBadgeDistribution>>): Record<RankBandId, number> {
