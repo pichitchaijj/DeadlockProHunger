@@ -1,6 +1,7 @@
 import 'server-only'
 import { createHash } from 'node:crypto'
 import { unstable_cache } from 'next/cache'
+import { PHASE_PRODUCTION_BUILD } from 'next/constants'
 import { stableKey } from '@/lib/cache/stableKey'
 import { z } from 'zod'
 import { AccessGuard, outcomeFor, type AccessStatus, type Outcome } from './accessBreaker'
@@ -142,12 +143,26 @@ export function previewBlocked(): boolean {
   return process.env.VERCEL_ENV === 'preview' && process.env.DEADLOCK_API_IN_PREVIEW !== '1'
 }
 
+/**
+ * `next build` (Next sets NEXT_PHASE=phase-production-build for the build and its prerender workers) sends nothing
+ * upstream unless the deployment is Vercel Production or DEADLOCK_API_AT_BUILD=1 opts in. Unlike the Preview guard it
+ * does not need VERCEL_ENV to exist: a build without it (a Preview whose env isn't exposed, a local build) is blocked.
+ * Runtime (next start, Vercel functions, ISR regeneration), dev and tests are not the build phase: unchanged.
+ */
+export function buildBlocked(): boolean {
+  return process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD && process.env.VERCEL_ENV !== 'production' && process.env.DEADLOCK_API_AT_BUILD !== '1'
+}
+
 async function request<S extends z.ZodType>(url: string, path: string, schema: S, timeoutMs: number, retry: boolean): Promise<z.infer<S>> {
   // Before the breaker and the budget: a blocked call takes no ticket, spends no token and sends nothing. Not a
   // refusal (nothing was refused upstream) and not cached (thrown inside the cache callback, like any failure).
   if (previewBlocked()) {
     if (TRACE) console.info(`[api] ${path} blocked (preview)`)
     throw new DataError('Deadlock API calls are off in Vercel Preview (DEADLOCK_API_IN_PREVIEW=1 allows them)', 'unavailable')
+  }
+  if (buildBlocked()) {
+    if (TRACE) console.info(`[api] ${path} blocked (build)`)
+    throw new DataError('Deadlock API calls are off during this build (DEADLOCK_API_AT_BUILD=1 allows them)', 'unavailable')
   }
   const headers: HeadersInit = { Accept: 'application/json', 'User-Agent': 'deadlockprohunger' }
   if (process.env.DEADLOCK_API_KEY) headers['X-API-KEY'] = process.env.DEADLOCK_API_KEY
