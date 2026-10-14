@@ -132,7 +132,23 @@ async function acquire(path: string, maxWaitMs: number) {
 
 // ── Network ──────────────────────────────────────────────────────────
 
+/**
+ * Vercel Preview deployments (their build and runtime) send nothing upstream unless DEADLOCK_API_IN_PREVIEW=1:
+ * a pushed branch must not prerender or serve pages from the live API by accident. Fail-closed for
+ * VERCEL_ENV=preview; production (VERCEL_ENV=production), local and test runs (no VERCEL_ENV) are unchanged.
+ * Read per call, so a deployment's env decides, not the module's first load.
+ */
+export function previewBlocked(): boolean {
+  return process.env.VERCEL_ENV === 'preview' && process.env.DEADLOCK_API_IN_PREVIEW !== '1'
+}
+
 async function request<S extends z.ZodType>(url: string, path: string, schema: S, timeoutMs: number, retry: boolean): Promise<z.infer<S>> {
+  // Before the breaker and the budget: a blocked call takes no ticket, spends no token and sends nothing. Not a
+  // refusal (nothing was refused upstream) and not cached (thrown inside the cache callback, like any failure).
+  if (previewBlocked()) {
+    if (TRACE) console.info(`[api] ${path} blocked (preview)`)
+    throw new DataError('Deadlock API calls are off in Vercel Preview (DEADLOCK_API_IN_PREVIEW=1 allows them)', 'unavailable')
+  }
   const headers: HeadersInit = { Accept: 'application/json', 'User-Agent': 'deadlockprohunger' }
   if (process.env.DEADLOCK_API_KEY) headers['X-API-KEY'] = process.env.DEADLOCK_API_KEY
   // A request may queue for at most half its timeout; beyond that the budget is effectively spent.

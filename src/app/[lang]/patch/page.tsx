@@ -21,6 +21,12 @@ import { noteCounts, type ChangeCounts, type PatchSummary } from '@/features/pat
 import { patchHref, patchListHref } from '@/features/patches/query'
 import { patchDate, patchTitle, type PatchTranslate } from '@/features/patches/text'
 
+/**
+ * Regenerated hourly (TTL.patches), stated here for every locale: left implicit, only the locale whose render
+ * entered the patch-feed cache inherited its revalidate and the others were prerendered as never revalidating.
+ */
+export const revalidate = 3600
+
 export async function generateMetadata(): Promise<Metadata> {
   const [t, locale] = await Promise.all([getTranslations('patch.meta'), getLocale()])
   return {
